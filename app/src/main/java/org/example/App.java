@@ -3,12 +3,23 @@
  */
 package org.example;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
+import org.example.scenes.MainMenuScene;
+
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+public class App extends Application{
+    @Override
+    public void start(Stage primaryStage) {
+        SceneManager manager = new SceneManager(primaryStage);
+
+        // 첫 화면: MainMenu
+        primaryStage.setScene(new MainMenuScene(manager).getScene());
+        primaryStage.setTitle("Tetris");
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        launch(args);
     }
 }

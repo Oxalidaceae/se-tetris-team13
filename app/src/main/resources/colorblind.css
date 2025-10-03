@@ -1,0 +1,51 @@
+/* 색맹(색각이상) 모드용 CSS */
+/* 명도와 패턴을 강조하여 구분성을 높임 */
+
+/* 전체 레이아웃 */
+.root {
+    -fx-background-color: #222222; /* 더 밝은 블랙 */
+    -fx-font-family: "Roboto", "Noto Sans", sans-serif;
+    -fx-text-fill: #F5F5F5; /* 밝은 회색 */
+}
+
+/* 기본 Label */
+.label {
+    -fx-text-fill: #F5F5F5;
+    -fx-font-size: 16px;
+}
+
+/* 타이틀 Label */
+.label-title {
+    -fx-text-fill: #F5F5F5;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-padding: 20 0 20 0;
+    -fx-effect: dropshadow(gaussian, #000000, 2, 0.5, 0, 1); /* 그림자 효과로 가독성 향상 */
+}
+
+/* 버튼 기본 */
+.button {
+    -fx-background-color: linear-gradient(to bottom, #F5F5F5 60%, #BDBDBD 100%);
+    -fx-text-fill: #222222;
+    -fx-border-color: #222222;
+    -fx-border-width: 2;
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-background-radius: 0;
+    -fx-border-style: dashed; /* 패턴 강조 */
+}
+
+/* 버튼 hover 효과 */
+.button:hover {
+    -fx-background-color: #FFD600; /* 노란색: 색각이상자에게도 잘 보임 */
+    -fx-text-fill: #222222;
+    -fx-border-color: #222222;
+}
+
+/* 버튼 눌렀을 때 */
+.button:pressed {
+    -fx-background-color: #00B8D4; /* 청록색: 색각이상자에게도 잘 보임 */
+    -fx-text-fill: #222222;
+    -fx-border-color: #222222;
+}
