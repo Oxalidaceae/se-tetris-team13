@@ -29,15 +29,17 @@ public class KeySettingsScene {
         Button rightBtn = new Button("Move Right: " + settings.getKeyRight());
         Button rotateBtn = new Button("Rotate: " + settings.getKeyRotate());
         Button dropBtn = new Button("Drop: " + settings.getKeyDrop());
+        Button backBtn = new Button("Back");
 
         // 키 변경 대기 모드
         leftBtn.setOnAction(e -> waitingForKey = "LEFT");
         rightBtn.setOnAction(e -> waitingForKey = "RIGHT");
         rotateBtn.setOnAction(e -> waitingForKey = "ROTATE");
         dropBtn.setOnAction(e -> waitingForKey = "DROP");
+        backBtn.setOnAction(e -> manager.showSettings(settings));
 
         // 현재 Scene에서 키 입력을 감지
-        VBox layout = new VBox(15, title, leftBtn, rightBtn, rotateBtn, dropBtn);
+        VBox layout = new VBox(15, title, leftBtn, rightBtn, rotateBtn, dropBtn, backBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 400, 400);
@@ -45,36 +47,37 @@ public class KeySettingsScene {
         // 키 입력 감지 핸들러
         scene.setOnKeyPressed(event -> {
             if (waitingForKey == null) return;
-            KeyCode key = event.getCode();
+            event.consume();
 
+            KeyCode key = event.getCode();
             switch (waitingForKey) {
                 case "LEFT" -> {
                     settings.setKeyLeft(key.getName());
                     leftBtn.setText("Move Left: " + key.getName());
+                    break;
                 }
                 case "RIGHT" -> {
                     settings.setKeyRight(key.getName());
                     rightBtn.setText("Move Right: " + key.getName());
+                    break;
                 }
                 case "ROTATE" -> {
                     settings.setKeyRotate(key.getName());
                     rotateBtn.setText("Rotate: " + key.getName());
+                    break;
                 }
                 case "DROP" -> {
                     settings.setKeyDrop(key.getName());
                     dropBtn.setText("Drop: " + key.getName());
+                    break;
                 }
             }
 
             waitingForKey = null; // 입력 완료 후 리셋
+            
         });
 
-        // 뒤로가기 버튼
-        Button backBtn = new Button("Back");
-        backBtn.setOnAction(e -> manager.showSettings(settings));
-
-        layout.getChildren().add(backBtn);
-
+        manager.enableArrowAsTab(scene);
         return scene;
     }
 }

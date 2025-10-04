@@ -1,5 +1,7 @@
 package org.example.scenes;
 
+import java.util.List;
+
 import org.example.SceneManager;
 import org.example.config.Settings;
 
@@ -87,6 +89,8 @@ public class SettingsScene {
         layout.setStyle("-fx-alignment: center;");
         
         Scene scene = new Scene(layout, 600, 700);
+
+        manager.enableArrowAsTab(scene);
 
         return scene;
     }

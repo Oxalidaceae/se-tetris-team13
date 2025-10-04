@@ -8,7 +8,10 @@ import org.example.scenes.MainMenuScene;
 import org.example.scenes.ScoreboardScene;
 import org.example.scenes.SettingsScene;
 
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 public class SceneManager {
@@ -84,5 +87,39 @@ public class SceneManager {
         scene.getStylesheets().add(
             getClass().getResource(cssPath).toExternalForm()
         );
+    }
+
+    // 키보드로 버튼들 간 이동 및 선택 기능 활성화 메서드
+    public void enableArrowAsTab(Scene scene) {
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, new javafx.event.EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent e) {
+                Node focusedNode = scene.getFocusOwner();
+                if (focusedNode == null) return;
+
+                // 아래/오른쪽 방향키 → Tab 이동
+                if (e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.RIGHT) {
+                    e.consume();
+                    focusedNode.fireEvent(new KeyEvent(
+                        KeyEvent.KEY_PRESSED,
+                        "",
+                        "",
+                        KeyCode.TAB,
+                        false, false, false, false
+                    ));
+                }
+                // 위/왼쪽 방향키 → Shift+Tab 이동
+                else if (e.getCode() == KeyCode.UP || e.getCode() == KeyCode.LEFT) {
+                    e.consume();
+                    focusedNode.fireEvent(new KeyEvent(
+                        KeyEvent.KEY_PRESSED,
+                        "",
+                        "",
+                        KeyCode.TAB,
+                        true, false, false, false // shift=true
+                    ));
+                }
+            }
+        });
     }
 }

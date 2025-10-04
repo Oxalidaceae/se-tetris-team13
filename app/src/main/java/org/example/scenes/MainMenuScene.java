@@ -1,5 +1,7 @@
 package org.example.scenes;
 
+import java.util.List;
+
 import org.example.SceneManager;
 import org.example.config.Settings;
 
@@ -27,16 +29,23 @@ public class MainMenuScene {
         Button scoreBtn = new Button("Scoreboard");
         Button exitBtn = new Button("Exit");
 
+        // 게임오버시 화면 전환 테스트용 버튼
+        Button testGameOverBtn = new Button("Test Game Over");
+        testGameOverBtn.setOnAction(e ->
+            manager.changeScene(new GameOverScene(manager, settings, 12345).getScene())
+        );
+
         startBtn.setOnAction(e -> manager.showGame(settings));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
         exitBtn.setOnAction(e -> manager.exitWithSave(settings));
 
-        VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn);
+        VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn, testGameOverBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
 
+        manager.enableArrowAsTab(scene);
         return scene;
     }
     
