@@ -37,6 +37,14 @@
     -fx-text-fill: black;
 }
 
+/* 버튼 포커스 효과 */
+.button:focused {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+}
+
 /* 버튼 눌렀을 때 */
 .button:pressed {
     -fx-background-color: #1E90FF; /* 파란색 포인트 */
