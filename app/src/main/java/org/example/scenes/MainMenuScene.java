@@ -1,8 +1,8 @@
 package org.example.scenes;
 
 import org.example.SceneManager;
+import org.example.config.Settings;
 
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -10,9 +10,11 @@ import javafx.scene.layout.VBox;
 
 public class MainMenuScene {
     private final SceneManager manager;
+    private final Settings settings;
 
-    public MainMenuScene(SceneManager manager) {
+    public MainMenuScene(SceneManager manager, Settings settings) {
         this.manager = manager;
+        this.settings = settings;
     }
 
     public Scene getScene() {
@@ -25,19 +27,15 @@ public class MainMenuScene {
         Button scoreBtn = new Button("Scoreboard");
         Button exitBtn = new Button("Exit");
 
+        startBtn.setOnAction(e -> manager.showGame(settings));
+        optionBtn.setOnAction(e -> manager.showSettings(settings));
+        scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
+        exitBtn.setOnAction(e -> manager.exitWithSave(settings));
+
         VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn);
         layout.setStyle("-fx-alignment: center;");
 
-        // 예: 옵션 버튼 클릭 → SettingsScene으로 이동
-        startBtn.setOnAction(e -> manager.changeScene(new GameScene(manager).getScene()));
-        optionBtn.setOnAction(e -> manager.changeScene(new SettingsScene(manager).getScene()));
-        scoreBtn.setOnAction(e -> manager.changeScene(new ScoreboardScene(manager).getScene()));
-        exitBtn.setOnAction(e -> Platform.exit()); //e -> System.exit(0)?
-
-        Scene scene = new Scene(layout, 400, 400);
-        scene.getStylesheets().add(
-            getClass().getResource("/application.css").toExternalForm()
-        );
+        Scene scene = new Scene(layout, 600, 700);
 
         return scene;
     }

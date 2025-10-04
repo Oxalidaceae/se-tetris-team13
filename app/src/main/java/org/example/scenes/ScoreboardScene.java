@@ -1,6 +1,7 @@
 package org.example.scenes;
 
 import org.example.SceneManager;
+import org.example.config.Settings;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -10,9 +11,11 @@ import javafx.scene.layout.VBox;
 
 public class ScoreboardScene {
 private final SceneManager manager;
+private final Settings settings;
 
-    public ScoreboardScene(SceneManager manager) {
+    public ScoreboardScene(SceneManager manager, Settings settings) {
         this.manager = manager;
+        this.settings = settings;
     }
     
     public Scene getScene() {
@@ -23,27 +26,23 @@ private final SceneManager manager;
         // 점수 리스트 (임시 더미 데이터)
         ListView<String> scoreList = new ListView<>();
         scoreList.getItems().addAll(
-                "AAA - 1000",
-                "BBB - 800",
-                "CCC - 600",
-                "DDD - 400",
-                "EEE - 200"
+                "AAA  score",
+                "BBB  score",
+                "CCC  score",
+                "DDD  score",
+                "EEE  score"
         );
         scoreList.setMaxHeight(200);
 
         // 뒤로가기 버튼
         Button backBtn = new Button("Back");
-        backBtn.setOnAction(e -> manager.changeScene(new MainMenuScene(manager).getScene()));
+        backBtn.setOnAction(e -> manager.showMainMenu(settings));
 
          // 레이아웃
         VBox layout = new VBox(15, title, scoreList, backBtn);
         layout.setStyle("-fx-alignment: center;");
 
-        Scene scene = new Scene(layout, 400, 400);
-
-        scene.getStylesheets().add(
-            getClass().getResource("/application.css").toExternalForm()
-        );
+        Scene scene = new Scene(layout, 600, 700);
 
         return scene;
     }
