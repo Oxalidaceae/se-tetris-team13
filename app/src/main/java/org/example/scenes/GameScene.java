@@ -1,6 +1,7 @@
 package org.example.scenes;
 
 import org.example.SceneManager;
+import org.example.config.Settings;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -11,11 +12,14 @@ import javafx.scene.layout.VBox;
 
 public class GameScene {
     private final SceneManager manager;
+    private final Settings settings;
+
     private Label scoreLabel;
     private Label boardLabel;
 
-    public GameScene(SceneManager manager) {
+    public GameScene(SceneManager manager, Settings settings) {
         this.manager = manager;
+        this.settings = settings;
     }
 
     public Scene getScene() {
@@ -35,7 +39,7 @@ public class GameScene {
         nextBlockLabel.getStyleClass().add("label");
 
         Button backBtn = new Button("Back");
-        backBtn.setOnAction(e -> manager.changeScene(new MainMenuScene(manager).getScene()));
+        backBtn.setOnAction(e -> manager.showMainMenu(settings));
 
         VBox rightPanel = new VBox(15, nextBlockLabel, backBtn);
         rightPanel.setStyle("-fx-alignment: top-center;");
@@ -46,12 +50,7 @@ public class GameScene {
         layout.setCenter(boardLabel);
         layout.setRight(rightPanel);
 
-        Scene scene = new Scene(layout, 600, 500);
-
-        // CSS 연결
-        scene.getStylesheets().add(
-            getClass().getResource("/application.css").toExternalForm()
-        );
+        Scene scene = new Scene(layout, 600, 700);
 
         return scene;
     }
