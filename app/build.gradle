@@ -43,7 +43,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.example.App'
+    mainClass = 'team13.tetris.App'
 }
 
 // 추가

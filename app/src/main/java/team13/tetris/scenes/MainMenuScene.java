@@ -1,9 +1,9 @@
-package org.example.scenes;
+package team13.tetris.scenes;
 
 import java.util.List;
 
-import org.example.SceneManager;
-import org.example.config.Settings;
+import team13.tetris.SceneManager;
+import team13.tetris.config.Settings;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;

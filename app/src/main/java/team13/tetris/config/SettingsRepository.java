@@ -1,4 +1,4 @@
-package org.example.config;
+package team13.tetris.config;
 
 import com.google.gson.Gson;
 import java.io.FileReader;

@@ -1,12 +1,12 @@
-package org.example;
+package team13.tetris;
 
-import org.example.config.Settings;
-import org.example.config.SettingsRepository;
-import org.example.scenes.GameScene;
-import org.example.scenes.KeySettingsScene;
-import org.example.scenes.MainMenuScene;
-import org.example.scenes.ScoreboardScene;
-import org.example.scenes.SettingsScene;
+import team13.tetris.config.Settings;
+import team13.tetris.config.SettingsRepository;
+import team13.tetris.scenes.GameScene;
+import team13.tetris.scenes.KeySettingsScene;
+import team13.tetris.scenes.MainMenuScene;
+import team13.tetris.scenes.ScoreboardScene;
+import team13.tetris.scenes.SettingsScene;
 
 import javafx.scene.Node;
 import javafx.scene.Scene;
