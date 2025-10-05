@@ -68,6 +68,14 @@ task runScoreBoardConsoleTest(type: JavaExec) {
     standardInput = System.in
 }
 
+// Task to run Timer demo
+task runTimerDemo(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'team13.tetris.game.TimerDemo'
+    args = []
+    standardInput = System.in
+}
+
 // 추가
 tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
