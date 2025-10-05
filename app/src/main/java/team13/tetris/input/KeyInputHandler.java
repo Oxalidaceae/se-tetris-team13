@@ -2,54 +2,62 @@
 package team13.tetris.input;
 
 import javafx.scene.input.KeyCode;
-import team13.tetris.config.PlayerCommand;
-import team13.tetris.config.KeySettings;
+import team13.tetris.config.Settings;
 
 public class KeyInputHandler {
 
-  private final KeySettings keySettings;
+  private final Settings settings;
 
-  public KeyInputHandler(KeySettings keySettings) {
-    this.keySettings = keySettings;
+  public KeyInputHandler(Settings settings) {
+    this.settings = settings;
   }
 
-  // default: '왼쪽 방향키'
+  // 키 매칭 헬퍼 메서드
+  private boolean isKeyMatch(KeyCode userPressed, String configuredKey) {
+    if (configuredKey == null || configuredKey.trim().isEmpty()) {
+      return false;
+    }
+
+    String userKey = userPressed.toString();
+    String settingKey = configuredKey.trim();
+
+    // 키 설정에서 저장한 문자열과 직접 비교
+    // KeyCode.toString() 결과는 일관되므로 정확히 매칭됨
+    return userKey.equals(settingKey);
+  }
+
+  // 왼쪽 이동
   public boolean isLeftClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.MOVE_LEFT);
+    return isKeyMatch(userPressedKey, settings.getKeyLeft());
   }
 
-  // default: '오른쪽 방향키'
+  // 오른쪽 이동
   public boolean isRightClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.MOVE_RIGHT);
+    return isKeyMatch(userPressedKey, settings.getKeyRight());
   }
 
-  // default: '아래쪽 방향키'
-  public boolean isDownClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.SOFT_DROP);
+  // 아래쪽 이동/소프트 드롭
+  public boolean isDropClicked(KeyCode userPressedKey) {
+    return isKeyMatch(userPressedKey, settings.getKeyDown());
   }
 
-  // default: '위쪽 방향키'
-  public boolean isUpClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.MOVE_UP);
-  }
-
-  // default: 'Z' 키
+  // 회전
   public boolean isRotateClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.ROTATE);
+    return isKeyMatch(userPressedKey, settings.getKeyRotate());
   }
 
-  // default: 'X' 키
+  // 하드 드롭
   public boolean isHardDropClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.HARD_DROP);
+    return isKeyMatch(userPressedKey, settings.getKeyDrop());
   }
 
-  // default: 'P' 키
+  // 일시정지
   public boolean isPauseClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.PAUSE);
+    return isKeyMatch(userPressedKey, settings.getPause());
   }
 
-  // default: 'ESC' 키
+  // 게임 종료
   public boolean isEscClicked(KeyCode userPressedKey) {
-    return userPressedKey == keySettings.getKeyForAction(PlayerCommand.EXIT);
+    return isKeyMatch(userPressedKey, settings.getExit());
   }
 }
