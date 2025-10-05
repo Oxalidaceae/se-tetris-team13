@@ -1,4 +1,4 @@
-package team13.tetris.ui;
+package team13.tetris.data;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

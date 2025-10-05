@@ -1,8 +1,8 @@
 package team13.tetris.game;
 
-import team13.tetris.ui.ScoreBoard;
+import team13.tetris.data.ScoreBoard;
 import javafx.animation.AnimationTimer;
-import javafx.scene.Scene;
+
 import javafx.stage.Stage;
 
 /**
@@ -32,6 +32,7 @@ public class GameManager {
     private Timer gameTimer;
     private GameState state;
     private AnimationTimer gameLoop;
+    @SuppressWarnings("unused") // Will be used by UI team
     private Stage primaryStage;
     
     private int currentScore;
@@ -174,18 +175,33 @@ public class GameManager {
     
     /**
      * Displays game over dialog for score entry (FR6 requirement)
+     * TODO: UI implementation will be handled by UI team (담당자 3번)
      */
     public void showGameOverScene() {
-        scoreBoard.addScoreWithDialog(primaryStage, currentScore, this::showScoreboardScene);
+        // TODO: Replace with UI team's implementation
+        // scoreBoard.addScoreWithDialog(primaryStage, currentScore, this::showScoreboardScene);
+        
+        // Temporary: Just add score with default name for now
+        scoreBoard.addScore("Player", currentScore);
+        System.out.println("Game Over! Score: " + currentScore + " added to scoreboard.");
+        showScoreboardScene(); // Show scores after adding
     }
     
     /**
      * Displays scoreboard with Play Again option
+     * TODO: UI implementation will be handled by UI team (담당자 3번)
      */
     private void showScoreboardScene() {
-        Scene scoreScene = scoreBoard.createScoreScene(primaryStage, this::startGame);
-        primaryStage.setScene(scoreScene);
-        primaryStage.setTitle("Tetris - High Scores");
+        // TODO: Replace with UI team's implementation
+        // Scene scoreScene = scoreBoard.createScoreScene(primaryStage, this::startGame);
+        // primaryStage.setScene(scoreScene);
+        // primaryStage.setTitle("Tetris - High Scores");
+        
+        // Temporary: Just print scores for now
+        System.out.println("=== High Scores ===");
+        scoreBoard.getScores().forEach(entry -> 
+            System.out.println(entry.getName() + ": " + entry.getScore()));
+        System.out.println("UI implementation pending...");
     }
     
     /**
