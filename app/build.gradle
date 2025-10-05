@@ -21,6 +21,10 @@ dependencies {
     // This dependency is used by the application.
     // implementation libs.guava
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    
+    // JavaFX dependencies
+    implementation 'org.openjfx:javafx-controls:17.0.2'
+    implementation 'org.openjfx:javafx-fxml:17.0.2'
 }
 
 testing {
@@ -43,6 +47,25 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'team13.tetris.App'
+}
+
+// Task to run ScoreBoard demo
+task runScoreBoardDemo(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'team13.tetris.ui.ScoreBoardDemo'
+    args = []
+    jvmArgs = [
+        '--module-path', configurations.runtimeClasspath.asPath,
+        '--add-modules', 'javafx.controls,javafx.fxml'
+    ]
+}
+
+// Task to run console test
+task runScoreBoardConsoleTest(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'team13.tetris.ui.ScoreBoardConsoleTest'
+    args = []
+    standardInput = System.in
 }
 
 // 추가

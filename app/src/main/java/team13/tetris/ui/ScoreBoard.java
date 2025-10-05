@@ -1,0 +1,171 @@
+package team13.tetris.ui;
+
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class ScoreBoard {
+    
+    // Inner class to store score entries
+    public static class ScoreEntry {
+        private String name;
+        private int score;
+        
+        public ScoreEntry(String name, int score) {
+            this.name = name;
+            this.score = score;
+        }
+        
+        public String getName() { return name; }
+        public int getScore() { return score; }
+        
+        @Override
+        public String toString() {
+            return String.format("%s: %d", name, score);
+        }
+    }
+    
+    // Score list
+    private List<ScoreEntry> scores;
+    private static final String SCORE_FILE = "scores.txt";
+    // Keep a handle to the most recently added entry during this runtime
+    private ScoreEntry lastAddedEntry;
+    
+    public ScoreBoard() {
+        this.scores = new ArrayList<>();
+        loadScores();
+    }
+    
+    /**
+     * Add a new score
+     * @param name Player name
+     * @param score Score
+     */
+    public void addScore(String name, int score) {
+        ScoreEntry entry = new ScoreEntry(name, score);
+        scores.add(entry);
+        // Track the most recently added entry
+        lastAddedEntry = entry;
+        // Sort by score in descending order
+        scores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
+        saveScores();
+    }
+    
+    /**
+     * Reset all scores
+     */
+    public void resetScores() {
+        scores.clear();
+        lastAddedEntry = null;
+        saveScores();
+    }
+    
+    /**
+     * Create scoreboard Scene
+     * @param stage Main stage
+     * @param onRetry Action to execute when retry button is clicked
+     * @return Scoreboard Scene
+     */
+    public Scene createScoreScene(Stage stage, Runnable onRetry) {
+        VBox root = new VBox(10);
+        root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+        
+        Label titleLabel = new Label("High Scores");
+        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        
+        ListView<ScoreEntry> scoreListView = new ListView<>();
+        scoreListView.getItems().addAll(scores);
+        scoreListView.setPrefHeight(300);
+        
+        // Highlight the last added entry if available
+        if (lastAddedEntry != null) {
+            int idx = scores.indexOf(lastAddedEntry);
+            if (idx >= 0) {
+                scoreListView.getSelectionModel().select(idx);
+                scoreListView.scrollTo(idx);
+            }
+        }
+        
+        Button retryButton = new Button("Play Again");
+        retryButton.setOnAction(e -> onRetry.run());
+        
+        Button exitButton = new Button("Exit");
+        exitButton.setOnAction(e -> stage.close());
+        
+        root.getChildren().addAll(titleLabel, scoreListView, retryButton, exitButton);
+        
+        return new Scene(root, 400, 500);
+    }
+    
+    /**
+     * Save scores to file
+     */
+    public void saveScores() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(SCORE_FILE))) {
+            for (ScoreEntry entry : scores) {
+                writer.println(entry.getName() + "," + entry.getScore());
+            }
+        } catch (IOException e) {
+            System.err.println("Error saving scores: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Load scores from file
+     */
+    public void loadScores() {
+        File file = new File(SCORE_FILE);
+        if (!file.exists()) {
+            return;
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    String name = parts[0];
+                    int score = Integer.parseInt(parts[1]);
+                    scores.add(new ScoreEntry(name, score));
+                }
+            }
+            // Sort after loading
+            scores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
+            // Since we loaded from disk, we don't know the "last added" in this runtime
+            lastAddedEntry = null;
+        } catch (IOException | NumberFormatException e) {
+            System.err.println("Error loading scores: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Return current score list
+     * @return Score list
+     */
+    public List<ScoreEntry> getScores() {
+        return new ArrayList<>(scores);
+    }
+
+    /**
+     * Returns the current index of the most recently added entry within the sorted list.
+     * If no entry has been added in this runtime (e.g., only loaded from file), returns -1.
+     */
+    public int getLastAddedIndex() {
+        if (lastAddedEntry == null) return -1;
+        return scores.indexOf(lastAddedEntry);
+    }
+
+    /**
+     * Returns the most recently added entry instance, or null if none tracked.
+     */
+    public ScoreEntry getLastAddedEntry() {
+        return lastAddedEntry;
+    }
+}
