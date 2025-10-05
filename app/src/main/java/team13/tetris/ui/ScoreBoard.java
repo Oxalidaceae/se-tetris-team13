@@ -4,12 +4,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public class ScoreBoard {
     
@@ -167,5 +169,32 @@ public class ScoreBoard {
      */
     public ScoreEntry getLastAddedEntry() {
         return lastAddedEntry;
+    }
+    
+    /**
+     * Add score with player name input dialog - Required by FR6
+     * Shows dialog to input player name, then adds score and shows scoreboard
+     */
+    public void addScoreWithDialog(Stage parentStage, int score, Runnable onComplete) {
+        TextInputDialog dialog = new TextInputDialog("Player");
+        dialog.setTitle("High Score!");
+        dialog.setHeaderText("Congratulations! You achieved a high score!");
+        dialog.setContentText("Enter your name:");
+        
+        // Only set owner if parentStage is valid
+        if (parentStage != null && parentStage.getScene() != null) {
+            dialog.initOwner(parentStage);
+        }
+        
+        Optional<String> result = dialog.showAndWait();
+        String playerName = result.orElse("Anonymous");
+        
+        // Ensure name is not empty
+        if (playerName.trim().isEmpty()) {
+            playerName = "Anonymous";
+        }
+        
+        addScore(playerName, score);
+        onComplete.run();
     }
 }
