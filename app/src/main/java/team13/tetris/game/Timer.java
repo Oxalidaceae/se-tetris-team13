@@ -6,15 +6,12 @@ package team13.tetris.game;
  */
 public class Timer {
     
-    private double elapsedTime;      // Elapsed time (seconds)
-    private double speedFactor;      // Speed multiplier (1.0 is base speed)
-    private static final double BASE_INTERVAL = 1000.0; // Base interval (milliseconds)
-    private static final double SPEED_INCREMENT = 0.1;   // Speed increase amount
-    private static final double MAX_SPEED_FACTOR = 10.0; // Maximum speed multiplier
+    private double elapsedTime;
+    private double speedFactor;
+    private static final double BASE_INTERVAL = 1000.0; // milliseconds
+    private static final double SPEED_INCREMENT = 0.1;
+    private static final double MAX_SPEED_FACTOR = 10.0;
     
-    /**
-     * Timer constructor
-     */
     public Timer() {
         this.elapsedTime = 0.0;
         this.speedFactor = 1.0;
@@ -29,8 +26,7 @@ public class Timer {
     }
     
     /**
-     * Increase game speed
-     * Usually called when level increases
+     * Increases game speed by SPEED_INCREMENT, up to MAX_SPEED_FACTOR
      */
     public void increaseSpeed() {
         if (speedFactor < MAX_SPEED_FACTOR) {
@@ -47,23 +43,21 @@ public class Timer {
     }
     
     /**
-     * Get elapsed time
-     * @return Elapsed time (seconds)
+     * @return Elapsed time in seconds
      */
     public double getElapsedTime() {
         return elapsedTime;
     }
     
     /**
-     * Get current speed multiplier
-     * @return Speed multiplier
+     * @return Current speed multiplier (1.0 = base speed)
      */
     public double getSpeedFactor() {
         return speedFactor;
     }
     
     /**
-     * Reset the timer
+     * Resets timer to initial state (time=0, speed=1.0)
      */
     public void reset() {
         elapsedTime = 0.0;
@@ -71,7 +65,7 @@ public class Timer {
     }
     
     /**
-     * Set specific speed
+     * Sets speed factor if within valid range (0 < factor <= MAX_SPEED_FACTOR)
      * @param speedFactor Speed multiplier to set
      */
     public void setSpeedFactor(double speedFactor) {
@@ -81,8 +75,7 @@ public class Timer {
     }
     
     /**
-     * Get formatted time as MM:SS string
-     * @return Time string in "MM:SS" format
+     * @return Formatted time string in "MM:SS" format
      */
     public String getFormattedTime() {
         int minutes = (int) (elapsedTime / 60);
@@ -91,8 +84,7 @@ public class Timer {
     }
     
     /**
-     * Calculate current level based on speed
-     * @return Current level
+     * @return Current level based on speed factor (integer part of speedFactor)
      */
     public int getCurrentLevel() {
         return (int) speedFactor;

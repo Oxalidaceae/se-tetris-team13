@@ -6,13 +6,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Game state enumeration
+ * Represents the current state of the Tetris game
  */
 enum GameState {
-    MENU,       // Menu screen
-    PLAYING,    // Game in progress
-    PAUSED,     // Game paused
-    GAME_OVER   // Game over
+    MENU, PLAYING, PAUSED, GAME_OVER
 }
 
 /**
@@ -21,25 +18,24 @@ enum GameState {
  */
 public class GameManager {
     
-    // Game components (to be implemented by other teams)
-    // private Board board;                 // Game board
-    // private Block currentBlock;          // Current falling block
-    // private Block nextBlock;             // Next block to spawn
-    // private InputHandler inputHandler;   // Input handler
-    // private Renderer renderer;           // Game renderer
+    // TODO: Game components to be implemented by other teams
+    // private Board board;
+    // private Block currentBlock;
+    // private Block nextBlock;
+    // private InputHandler inputHandler;
+    // private Renderer renderer;
     
-    private ScoreBoard scoreBoard;       // Score board
-    private Timer gameTimer;             // Game timer
-    private GameState state;             // Current game state
-    private AnimationTimer gameLoop;     // Game loop
-    private Stage primaryStage;          // Main stage
+    private ScoreBoard scoreBoard;
+    private Timer gameTimer;
+    private GameState state;
+    private AnimationTimer gameLoop;
+    private Stage primaryStage;
     
-    // Game related variables
     private int currentScore;
     private int linesCleared;
     private long lastDropTime;
     private boolean gameRunning;
-    private int lastSpeedUpLevel; // Track last difficulty level when speed was increased (lines/10)
+    private int lastSpeedUpLevel; // Tracks difficulty level for speed progression
     
     /**
      * GameManager constructor
@@ -73,7 +69,7 @@ public class GameManager {
                     return;
                 }
                 
-                double deltaTime = (now - lastTime) / 1_000_000_000.0; // Convert nanoseconds to seconds
+                double deltaTime = (now - lastTime) / 1_000_000_000.0;
                 lastTime = now;
                 
                 if (state == GameState.PLAYING) {
@@ -84,7 +80,7 @@ public class GameManager {
     }
     
     /**
-     * Start the game
+     * Initializes and starts a new game session
      */
     public void startGame() {
         state = GameState.PLAYING;
@@ -95,10 +91,9 @@ public class GameManager {
         lastDropTime = System.currentTimeMillis();
         lastSpeedUpLevel = 0;
         
-        // TODO: Initialize board, generate first block, etc.
+        // TODO: Initialize game board and spawn first blocks
         // board.clear();
-        // currentBlock = generateNewBlock();
-        // nextBlock = generateNewBlock();
+        // spawnNewBlock();
         
         gameLoop.start();
         System.out.println("Game started!");
@@ -113,37 +108,29 @@ public class GameManager {
             return;
         }
         
-        // Update timer
         gameTimer.tick(deltaTime);
         
-        // Handle automatic block dropping
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastDropTime >= gameTimer.getInterval()) {
             dropCurrentBlock();
             lastDropTime = currentTime;
         }
         
-        // TODO: Game logic processing
-        // - Update current block position
-        // - Collision detection
-        // - Line clearing check
-        // - Game over condition check
-        // - Rendering update
-        
-        // Level progression is now handled in linesCleared() method
+        // TODO: Implement remaining game logic
+        // - Block movement and collision detection
+        // - Line clearing and game over checks
+        // - Rendering updates
     }
     
     /**
-     * Drop the current block one row down
+     * Handles automatic block dropping based on current game speed
      */
     private void dropCurrentBlock() {
-        // TODO: Implement actual block dropping logic
+        // TODO: Implement block dropping logic
         // if (canMoveDown(currentBlock)) {
         //     currentBlock.moveDown();
         // } else {
-        //     placeBlock();
-        //     checkLines();
-        //     spawnNewBlock();
+        //     placeBlock(); checkLines(); spawnNewBlock();
         // }
         
         System.out.println("Block drop - Time: " + gameTimer.getFormattedTime() + 
@@ -165,7 +152,7 @@ public class GameManager {
     }
     
     /**
-     * End the game
+     * Ends current game session and shows score input dialog
      */
     public void endGame() {
         gameRunning = false;
@@ -177,15 +164,14 @@ public class GameManager {
     }
     
     /**
-     * Show game over scene with high scores
+     * Displays game over dialog for score entry (FR6 requirement)
      */
     public void showGameOverScene() {
-        // Add score with player name input - Required by FR6
         scoreBoard.addScoreWithDialog(primaryStage, currentScore, this::showScoreboardScene);
     }
     
     /**
-     * Show scoreboard scene after name input
+     * Displays scoreboard with Play Again option
      */
     private void showScoreboardScene() {
         Scene scoreScene = scoreBoard.createScoreScene(primaryStage, this::startGame);
@@ -208,7 +194,6 @@ public class GameManager {
     public void linesCleared(int lines) {
         this.linesCleared += lines;
         
-        // Check for difficulty progression (every 10 lines cleared)
         int currentDifficultyLevel = this.linesCleared / 10;
         if (currentDifficultyLevel > lastSpeedUpLevel) {
             gameTimer.increaseSpeed();
@@ -218,21 +203,19 @@ public class GameManager {
                              " - Timer Level: " + gameTimer.getCurrentLevel());
         }
         
-        // Calculate points based on lines cleared (Tetris standard)
-        // Using Timer's level (based on speed factor) for scoring
+        // Standard Tetris scoring with level multiplier
         int points = 0;
         switch (lines) {
             case 1: points = 100 * gameTimer.getCurrentLevel(); break;
             case 2: points = 300 * gameTimer.getCurrentLevel(); break;
             case 3: points = 500 * gameTimer.getCurrentLevel(); break;
-            case 4: points = 800 * gameTimer.getCurrentLevel(); break; // Tetris!
+            case 4: points = 800 * gameTimer.getCurrentLevel(); break;
         }
         
         addScore(points);
         System.out.println(lines + " lines cleared! Points: " + points + " (Timer Level: " + gameTimer.getCurrentLevel() + ")");
     }
     
-    // Getter methods
     public GameState getState() { return state; }
     public int getCurrentScore() { return currentScore; }
     public int getLinesCleared() { return linesCleared; }
@@ -241,16 +224,12 @@ public class GameManager {
     public boolean isGameRunning() { return gameRunning; }
     
     /**
-     * Get current difficulty level (based on lines cleared / 10)
-     * This is different from Timer's getCurrentLevel() which is based on speed factor
-     * @return Difficulty level (0-based)
+     * @return Difficulty level based on lines cleared (every 10 lines = +1 level)
      */
     public int getDifficultyLevel() { return linesCleared / 10; }
     
     /**
-     * Get speed-based level from Timer (based on speed factor)
-     * Used for scoring calculations
-     * @return Speed level from Timer
+     * @return Speed-based level from Timer (used for scoring calculations)
      */
     public int getSpeedLevel() { return gameTimer.getCurrentLevel(); }
 }

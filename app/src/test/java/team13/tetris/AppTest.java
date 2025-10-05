@@ -4,9 +4,6 @@
 package team13.tetris;
 
 import org.junit.jupiter.api.Test;
-
-import team13.tetris.App;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {

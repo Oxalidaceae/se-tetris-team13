@@ -13,9 +13,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * ScoreBoard class for managing Tetris high scores
+ * Provides functionality for score storage, retrieval, and UI display
+ * Supports file persistence and JavaFX integration
+ */
 public class ScoreBoard {
     
-    // Inner class to store score entries
+    /**
+     * Represents a single score entry with player name and score
+     */
     public static class ScoreEntry {
         private String name;
         private int score;
@@ -34,11 +41,9 @@ public class ScoreBoard {
         }
     }
     
-    // Score list
     private List<ScoreEntry> scores;
     private static final String SCORE_FILE = "scores.txt";
-    // Keep a handle to the most recently added entry during this runtime
-    private ScoreEntry lastAddedEntry;
+    private ScoreEntry lastAddedEntry; // Tracks most recently added entry for UI highlighting
     
     public ScoreBoard() {
         this.scores = new ArrayList<>();
@@ -53,9 +58,7 @@ public class ScoreBoard {
     public void addScore(String name, int score) {
         ScoreEntry entry = new ScoreEntry(name, score);
         scores.add(entry);
-        // Track the most recently added entry
         lastAddedEntry = entry;
-        // Sort by score in descending order
         scores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
         saveScores();
     }
@@ -70,10 +73,10 @@ public class ScoreBoard {
     }
     
     /**
-     * Create scoreboard Scene
-     * @param stage Main stage
-     * @param onRetry Action to execute when retry button is clicked
-     * @return Scoreboard Scene
+     * Creates a JavaFX Scene displaying the scoreboard with Play Again and Exit buttons
+     * @param stage Main stage for scene display
+     * @param onRetry Callback executed when Play Again button is clicked
+     * @return Complete scoreboard Scene ready for display
      */
     public Scene createScoreScene(Stage stage, Runnable onRetry) {
         VBox root = new VBox(10);
@@ -86,7 +89,6 @@ public class ScoreBoard {
         scoreListView.getItems().addAll(scores);
         scoreListView.setPrefHeight(300);
         
-        // Highlight the last added entry if available
         if (lastAddedEntry != null) {
             int idx = scores.indexOf(lastAddedEntry);
             if (idx >= 0) {
@@ -107,7 +109,7 @@ public class ScoreBoard {
     }
     
     /**
-     * Save scores to file
+     * Persists current scores to CSV file
      */
     public void saveScores() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SCORE_FILE))) {
@@ -120,7 +122,7 @@ public class ScoreBoard {
     }
     
     /**
-     * Load scores from file
+     * Loads scores from CSV file on initialization
      */
     public void loadScores() {
         File file = new File(SCORE_FILE);
@@ -138,26 +140,22 @@ public class ScoreBoard {
                     scores.add(new ScoreEntry(name, score));
                 }
             }
-            // Sort after loading
             scores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
-            // Since we loaded from disk, we don't know the "last added" in this runtime
-            lastAddedEntry = null;
+            lastAddedEntry = null; // Reset since loaded entries aren't "newly added"
         } catch (IOException | NumberFormatException e) {
             System.err.println("Error loading scores: " + e.getMessage());
         }
     }
     
     /**
-     * Return current score list
-     * @return Score list
+     * @return Defensive copy of current scores list
      */
     public List<ScoreEntry> getScores() {
         return new ArrayList<>(scores);
     }
 
     /**
-     * Returns the current index of the most recently added entry within the sorted list.
-     * If no entry has been added in this runtime (e.g., only loaded from file), returns -1.
+     * @return Index of last added entry in sorted list, or -1 if none tracked
      */
     public int getLastAddedIndex() {
         if (lastAddedEntry == null) return -1;
@@ -165,7 +163,7 @@ public class ScoreBoard {
     }
 
     /**
-     * Returns the most recently added entry instance, or null if none tracked.
+     * @return Most recently added entry instance, or null if none tracked
      */
     public ScoreEntry getLastAddedEntry() {
         return lastAddedEntry;

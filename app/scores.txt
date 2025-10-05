@@ -1,6 +1,0 @@
-shin,100000
-Henry,4522
-Grace,3887
-Diana,2666
-Eve,2097
-Bob,1245

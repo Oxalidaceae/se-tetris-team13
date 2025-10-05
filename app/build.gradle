@@ -76,6 +76,17 @@ task runTimerDemo(type: JavaExec) {
     standardInput = System.in
 }
 
+// Task to run GameManager demo
+task runGameManagerDemo(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'team13.tetris.game.GameManagerDemo'
+    args = []
+    jvmArgs = [
+        '--module-path', configurations.runtimeClasspath.asPath,
+        '--add-modules', 'javafx.controls,javafx.fxml'
+    ]
+}
+
 // 추가
 tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
