@@ -20,6 +20,7 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     // implementation libs.guava
+    implementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
 
     // JavaFX 테스트를 위한 추가 의존성 (필요시)
