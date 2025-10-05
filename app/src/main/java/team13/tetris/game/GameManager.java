@@ -1,51 +1,39 @@
 package team13.tetris.game;
 
 import team13.tetris.data.ScoreBoard;
-import javafx.animation.AnimationTimer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import javafx.stage.Stage;
-
-/**
- * Represents the current state of a Tetris game session
- */
 enum GameState {
-    READY,      // Game initialized, ready to start
-    PLAYING,    // Game actively running
-    PAUSED,     // Game paused
-    GAME_OVER   // Game ended
+    READY, PLAYING, PAUSED, GAME_OVER
 }
 
 /**
- * Main game manager class that handles the entire Tetris game
- * Manages game loop, scene transitions, and game state
+ * Main game manager - handles Tetris game logic without UI dependencies.
+ * Uses ScheduledExecutorService for 60 FPS game loop.
  */
 public class GameManager {
-    
-    // TODO: Game components to be implemented by other teams
-    // private Board board;
-    // private Block currentBlock;
-    // private Block nextBlock;
-    // private InputHandler inputHandler;
-    // private Renderer renderer;
-    
+    // Core components
     private ScoreBoard scoreBoard;
     private Timer gameTimer;
     private GameState state;
-    private AnimationTimer gameLoop;
-    @SuppressWarnings("unused") // Will be used by UI team
-    private Stage primaryStage;
+    private ScheduledExecutorService gameLoop;
     
+    // Game state
     private int currentScore;
     private int linesCleared;
     private long lastDropTime;
-    private int lastDifficultyLevel; // Tracks difficulty level for speed progression
+    private int lastDifficultyLevel;
+    
+    // TODO: Game components to be implemented by other teams
+    // private Board board, currentBlock, nextBlock;
+    // private InputHandler inputHandler;
     
     /**
-     * GameManager constructor
-     * @param primaryStage Main stage
+     * GameManager constructor for pure game logic management.
      */
-    public GameManager(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+    public GameManager() {
         this.scoreBoard = new ScoreBoard();
         this.gameTimer = new Timer();
         this.state = GameState.READY;
@@ -53,172 +41,104 @@ public class GameManager {
         this.linesCleared = 0;
         this.lastDropTime = 0;
         this.lastDifficultyLevel = 0;
-        
-        initializeGameLoop();
+        // Executor will be created when game starts
     }
     
-    /**
-     * Initialize the game loop
-     */
-    private void initializeGameLoop() {
-        gameLoop = new AnimationTimer() {
-            private long lastTime = 0;
-            
-            @Override
-            public void handle(long now) {
-                if (lastTime == 0) {
-                    lastTime = now;
-                    return;
-                }
-                
-                double deltaTime = (now - lastTime) / 1_000_000_000.0;
-                lastTime = now;
-                
-                if (state == GameState.PLAYING) {
-                    updateGame(deltaTime);
-                }
-            }
-        };
-    }
-    
-    /**
-     * Starts a new game (resets scores and begins game loop)
-     */
+    /** Starts new game (resets state and begins 60 FPS loop) */
     public void startGame() {
+        // Create new game loop if needed (for multiple games)
+        if (gameLoop == null || gameLoop.isShutdown()) {
+            gameLoop = Executors.newSingleThreadScheduledExecutor();
+        }
+        
         state = GameState.PLAYING;
         currentScore = 0;
         linesCleared = 0;
         gameTimer.reset();
         lastDropTime = System.currentTimeMillis();
         lastDifficultyLevel = 0;
-        
         // TODO: Initialize game board and spawn first blocks
-        // board.clear();
-        // spawnNewBlock();
-        
-        gameLoop.start();
+        startGameLoop();
         System.out.println("Game started!");
     }
     
-    /**
-     * Update the game (called from game loop)
-     * @param deltaTime Time elapsed since last frame (seconds)
-     */
-    private void updateGame(double deltaTime) {
-        if (state != GameState.PLAYING) {
-            return;
+    /** Starts 60 FPS game loop */
+    private void startGameLoop() {
+        gameLoop.scheduleAtFixedRate(this::updateGame, 0, 16, TimeUnit.MILLISECONDS);
+    }
+    
+    /** Stops game loop */
+    private void stopGameLoop() {
+        if (gameLoop != null && !gameLoop.isShutdown()) {
+            gameLoop.shutdown();
         }
+    }
+
+    /** Main game update (called every 16ms) */
+    private void updateGame() {
+        if (state != GameState.PLAYING) return;
         
-        gameTimer.tick(deltaTime);
-        
+        gameTimer.tick(0.016); // Fixed 16ms delta time
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastDropTime >= gameTimer.getInterval()) {
             dropCurrentBlock();
             lastDropTime = currentTime;
         }
-        
-        // TODO: Implement remaining game logic
-        // - Block movement and collision detection
-        // - Line clearing and game over checks
-        // - Rendering updates
+        // TODO: Block movement, collision detection, line clearing
     }
     
-    /**
-     * Handles automatic block dropping based on current game speed
-     */
+    /** Handles automatic block dropping */
     private void dropCurrentBlock() {
         // TODO: Implement block dropping logic
-        // if (canMoveDown(currentBlock)) {
-        //     currentBlock.moveDown();
-        // } else {
-        //     placeBlock(); checkLines(); spawnNewBlock();
-        // }
-        
         System.out.println("Block drop - Time: " + gameTimer.getFormattedTime() + 
                           ", Speed Level: " + gameTimer.getSpeedLevel());
     }
     
-    /**
-     * Toggle game pause/resume
-     */
+    /** Toggle pause/resume */
     public void togglePause() {
         if (state == GameState.PLAYING) {
             state = GameState.PAUSED;
             System.out.println("Game paused.");
         } else if (state == GameState.PAUSED) {
             state = GameState.PLAYING;
-            lastDropTime = System.currentTimeMillis(); // Reset time
+            lastDropTime = System.currentTimeMillis();
             System.out.println("Game resumed.");
         }
     }
     
-    /**
-     * Ends current game session
-     */
+    /** Ends current game session */
     public void endGame() {
         endGame(true);
     }
     
-    /**
-     * Ends current game session with optional UI display
-     * @param showUI Whether to show the game over dialog
-     */
+    /** Ends game session with optional score display */
     public void endGame(boolean showUI) {
         state = GameState.GAME_OVER;
-        gameLoop.stop();
-        
+        stopGameLoop();
         System.out.println("Game Over! Final Score: " + currentScore);
-        if (showUI) {
-            showGameOverScene();
-        }
+        if (showUI) handleGameOver();
     }
     
-    /**
-     * Displays game over dialog for score entry (FR6 requirement)
-     * TODO: UI implementation will be handled by UI team (담당자 3번)
-     */
-    public void showGameOverScene() {
-        // TODO: Replace with UI team's implementation
-        // scoreBoard.addScoreWithDialog(primaryStage, currentScore, this::showScoreboardScene);
-        
-        // Temporary: Just add score with default name for now
+    /** Handles game over - adds score and shows leaderboard */
+    public void handleGameOver() {
         scoreBoard.addScore("Player", currentScore);
-        System.out.println("Game Over! Score: " + currentScore + " added to scoreboard.");
-        showScoreboardScene(); // Show scores after adding
+        System.out.println("Game Over! Final Score: " + currentScore);
+        System.out.println("\n=== High Scores ===");
+        scoreBoard.getScores().stream()
+            .limit(10)
+            .forEach(entry -> System.out.println(entry.getName() + ": " + entry.getScore()));
     }
     
-    /**
-     * Displays scoreboard with Play Again option
-     * TODO: UI implementation will be handled by UI team (담당자 3번)
-     */
-    private void showScoreboardScene() {
-        // TODO: Replace with UI team's implementation
-        // Scene scoreScene = scoreBoard.createScoreScene(primaryStage, this::startGame);
-        // primaryStage.setScene(scoreScene);
-        // primaryStage.setTitle("Tetris - High Scores");
-        
-        // Temporary: Just print scores for now
-        System.out.println("=== High Scores ===");
-        scoreBoard.getScores().forEach(entry -> 
-            System.out.println(entry.getName() + ": " + entry.getScore()));
-        System.out.println("UI implementation pending...");
-    }
-    
-    /**
-     * Add points to current score
-     * @param points Points to add
-     */
+    /** Add points to current score */
     public void addScore(int points) {
         currentScore += points;
     }
     
-    /**
-     * Called when lines are cleared
-     * @param lines Number of lines cleared
-     */
+    /** Process line clearing and update difficulty/score */
     public void linesCleared(int lines) {
         this.linesCleared += lines;
         
+        // Check difficulty increase (every 10 lines)
         int difficultyLevel = this.linesCleared / 10;
         if (difficultyLevel > lastDifficultyLevel) {
             gameTimer.increaseSpeed();
@@ -228,33 +148,26 @@ public class GameManager {
                              " - Speed Level: " + gameTimer.getSpeedLevel());
         }
         
-        // Standard Tetris scoring with speed level multiplier
-        int points = 0;
-        switch (lines) {
-            case 1: points = 100 * gameTimer.getSpeedLevel(); break;
-            case 2: points = 300 * gameTimer.getSpeedLevel(); break;
-            case 3: points = 500 * gameTimer.getSpeedLevel(); break;
-            case 4: points = 800 * gameTimer.getSpeedLevel(); break;
-        }
+        // Standard Tetris scoring
+        int points = switch (lines) {
+            case 1 -> 100 * gameTimer.getSpeedLevel();
+            case 2 -> 300 * gameTimer.getSpeedLevel();
+            case 3 -> 500 * gameTimer.getSpeedLevel();
+            case 4 -> 800 * gameTimer.getSpeedLevel();
+            default -> 0;
+        };
         
         addScore(points);
         System.out.println(lines + " lines cleared! Points: " + points + " (Speed Level: " + gameTimer.getSpeedLevel() + ")");
     }
     
+    // Getters
     public GameState getState() { return state; }
     public int getCurrentScore() { return currentScore; }
     public int getLinesCleared() { return linesCleared; }
     public Timer getGameTimer() { return gameTimer; }
     public ScoreBoard getScoreBoard() { return scoreBoard; }
     public boolean isGameRunning() { return state == GameState.PLAYING || state == GameState.PAUSED; }
-    
-    /**
-     * @return Difficulty level based on lines cleared (every 10 lines = +1 level)
-     */
     public int getDifficultyLevel() { return linesCleared / 10; }
-    
-    /**
-     * @return Speed-based level from Timer (used for scoring calculations)
-     */
     public int getSpeedLevel() { return gameTimer.getSpeedLevel(); }
 }
