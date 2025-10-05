@@ -21,7 +21,7 @@ public class TimerTest {
         assertEquals(0.0, timer.getElapsedTime(), 0.001, "Initial elapsed time should be 0");
         assertEquals(1.0, timer.getSpeedFactor(), 0.001, "Initial speed factor should be 1.0");
         assertEquals(1000.0, timer.getInterval(), 0.001, "Initial interval should be 1000ms");
-        assertEquals(1, timer.getCurrentLevel(), "Initial level should be 1");
+        assertEquals(1, timer.getSpeedLevel(), "Initial speed level should be 1");
         assertEquals("00:00", timer.getFormattedTime(), "Initial formatted time should be 00:00");
     }
     
@@ -43,14 +43,14 @@ public class TimerTest {
         timer.increaseSpeed();
         assertEquals(1.1, timer.getSpeedFactor(), 0.001, "Speed should increase by 0.1");
         assertEquals(1000.0 / 1.1, timer.getInterval(), 0.001, "Interval should decrease");
-        assertEquals(1, timer.getCurrentLevel(), "Level should still be 1");
+        assertEquals(1, timer.getSpeedLevel(), "Speed level should still be 1");
         
         // Test multiple increases
         for (int i = 0; i < 10; i++) {
             timer.increaseSpeed();
         }
         assertEquals(2.1, timer.getSpeedFactor(), 0.001, "Speed should be 2.1 after 11 increases");
-        assertEquals(2, timer.getCurrentLevel(), "Level should be 2");
+        assertEquals(2, timer.getSpeedLevel(), "Speed level should be 2");
     }
     
     @Test
@@ -64,7 +64,7 @@ public class TimerTest {
         timer.increaseSpeed();
         assertEquals(10.0, timer.getSpeedFactor(), 0.001, "Speed should not exceed max 10.0");
         assertEquals(100.0, timer.getInterval(), 0.001, "Min interval should be 100ms");
-        assertEquals(10, timer.getCurrentLevel(), "Max level should be 10");
+        assertEquals(10, timer.getSpeedLevel(), "Max speed level should be 10");
     }
     
     @Test
@@ -73,7 +73,7 @@ public class TimerTest {
         timer.setSpeedFactor(5.0);
         assertEquals(5.0, timer.getSpeedFactor(), 0.001, "Speed should be set to 5.0");
         assertEquals(200.0, timer.getInterval(), 0.001, "Interval should be 200ms");
-        assertEquals(5, timer.getCurrentLevel(), "Level should be 5");
+        assertEquals(5, timer.getSpeedLevel(), "Speed level should be 5");
         
         // Invalid speed factors
         timer.setSpeedFactor(0.0);
@@ -119,23 +119,23 @@ public class TimerTest {
     }
     
     @Test
-    void testGetCurrentLevel() {
-        assertEquals(1, timer.getCurrentLevel(), "Level 1 at speed 1.0");
+    void testGetSpeedLevel() {
+        assertEquals(1, timer.getSpeedLevel(), "Speed level 1 at speed 1.0");
         
         timer.setSpeedFactor(1.9);
-        assertEquals(1, timer.getCurrentLevel(), "Level 1 at speed 1.9");
+        assertEquals(1, timer.getSpeedLevel(), "Speed level 1 at speed 1.9");
         
         timer.setSpeedFactor(2.0);
-        assertEquals(2, timer.getCurrentLevel(), "Level 2 at speed 2.0");
+        assertEquals(2, timer.getSpeedLevel(), "Speed level 2 at speed 2.0");
         
         timer.setSpeedFactor(2.9);
-        assertEquals(2, timer.getCurrentLevel(), "Level 2 at speed 2.9");
+        assertEquals(2, timer.getSpeedLevel(), "Speed level 2 at speed 2.9");
         
         timer.setSpeedFactor(5.7);
-        assertEquals(5, timer.getCurrentLevel(), "Level 5 at speed 5.7");
+        assertEquals(5, timer.getSpeedLevel(), "Speed level 5 at speed 5.7");
         
         timer.setSpeedFactor(10.0);
-        assertEquals(10, timer.getCurrentLevel(), "Level 10 at max speed");
+        assertEquals(10, timer.getSpeedLevel(), "Speed level 10 at max speed");
     }
     
     @Test
@@ -153,7 +153,7 @@ public class TimerTest {
         assertEquals(0.0, timer.getElapsedTime(), 0.001, "Time should be reset to 0");
         assertEquals(1.0, timer.getSpeedFactor(), 0.001, "Speed should be reset to 1.0");
         assertEquals("00:00", timer.getFormattedTime(), "Formatted time should be reset");
-        assertEquals(1, timer.getCurrentLevel(), "Level should be reset to 1");
+        assertEquals(1, timer.getSpeedLevel(), "Speed level should be reset to 1");
     }
     
     @Test
@@ -187,7 +187,7 @@ public class TimerTest {
         assertEquals(expectedSpeed, gameTimer.getSpeedFactor(), 0.01, 
                     "Speed should be " + expectedSpeed + " after " + speedIncreases + " increases");
         
-        assertTrue(gameTimer.getCurrentLevel() >= 1, "Should be at least level 1");
+        assertTrue(gameTimer.getSpeedLevel() >= 1, "Should be at least speed level 1");
         assertTrue(gameTimer.getInterval() <= 1000.0, "Interval should be faster than or equal to initial");
     }
     

@@ -214,7 +214,7 @@ public class GameManagerDemo extends Application {
             linesLabel.setText("Lines Cleared: " + gameManager.getLinesCleared());
             timeLabel.setText("Time: " + gameManager.getGameTimer().getFormattedTime() + 
                             " (" + String.format("%.1f", gameManager.getGameTimer().getElapsedTime()) + "s)");
-            levelLabel.setText("Level: " + gameManager.getGameTimer().getCurrentLevel() + 
+            levelLabel.setText("Speed Level: " + gameManager.getGameTimer().getSpeedLevel() + 
                             " (Speed: " + String.format("%.1f", gameManager.getGameTimer().getSpeedFactor()) + "x)");
         }
     }
@@ -260,7 +260,7 @@ public class GameManagerDemo extends Application {
         System.out.println("Final Score: " + gameManager.getCurrentScore());
         System.out.println("Total Lines: " + gameManager.getLinesCleared());
         System.out.println("Final Time: " + gameManager.getGameTimer().getFormattedTime());
-        System.out.println("Final Level: " + gameManager.getGameTimer().getCurrentLevel());
+        System.out.println("Final Speed Level: " + gameManager.getGameTimer().getSpeedLevel());
     }
     
     public static void main(String[] args) {

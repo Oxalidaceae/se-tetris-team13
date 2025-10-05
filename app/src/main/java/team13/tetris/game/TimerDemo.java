@@ -47,14 +47,14 @@ public class TimerDemo {
         }
         printTimerState(timer);
         assert Math.abs(timer.getSpeedFactor() - 1.5) < 0.001 : "Speed should be 1.5";
-        assert timer.getCurrentLevel() == 1 : "Level should still be 1";
+        assert timer.getSpeedLevel() == 1 : "Speed level should still be 1";
         System.out.println("[OK] PASSED\n");
         
         // Test 4: Level progression
         System.out.println("Test 4 - Level Progression:");
         timer.setSpeedFactor(2.7);
         printTimerState(timer);
-        assert timer.getCurrentLevel() == 2 : "Level should be 2";
+        assert timer.getSpeedLevel() == 2 : "Speed level should be 2";
         System.out.println("[OK] PASSED\n");
         
         // Test 5: Max speed limit
@@ -191,7 +191,7 @@ public class TimerDemo {
         System.out.println("  Time: " + timer.getFormattedTime() + 
                           " (" + String.format("%.1f", timer.getElapsedTime()) + "s)");
         System.out.println("  Speed: " + String.format("%.1f", timer.getSpeedFactor()) + "x");
-        System.out.println("  Level: " + timer.getCurrentLevel());
+        System.out.println("  Speed Level: " + timer.getSpeedLevel());
         System.out.println("  Drop Interval: " + String.format("%.0f", timer.getInterval()) + "ms");
     }
     
@@ -216,7 +216,7 @@ public class TimerDemo {
             if (second % 10 == 0 || second == durationSeconds) {
                 System.out.println("  [" + String.format("%02d", second) + "s] " + 
                                  gameTimer.getFormattedTime() + " - Level " + 
-                                 gameTimer.getCurrentLevel() + " - " + 
+                                 gameTimer.getSpeedLevel() + " - " + 
                                  String.format("%.0f", gameTimer.getInterval()) + "ms interval");
             }
         }

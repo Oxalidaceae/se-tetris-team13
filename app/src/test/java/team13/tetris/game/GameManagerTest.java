@@ -214,7 +214,7 @@ public class GameManagerTest {
             
             // Simulate level progression by increasing speed
             gameManager.getGameTimer().setSpeedFactor(2.5);
-            assertEquals(2, gameManager.getGameTimer().getCurrentLevel(), "Should be level 2");
+            assertEquals(2, gameManager.getGameTimer().getSpeedLevel(), "Should be speed level 2");
             
             // Test score calculation with higher level
             gameManager.linesCleared(1);
@@ -222,7 +222,7 @@ public class GameManagerTest {
             
             // Test level 5
             gameManager.getGameTimer().setSpeedFactor(5.0);
-            assertEquals(5, gameManager.getGameTimer().getCurrentLevel(), "Should be level 5");
+            assertEquals(5, gameManager.getGameTimer().getSpeedLevel(), "Should be speed level 5");
             
             gameManager.linesCleared(4); // Tetris at level 5
             // Previous score (200) + new score (4 lines * level 5 * 800) = 200 + 4000 = 4200

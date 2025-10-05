@@ -2,7 +2,8 @@ package team13.tetris.game;
 
 /**
  * Timer class for managing Tetris game timing
- * Manages falling speed and elapsed time
+ * Manages game speed progression and elapsed time tracking
+ * Speed level system: speedFactor determines both drop interval and score multiplier
  */
 public class Timer {
     
@@ -84,9 +85,9 @@ public class Timer {
     }
     
     /**
-     * @return Current level based on speed factor (integer part of speedFactor)
+     * @return Current speed level based on speed factor (integer part of speedFactor)
      */
-    public int getCurrentLevel() {
+    public int getSpeedLevel() {
         return (int) speedFactor;
     }
 }

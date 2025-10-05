@@ -37,7 +37,7 @@ public class GameManager {
     private int currentScore;
     private int linesCleared;
     private long lastDropTime;
-    private int lastSpeedUpLevel; // Tracks difficulty level for speed progression
+    private int lastDifficultyLevel; // Tracks difficulty level for speed progression
     
     /**
      * GameManager constructor
@@ -51,7 +51,7 @@ public class GameManager {
         this.currentScore = 0;
         this.linesCleared = 0;
         this.lastDropTime = 0;
-        this.lastSpeedUpLevel = 0;
+        this.lastDifficultyLevel = 0;
         
         initializeGameLoop();
     }
@@ -89,7 +89,7 @@ public class GameManager {
         linesCleared = 0;
         gameTimer.reset();
         lastDropTime = System.currentTimeMillis();
-        lastSpeedUpLevel = 0;
+        lastDifficultyLevel = 0;
         
         // TODO: Initialize game board and spawn first blocks
         // board.clear();
@@ -134,7 +134,7 @@ public class GameManager {
         // }
         
         System.out.println("Block drop - Time: " + gameTimer.getFormattedTime() + 
-                          ", Level: " + gameTimer.getCurrentLevel());
+                          ", Speed Level: " + gameTimer.getSpeedLevel());
     }
     
     /**
@@ -203,26 +203,26 @@ public class GameManager {
     public void linesCleared(int lines) {
         this.linesCleared += lines;
         
-        int currentDifficultyLevel = this.linesCleared / 10;
-        if (currentDifficultyLevel > lastSpeedUpLevel) {
+        int difficultyLevel = this.linesCleared / 10;
+        if (difficultyLevel > lastDifficultyLevel) {
             gameTimer.increaseSpeed();
-            lastSpeedUpLevel = currentDifficultyLevel;
+            lastDifficultyLevel = difficultyLevel;
             System.out.println("Difficulty increased! Lines: " + this.linesCleared + 
                              " - Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x" +
-                             " - Timer Level: " + gameTimer.getCurrentLevel());
+                             " - Speed Level: " + gameTimer.getSpeedLevel());
         }
         
-        // Standard Tetris scoring with level multiplier
+        // Standard Tetris scoring with speed level multiplier
         int points = 0;
         switch (lines) {
-            case 1: points = 100 * gameTimer.getCurrentLevel(); break;
-            case 2: points = 300 * gameTimer.getCurrentLevel(); break;
-            case 3: points = 500 * gameTimer.getCurrentLevel(); break;
-            case 4: points = 800 * gameTimer.getCurrentLevel(); break;
+            case 1: points = 100 * gameTimer.getSpeedLevel(); break;
+            case 2: points = 300 * gameTimer.getSpeedLevel(); break;
+            case 3: points = 500 * gameTimer.getSpeedLevel(); break;
+            case 4: points = 800 * gameTimer.getSpeedLevel(); break;
         }
         
         addScore(points);
-        System.out.println(lines + " lines cleared! Points: " + points + " (Timer Level: " + gameTimer.getCurrentLevel() + ")");
+        System.out.println(lines + " lines cleared! Points: " + points + " (Speed Level: " + gameTimer.getSpeedLevel() + ")");
     }
     
     public GameState getState() { return state; }
@@ -240,5 +240,5 @@ public class GameManager {
     /**
      * @return Speed-based level from Timer (used for scoring calculations)
      */
-    public int getSpeedLevel() { return gameTimer.getCurrentLevel(); }
+    public int getSpeedLevel() { return gameTimer.getSpeedLevel(); }
 }
