@@ -20,6 +20,7 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     // implementation libs.guava
+    implementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
 }
 
@@ -42,7 +43,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.example.App'
+    mainClass = 'team13.tetris.App'
 }
 
 // 추가

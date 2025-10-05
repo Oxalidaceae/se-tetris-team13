@@ -3,12 +3,55 @@
  */
 package team13.tetris;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
+import team13.tetris.config.Settings;
+import team13.tetris.config.SettingsRepository;
+
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+public class App extends Application{
+
+    private SceneManager manager;
+    private Settings settings;
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        // 설정 불러오기 및 적용
+        settings = SettingsRepository.load();
+        manager = new SceneManager(primaryStage);
+
+        manager.showMainMenu(settings);
+
+        // 색맹 모드 적용
+        manager.setColorBlindMode(settings.isColorBlindMode());
+
+        // 창 크기 적용
+        switch (settings.getWindowSize()) {
+            case "SMALL" -> manager.setWindowSize(400, 500);
+            case "LARGE" -> manager.setWindowSize(800, 900);
+            default -> manager.setWindowSize(600, 700);
+        }
+
+        primaryStage.setTitle("Tetris");
+        primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> {
+            settings.setColorBlindMode(manager.isColorBlindMode());
+            settings.setWindowSize(getCurrentWindowSize(primaryStage));
+            SettingsRepository.save(settings);
+        });
+    }
+
+    // 현재 창 크기에 따른 설정 문자열 반환(OS별로 약간의 픽셀 차이 존재 가능 -> 범위로 판단)
+    private String getCurrentWindowSize(Stage stage) {
+        double width = stage.getWidth();
+        if (width <= 450) return "SMALL";
+        else if (width >= 750) return "LARGE";
+        else return "MEDIUM";
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        launch(args);
     }
 }
