@@ -42,7 +42,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.example.App'
+    mainClass = 'team13.tetris.App'
 }
 
 // 추가
@@ -55,4 +55,11 @@ tasks.test {
 javafx {
     version = "17.0.12"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+// Ensure Java compiler reads source files as UTF-8 so non-ASCII comments compile
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // 명시적으로 Java 17 호환으로 컴파일하도록 설정합니다.
+    options.release = 17
 }
