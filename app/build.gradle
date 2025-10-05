@@ -1,6 +1,5 @@
 /*
  * Tetris Game - Team 13
- * Clean Java application with separated business logic and UI
  */
 
 plugins {
@@ -15,16 +14,12 @@ repositories {
 }
 
 dependencies {
-    // JUnit 5 for testing
-    // This dependency is used by the application.
-    // implementation libs.guava
+    // runtime
     implementation 'com.google.code.gson:gson:2.10.1'
+
+    // test
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    
-    // JavaFX dependencies for UI teams
-    implementation 'org.openjfx:javafx-controls:17.0.2'
-    implementation 'org.openjfx:javafx-fxml:17.0.2'
 }
 
 test {
@@ -47,23 +42,8 @@ application {
     mainClass = 'team13.tetris.App'
 }
 
-// Custom tasks for running specific components
-task runScoreBoard(type: JavaExec) {
-    description = 'Run ScoreBoard console demonstration'
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'team13.tetris.data.ScoreBoard'
-    standardInput = System.in
-}
-
-task runGameManager(type: JavaExec) {
-    description = 'Run GameManager demonstration'  
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'team13.tetris.game.GameManager'
-    standardInput = System.in
-}
-
-// JavaFX configuration for UI teams
+// java fx
 javafx {
-    version = "17.0.2"
+    version = "17.0.12"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
