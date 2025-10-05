@@ -1,4 +1,4 @@
-package team13.tetris.game;
+package team13.tetris.demo;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
+import team13.tetris.game.GameManager;
 
 /**
  * Demo application for testing GameManager functionality

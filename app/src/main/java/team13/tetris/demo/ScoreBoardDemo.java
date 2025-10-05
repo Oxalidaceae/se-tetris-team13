@@ -1,4 +1,4 @@
-package team13.tetris.ui;
+package team13.tetris.demo;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -9,6 +9,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import team13.tetris.ui.ScoreBoard;
+import team13.tetris.ui.ScoreBoard.ScoreEntry;
 
 import java.util.Random;
 

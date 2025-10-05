@@ -1,6 +1,8 @@
-package team13.tetris.game;
+package team13.tetris.demo;
 
 import java.util.Scanner;
+
+import team13.tetris.game.Timer;
 
 /**
  * Interactive demo for Timer class
