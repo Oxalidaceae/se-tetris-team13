@@ -19,14 +19,21 @@ dependencies {
 
     // test
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-        exceptionFormat "full"
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter('5.11.3')
+        }
     }
 }
 
