@@ -6,10 +6,13 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Represents the current state of the Tetris game
+ * Represents the current state of a Tetris game session
  */
 enum GameState {
-    MENU, PLAYING, PAUSED, GAME_OVER
+    READY,      // Game initialized, ready to start
+    PLAYING,    // Game actively running
+    PAUSED,     // Game paused
+    GAME_OVER   // Game ended
 }
 
 /**
@@ -34,7 +37,6 @@ public class GameManager {
     private int currentScore;
     private int linesCleared;
     private long lastDropTime;
-    private boolean gameRunning;
     private int lastSpeedUpLevel; // Tracks difficulty level for speed progression
     
     /**
@@ -45,11 +47,10 @@ public class GameManager {
         this.primaryStage = primaryStage;
         this.scoreBoard = new ScoreBoard();
         this.gameTimer = new Timer();
-        this.state = GameState.MENU;
+        this.state = GameState.READY;
         this.currentScore = 0;
         this.linesCleared = 0;
         this.lastDropTime = 0;
-        this.gameRunning = false;
         this.lastSpeedUpLevel = 0;
         
         initializeGameLoop();
@@ -80,11 +81,10 @@ public class GameManager {
     }
     
     /**
-     * Initializes and starts a new game session
+     * Starts a new game (resets scores and begins game loop)
      */
     public void startGame() {
         state = GameState.PLAYING;
-        gameRunning = true;
         currentScore = 0;
         linesCleared = 0;
         gameTimer.reset();
@@ -104,7 +104,7 @@ public class GameManager {
      * @param deltaTime Time elapsed since last frame (seconds)
      */
     private void updateGame(double deltaTime) {
-        if (!gameRunning || state != GameState.PLAYING) {
+        if (state != GameState.PLAYING) {
             return;
         }
         
@@ -152,15 +152,24 @@ public class GameManager {
     }
     
     /**
-     * Ends current game session and shows score input dialog
+     * Ends current game session
      */
     public void endGame() {
-        gameRunning = false;
+        endGame(true);
+    }
+    
+    /**
+     * Ends current game session with optional UI display
+     * @param showUI Whether to show the game over dialog
+     */
+    public void endGame(boolean showUI) {
         state = GameState.GAME_OVER;
         gameLoop.stop();
         
         System.out.println("Game Over! Final Score: " + currentScore);
-        showGameOverScene();
+        if (showUI) {
+            showGameOverScene();
+        }
     }
     
     /**
@@ -221,7 +230,7 @@ public class GameManager {
     public int getLinesCleared() { return linesCleared; }
     public Timer getGameTimer() { return gameTimer; }
     public ScoreBoard getScoreBoard() { return scoreBoard; }
-    public boolean isGameRunning() { return gameRunning; }
+    public boolean isGameRunning() { return state == GameState.PLAYING || state == GameState.PAUSED; }
     
     /**
      * @return Difficulty level based on lines cleared (every 10 lines = +1 level)

@@ -55,7 +55,7 @@ public class GameManagerTest {
     void testInitialState() {
         Platform.runLater(() -> {
             // Test initial game state
-            assertEquals(GameState.MENU, gameManager.getState(), "Initial state should be MENU");
+            assertEquals(GameState.READY, gameManager.getState(), "Initial state should be READY");
             assertEquals(0, gameManager.getCurrentScore(), "Initial score should be 0");
             assertEquals(0, gameManager.getLinesCleared(), "Initial lines cleared should be 0");
             assertFalse(gameManager.isGameRunning(), "Game should not be running initially");
@@ -119,7 +119,7 @@ public class GameManagerTest {
             assertTrue(gameManager.isGameRunning(), "Game should be running");
             
             // Test toggle from non-playing state (should do nothing)
-            gameManager.endGame();
+            gameManager.endGame(false);
             gameManager.togglePause();
             assertEquals(GameState.GAME_OVER, gameManager.getState(), "Should remain GAME_OVER");
         });
@@ -138,8 +138,8 @@ public class GameManagerTest {
             gameManager.startGame();
             assertTrue(gameManager.isGameRunning(), "Game should be running");
             
-            // End the game
-            gameManager.endGame();
+            // End the game (without UI for testing)
+            gameManager.endGame(false);
             
             // Verify game state
             assertFalse(gameManager.isGameRunning(), "Game should not be running");
@@ -240,7 +240,7 @@ public class GameManagerTest {
     void testGameStateTransitions() {
         Platform.runLater(() -> {
             // Test complete state transition cycle
-            assertEquals(GameState.MENU, gameManager.getState(), "Should start in MENU");
+            assertEquals(GameState.READY, gameManager.getState(), "Should start in READY");
             
             // MENU -> PLAYING
             gameManager.startGame();
@@ -255,7 +255,7 @@ public class GameManagerTest {
             assertEquals(GameState.PLAYING, gameManager.getState(), "Should transition back to PLAYING");
             
             // PLAYING -> GAME_OVER
-            gameManager.endGame();
+            gameManager.endGame(false);
             assertEquals(GameState.GAME_OVER, gameManager.getState(), "Should transition to GAME_OVER");
             
             // GAME_OVER -> PLAYING (restart)
@@ -303,7 +303,7 @@ public class GameManagerTest {
             
             // Test score submission
             gameManager.addScore(1500);
-            gameManager.endGame(); // This should add score to scoreboard
+            gameManager.endGame(false); // End game without UI for testing
             
             // Verify the score was added (we can't easily test UI, but we can test the component exists)
             assertTrue(gameManager.getScoreBoard().getScores().size() > 0, "Score should be added to scoreboard");
@@ -334,7 +334,7 @@ public class GameManagerTest {
             assertEquals(4400, gameManager.getCurrentScore(), "Score should be 4400");
             
             // End game
-            gameManager.endGame();
+            gameManager.endGame(false);
             assertEquals(GameState.GAME_OVER, gameManager.getState(), "Should be game over");
             assertFalse(gameManager.isGameRunning(), "Game should not be running");
         });
