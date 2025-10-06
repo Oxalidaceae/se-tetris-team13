@@ -19,6 +19,9 @@ dependencies {
 
     // test
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+
+    // JavaFX 테스트를 위한 추가 의존성 (필요시)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 compileJava {
@@ -49,7 +52,18 @@ application {
     mainClass = 'team13.tetris.App'
 }
 
-// java fx
+tasks.test {
+    // Enable JUnit 5 (Jupiter) support in Gradle
+    useJUnitPlatform()
+
+    // JavaFX 헤드리스 모드로 테스트 실행 (GUI 없이)
+    systemProperty 'java.awt.headless', 'true'
+    systemProperty 'testfx.headless', 'true'
+    systemProperty 'prism.order', 'sw'
+    systemProperty 'prism.text', 't2k'
+    systemProperty 'file.encoding', 'UTF-8'
+}
+
 javafx {
     version = "17.0.12"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
