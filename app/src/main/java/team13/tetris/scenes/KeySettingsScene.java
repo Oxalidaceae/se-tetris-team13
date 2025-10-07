@@ -58,37 +58,37 @@ public class KeySettingsScene {
             KeyCode key = event.getCode();
             switch (waitingForKey) {
                 case "LEFT" -> {
-                    settings.setKeyLeft(key.getName());
+                    settings.setKeyLeft(key.toString());
                     leftBtn.setText("Move Left: " + key.getName());
                     break;
                 }
                 case "RIGHT" -> {
-                    settings.setKeyRight(key.getName());
+                    settings.setKeyRight(key.toString());
                     rightBtn.setText("Move Right: " + key.getName());
                     break;
                 }
                 case "DOWN" -> {
-                    settings.setKeyDown(key.getName());
+                    settings.setKeyDown(key.toString());
                     downBtn.setText("Move Down: " + key.getName());
                     break;
                 }
                 case "ROTATE" -> {
-                    settings.setKeyRotate(key.getName());
+                    settings.setKeyRotate(key.toString());
                     rotateBtn.setText("Rotate: " + key.getName());
                     break;
                 }
                 case "DROP" -> {
-                    settings.setKeyDrop(key.getName());
+                    settings.setKeyDrop(key.toString());
                     dropBtn.setText("Drop: " + key.getName());
                     break;
                 }
                 case "PAUSE" -> {
-                    settings.setPause(key.getName());
+                    settings.setPause(key.toString());
                     pauseBtn.setText("Pause: " + key.getName());
                     break;
                 }
                 case "EXIT" -> {
-                    settings.setExit(key.getName());
+                    settings.setExit(key.toString());
                     exitBtn.setText("Exit: " + key.getName());
                     break;
                 }

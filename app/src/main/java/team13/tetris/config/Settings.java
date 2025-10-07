@@ -6,11 +6,11 @@ public class Settings {
     private boolean colorBlindMode = false;
     private String windowSize = "MEDIUM"; // SMALL, MEDIUM, LARGE
 
-    private String keyLeft = "LEFT";   // 왼쪽 이동
-    private String keyRight = "RIGHT"; // 오른쪽 이동
-    private String keyDown = "DOWN";   // 아래쪽 이동(한칸씩)
-    private String keyRotate = "z";   // 회전
-    private String keyDrop = "x";      // hard drop
+    private String keyLeft = "A";   // 왼쪽 이동
+    private String keyRight = "D"; // 오른쪽 이동
+    private String keyDown = "S";   // 아래쪽 이동(한칸씩)
+    private String keyRotate = "J";   // 회전
+    private String keyDrop = "K";      // hard drop
     private String pause = "P";        // 일시정지
     private String exit = "ESC";     // 게임 종료
 
@@ -33,7 +33,9 @@ public class Settings {
     public String getKeyLeft() { 
         return keyLeft; 
     }
-    public void setKeyLeft(String keyLeft) { this.keyLeft = keyLeft; }
+    public void setKeyLeft(String keyLeft) { 
+        this.keyLeft = keyLeft; 
+    }
 
     public String getKeyRight() { 
         return keyRight; 
@@ -79,4 +81,15 @@ public class Settings {
     public void setExit(String exit) { 
         this.exit = exit; 
     }
+
+    public void restoreDefaultKeys() {
+        setKeyLeft("A");
+        setKeyRight("D");
+        setKeyDown("S");
+        setKeyRotate("J");
+        setKeyDrop("K");
+        setPause("P");
+        setExit("ESC");
+    }
+
 }

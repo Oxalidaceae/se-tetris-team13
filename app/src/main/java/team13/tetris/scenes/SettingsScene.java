@@ -1,7 +1,5 @@
 package team13.tetris.scenes;
 
-import java.util.List;
-
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
@@ -79,6 +77,7 @@ public class SettingsScene {
             settings.setWindowSize("MEDIUM");
             colorBlindBtn.setSelected(false);
             colorBlindBtn.setText("Color Blind Mode: OFF");
+            settings.restoreDefaultKeys();
         });
 
         // 뒤로가기 버튼
