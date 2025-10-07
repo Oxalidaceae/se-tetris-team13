@@ -44,10 +44,10 @@ public class SettingsScene {
         // 키 설정 버튼
         Button keyBtn = new Button("Key Settings");
         keyBtn.setOnAction(e -> manager.showKeySettings(settings));
-
+        
         // 색맹 모드 토글 버튼
         ToggleButton colorBlindBtn = new ToggleButton();
-
+        
         // 초기 상태 설정
         boolean isColorBlind = settings.isColorBlindMode();
         colorBlindBtn.setSelected(isColorBlind);

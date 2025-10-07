@@ -82,6 +82,18 @@ public class Settings {
         this.exit = exit; 
     }
 
+    public boolean isKeyAlreadyUsed(String key) {
+    key = key.toUpperCase();
+    return key.equals(keyLeft.toUpperCase()) ||
+           key.equals(keyRight.toUpperCase()) ||
+           key.equals(keyDown.toUpperCase()) ||
+           key.equals(keyRotate.toUpperCase()) ||
+           key.equals(keyDrop.toUpperCase()) ||
+           key.equals(pause.toUpperCase()) ||
+           key.equals(exit.toUpperCase());
+}
+
+
     public void restoreDefaultKeys() {
         setKeyLeft("A");
         setKeyRight("D");
