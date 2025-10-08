@@ -2,6 +2,11 @@ package team13.tetris.game;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import team13.tetris.model.game.GameManager;
+import team13.tetris.model.game.GameState;
+import team13.tetris.model.game.Timer;
+
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,0 +1,48 @@
+/* 색맹(색각이상) 모드용 CSS */
+/* 명도와 패턴을 강조하여 구분성을 높임 */
+
+:root {
+    font-family: "Segoe UI", "Nanum Gothic", sans-serif;
+    -fx-font-family: "Segoe UI", "Nanum Gothic", sans-serif;
+    background: #141414;
+    -fx-base: #141414;
+    -fx-background: #141414;
+}
+
+.label-title {
+    color: #f3f3f3;
+    -fx-text-fill: #f3f3f3;
+    font-size: 48px;
+    -fx-font-size: 48px;
+    font-weight: bold;
+    -fx-font-weight: bold;
+}
+
+.label, .button {
+    color: #f3f3f3;
+    -fx-text-fill: #f3f3f3;
+}
+
+.button {
+    background-color: linear-gradient(#2e2e2e, #1a1a1a);
+    -fx-background-color: linear-gradient(#2e2e2e, #1a1a1a);
+    color: #fafafa;
+    -fx-text-fill: #fafafa;
+    font-size: 16px;
+    -fx-font-size: 16px;
+    padding: 10px 18px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 6;
+}
+
+.button:hover {
+    background-color: linear-gradient(#3a3a3a, #222222);
+    -fx-background-color: linear-gradient(#3a3a3a, #222222);
+}
+
+.root {
+    background-color: #101010;
+    -fx-background-color: #101010;
+    padding: 24px;
+    -fx-padding: 24;
+}

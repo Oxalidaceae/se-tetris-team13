@@ -1,4 +1,4 @@
-package team13.tetris.config;
+package team13.tetris.model.data;
 
 
 // 사용자 설정 값 저장 클래스

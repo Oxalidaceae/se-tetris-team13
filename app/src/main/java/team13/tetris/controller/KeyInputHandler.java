@@ -1,8 +1,8 @@
 // 경로: src/main/team13/tetris/input/KeyInputHandler.java
-package team13.tetris.input;
+package team13.tetris.controller;
 
 import javafx.scene.input.KeyCode;
-import team13.tetris.config.Settings;
+import team13.tetris.model.data.Settings;
 
 public class KeyInputHandler {
 
@@ -21,9 +21,8 @@ public class KeyInputHandler {
     String userKey = userPressed.toString();
     String settingKey = configuredKey.trim();
 
-    // 키 설정에서 저장한 문자열과 직접 비교
-    // KeyCode.toString() 결과는 일관되므로 정확히 매칭됨
-    return userKey.equals(settingKey);
+    // 대소문자 차이로 인한 문제를 방지하기 위해 대소문자를 무시하고 비교
+    return userKey.equalsIgnoreCase(settingKey);
   }
 
   // 왼쪽 이동

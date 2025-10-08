@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import javafx.scene.input.KeyCode;
-import team13.tetris.config.Settings;
+import team13.tetris.controller.KeyInputHandler;
+import team13.tetris.model.data.Settings;
 
 @DisplayName("KeyInputHandler 테스트")
 class KeyInputHandlerTest {

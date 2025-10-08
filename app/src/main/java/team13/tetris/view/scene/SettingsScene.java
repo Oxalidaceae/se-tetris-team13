@@ -1,31 +1,26 @@
-package team13.tetris.scenes;
-
-import java.util.List;
-
-import team13.tetris.SceneManager;
-import team13.tetris.config.Settings;
+package team13.tetris.view.scene;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
+import team13.tetris.model.data.Settings;
+import team13.tetris.view.SceneManager;
 
 public class SettingsScene {
     private final SceneManager manager;
-    private final Settings settings;
 
-    public SettingsScene(SceneManager manager, Settings settings) {
+    public SettingsScene(SceneManager manager) {
         this.manager = manager;
-        this.settings = settings;
     }
 
     public Scene getScene() {
-        // 타이틀
+        Settings settings = manager.getSettings();
+
         Label title = new Label("Settings");
         title.getStyleClass().add("label-title");
 
-        // 화면 크기 버튼
         Button smallBtn = new Button("Small");
         Button mediumBtn = new Button("Medium");
         Button largeBtn = new Button("Large");
@@ -43,34 +38,25 @@ public class SettingsScene {
             settings.setWindowSize("LARGE");
         });
 
-        // 키 설정 버튼
         Button keyBtn = new Button("Key Settings");
-        keyBtn.setOnAction(e -> manager.showKeySettings(settings));
+        keyBtn.setOnAction(e -> manager.showKeySettings());
 
-        // 색맹 모드 토글 버튼
         ToggleButton colorBlindBtn = new ToggleButton();
-
-        // 초기 상태 설정
         boolean isColorBlind = settings.isColorBlindMode();
         colorBlindBtn.setSelected(isColorBlind);
         colorBlindBtn.setText(isColorBlind ? "Color Blind Mode: ON" : "Color Blind Mode: OFF");
-
-        // 토글 버튼 클릭 시 상태 변경
         colorBlindBtn.setOnAction(e -> {
             boolean newState = colorBlindBtn.isSelected();
             colorBlindBtn.setText(newState ? "Color Blind Mode: ON" : "Color Blind Mode: OFF");
-
             manager.setColorBlindMode(newState);
             settings.setColorBlindMode(newState);
         });
 
-        // 스코어보드 초기화
         Button resetBtn = new Button("Reset Scoreboard");
         resetBtn.setOnAction(e -> {
-            System.out.println("Scoreboard reset requested (TODO)");
+            manager.getScoreBoard().resetScores();
         });
 
-        // 기본 설정 복원
         Button defaultBtn = new Button("Restore Defaults");
         defaultBtn.setOnAction(e -> {
             manager.setColorBlindMode(false);
@@ -81,17 +67,14 @@ public class SettingsScene {
             colorBlindBtn.setText("Color Blind Mode: OFF");
         });
 
-        // 뒤로가기 버튼
         Button backBtn = new Button("Back");
-        backBtn.setOnAction(e -> manager.showMainMenu(settings));
+        backBtn.setOnAction(e -> manager.showMainMenu());
 
         VBox layout = new VBox(15, title, smallBtn, mediumBtn, largeBtn, keyBtn, colorBlindBtn, resetBtn, defaultBtn, backBtn);
         layout.setStyle("-fx-alignment: center;");
-        
+
         Scene scene = new Scene(layout, 600, 700);
-
         manager.enableArrowAsTab(scene);
-
         return scene;
     }
 }

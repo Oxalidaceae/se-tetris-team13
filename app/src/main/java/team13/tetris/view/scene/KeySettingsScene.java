@@ -1,26 +1,24 @@
-package team13.tetris.scenes;
+package team13.tetris.view.scene;
 
-import team13.tetris.SceneManager;
-import team13.tetris.config.Settings;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
+import team13.tetris.model.data.Settings;
+import team13.tetris.view.SceneManager;
 
 public class KeySettingsScene {
     private final SceneManager manager;
-    private final Settings settings;
 
-    // 키 변경 중 어떤 항목을 수정 중인지 기억
     private String waitingForKey = null;
 
-    public KeySettingsScene(SceneManager manager, Settings settings) {
+    public KeySettingsScene(SceneManager manager) {
         this.manager = manager;
-        this.settings = settings;
     }
 
     public Scene getScene() {
+        Settings settings = manager.getSettings();
         Label title = new Label("Key Settings");
         title.getStyleClass().add("label-title");
 
@@ -35,14 +33,14 @@ public class KeySettingsScene {
         Button exitBtn = new Button("Exit: " + settings.getExit());
 
         // 키 변경 대기 모드
-        leftBtn.setOnAction(e -> waitingForKey = "LEFT");
-        rightBtn.setOnAction(e -> waitingForKey = "RIGHT");
-        downBtn.setOnAction(e -> waitingForKey = "DOWN");
-        rotateBtn.setOnAction(e -> waitingForKey = "ROTATE");
-        dropBtn.setOnAction(e -> waitingForKey = "DROP");
-        pauseBtn.setOnAction(e -> waitingForKey = "PAUSE");
-        exitBtn.setOnAction(e -> waitingForKey = "EXIT");
-        backBtn.setOnAction(e -> manager.showSettings(settings));
+    leftBtn.setOnAction(e -> waitingForKey = "LEFT");
+    rightBtn.setOnAction(e -> waitingForKey = "RIGHT");
+    downBtn.setOnAction(e -> waitingForKey = "DOWN");
+    rotateBtn.setOnAction(e -> waitingForKey = "ROTATE");
+    dropBtn.setOnAction(e -> waitingForKey = "DROP");
+    pauseBtn.setOnAction(e -> waitingForKey = "PAUSE");
+    exitBtn.setOnAction(e -> waitingForKey = "EXIT");
+    backBtn.setOnAction(e -> manager.showSettings());
 
         // 현재 Scene에서 키 입력을 감지
         VBox layout = new VBox(15, title, leftBtn, rightBtn, downBtn, rotateBtn, dropBtn, pauseBtn, exitBtn, backBtn);

@@ -1,4 +1,4 @@
-package team13.tetris.game;
+package team13.tetris.model.game;
 
 /**
  * Timer class for managing Tetris game timing

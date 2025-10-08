@@ -1,0 +1,45 @@
+:root {
+    font-family: "Segoe UI", "Nanum Gothic", sans-serif;
+    -fx-font-family: "Segoe UI", "Nanum Gothic", sans-serif;
+    background: #1e1e1e;
+    -fx-base: #1e1e1e;
+    -fx-background: #1e1e1e;
+}
+
+.label-title {
+    color: #ffffff;
+    -fx-text-fill: #ffffff;
+    font-size: 48px;
+    -fx-font-size: 48px;
+    font-weight: bold;
+    -fx-font-weight: bold;
+}
+
+.label, .button {
+    color: #f0f0f0;
+    -fx-text-fill: #f0f0f0;
+}
+
+.button {
+    background-color: linear-gradient(#3a3a3a, #222222);
+    -fx-background-color: linear-gradient(#3a3a3a, #222222);
+    color: #fafafa;
+    -fx-text-fill: #fafafa;
+    font-size: 16px;
+    -fx-font-size: 16px;
+    padding: 10px 18px;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 6;
+}
+
+.button:hover {
+    background-color: linear-gradient(#4a4a4a, #2a2a2a);
+    -fx-background-color: linear-gradient(#4a4a4a, #2a2a2a);
+}
+
+.root {
+    background-color: #1b1b1b;
+    -fx-background-color: #1b1b1b;
+    padding: 24px;
+    -fx-padding: 24;
+}

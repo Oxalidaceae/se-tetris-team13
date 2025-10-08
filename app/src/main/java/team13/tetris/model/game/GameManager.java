@@ -1,13 +1,10 @@
-package team13.tetris.game;
+package team13.tetris.model.game;
 
-import team13.tetris.data.ScoreBoard;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-enum GameState {
-    READY, PLAYING, PAUSED, GAME_OVER
-}
+import team13.tetris.model.data.ScoreBoard;
 
 /**
  * Main game manager - handles Tetris game logic without UI dependencies.

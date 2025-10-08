@@ -1,4 +1,4 @@
-package team13.tetris.data;
+package team13.tetris.model.data;
 
 import java.io.*;
 import java.util.ArrayList;

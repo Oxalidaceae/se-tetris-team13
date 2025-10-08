@@ -1,6 +1,9 @@
-package team13.tetris.config;
+package team13.tetris.model.repository;
 
 import com.google.gson.Gson;
+
+import team13.tetris.model.data.Settings;
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;

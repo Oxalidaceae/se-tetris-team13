@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.io.TempDir;
+
+import team13.tetris.model.data.ScoreBoard;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;

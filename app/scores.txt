@@ -1,0 +1,3 @@
+shin,12345
+dddd,12345
+Player,500
