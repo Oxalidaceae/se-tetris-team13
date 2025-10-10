@@ -5,11 +5,11 @@ public class Settings {
     private boolean colorBlindMode = false;
     private String windowSize = "MEDIUM"; // SMALL, MEDIUM, LARGE
 
-    private String keyLeft = "LEFT"; // 왼쪽 이동
-    private String keyRight = "RIGHT"; // 오른쪽 이동
-    private String keyDown = "DOWN"; // 아래쪽 이동(한칸씩)
-    private String keyRotate = "Z"; // 회전
-    private String keyDrop = "X"; // hard drop
+    private String keyLeft = "A"; // 왼쪽 이동
+    private String keyRight = "D"; // 오른쪽 이동
+    private String keyDown = "S"; // 아래쪽 이동(한칸씩)
+    private String keyRotate = "J"; // 회전
+    private String keyDrop = "K"; // hard drop
     private String pause = "P"; // 일시정지
     private String exit = "ESCAPE"; // 게임 종료
 
@@ -83,5 +83,26 @@ public class Settings {
 
     public void setExit(String exit) {
         this.exit = exit;
+    }
+
+    public boolean isKeyAlreadyUsed(String key) {
+        key = key.toUpperCase();
+        return key.equals(keyLeft.toUpperCase()) ||
+            key.equals(keyRight.toUpperCase()) ||
+            key.equals(keyDown.toUpperCase()) ||
+            key.equals(keyRotate.toUpperCase()) ||
+            key.equals(keyDrop.toUpperCase()) ||
+            key.equals(pause.toUpperCase()) ||
+            key.equals(exit.toUpperCase());
+    }
+
+    public void restoreDefaultKeys() {
+        setKeyLeft("A");
+        setKeyRight("D");
+        setKeyDown("S");
+        setKeyRotate("J");
+        setKeyDrop("K");
+        setPause("P");
+        setExit("ESC");
     }
 }
