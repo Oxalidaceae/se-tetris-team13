@@ -4,8 +4,8 @@
   "keyLeft": "A",
   "keyRight": "D",
   "keyDown": "S",
-  "keyRotate": "W",
-  "keyDrop": "X",
+  "keyRotate": "J",
+  "keyDrop": "K",
   "pause": "P",
   "exit": "ESCAPE"
 }
