@@ -25,7 +25,7 @@ import team13.tetris.input.KeyInputHandler;
  * 미리보기는 4x4 크기의 GridPane으로 표시됩니다.
  */
 public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCallback { // 수정: KeyInputCallback 인터페이스 구현
-    private final GameEngine engine;
+    private GameEngine engine; // final 제거하고 setter로 설정 가능하게 함
     private final KeyInputHandler keyInputHandler; // 수정: 키 입력 처리를 위한 핸들러 추가
     private final HBox root;
     private Scene scene;
@@ -41,9 +41,9 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
         this.keyInputHandler = keyInputHandler; // 수정: 키 입력 핸들러 저장
         this.root = new HBox(12);
 
-        Board b = engine.getBoard();
-        int w = b.getWidth();
-        int h = b.getHeight();
+        // engine이 null일 수 있으므로 임시 보드 크기 사용
+        int w = (engine != null) ? engine.getBoard().getWidth() : 10;
+        int h = (engine != null) ? engine.getBoard().getHeight() : 20;
 
         // 플레이 가능한 영역 주위에 1셀 테두리를 만들어 사용자의 요청대로 'X' 문자를 테두리로 표시합니다.
         boardGrid = new GridPane();
@@ -103,6 +103,11 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
         return scene;
     }
 
+    // GameEngine을 설정하는 메서드 추가
+    public void setEngine(GameEngine engine) {
+        this.engine = engine;
+    }
+
     public void requestFocus() {
         Platform.runLater(() -> {
             if (scene != null)
@@ -115,32 +120,37 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
     // Settings에 정의된 키 매핑을 통한 동적 키 처리로 변경
     @Override
     public void onLeftPressed() {
-        engine.moveLeft(); // 설정된 키(기본값: A)가 눌렸을 때 왼쪽 이동
+        if (engine != null)
+            engine.moveLeft(); // 설정된 키(기본값: A)가 눌렸을 때 왼쪽 이동
     }
 
     @Override
     public void onRightPressed() {
-        engine.moveRight(); // 설정된 키(기본값: D)가 눌렸을 때 오른쪽 이동
+        if (engine != null)
+            engine.moveRight(); // 설정된 키(기본값: D)가 눌렸을 때 오른쪽 이동
     }
 
     @Override
     public void onRotatePressed() {
-        engine.rotateCW(); // 설정된 키(기본값: W)가 눌렸을 때 시계방향 회전
+        if (engine != null)
+            engine.rotateCW(); // 설정된 키(기본값: W)가 눌렸을 때 시계방향 회전
     }
 
     @Override
     public void onDropPressed() {
-        engine.softDrop(); // 설정된 키(기본값: S)가 눌렸을 때 소프트 드롭
+        if (engine != null)
+            engine.softDrop(); // 설정된 키(기본값: S)가 눌렸을 때 소프트 드롭
     }
 
     @Override
     public void onHardDropPressed() {
-        engine.hardDrop(); // 설정된 키(기본값: X)가 눌렸을 때 하드 드롭
+        if (engine != null)
+            engine.hardDrop(); // 설정된 키(기본값: X)가 눌렸을 때 하드 드롭
     }
 
     @Override
     public void onPausePressed() {
-        if (!paused) { // 설정된 키(기본값: P)가 눌렸을 때 일시정지
+        if (engine != null && !paused) { // 설정된 키(기본값: P)가 눌렸을 때 일시정지
             paused = true;
             engine.stopAutoDrop();
             showPauseWindow();
@@ -155,6 +165,9 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
     // ========== KeyInputCallback 구현 끝 ==========
 
     private void updateGrid() {
+        if (engine == null)
+            return; // null 체크 추가
+
         Board b = engine.getBoard();
         int w = b.getWidth();
         int h = b.getHeight();
