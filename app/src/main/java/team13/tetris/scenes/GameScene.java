@@ -13,7 +13,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
+import team13.tetris.SceneManager;
+import team13.tetris.config.Settings;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
@@ -25,25 +26,32 @@ import team13.tetris.input.KeyInputHandler;
  * 미리보기는 4x4 크기의 GridPane으로 표시됩니다.
  */
 public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCallback { // 수정: KeyInputCallback 인터페이스 구현
-    private GameEngine engine; // final 제거하고 setter로 설정 가능하게 함
-    private final KeyInputHandler keyInputHandler; // 수정: 키 입력 처리를 위한 핸들러 추가
+    private final SceneManager manager;
+    private final Settings settings;
+    private GameEngine engine;
+    private final KeyInputHandler keyInputHandler;
+
     private final HBox root;
     private Scene scene;
-
-    private final GridPane boardGrid; // width x height grid of Labels
-    private final GridPane previewGrid; // 4x4 preview
+    private final GridPane boardGrid;
+    private final GridPane previewGrid;
     private final Label scoreLabel;
+
     private boolean paused = false;
     private boolean gameOver = false;
 
-    public GameScene(GameEngine engine, KeyInputHandler keyInputHandler) { // 수정: KeyInputHandler를 생성자 파라미터로 추가
+    public GameScene(SceneManager manager, Settings settings,
+                     GameEngine engine, KeyInputHandler keyInputHandler) {
+        this.manager = manager;
+        this.settings = settings;
         this.engine = engine;
-        this.keyInputHandler = keyInputHandler; // 수정: 키 입력 핸들러 저장
-        this.root = new HBox(12);
+        this.keyInputHandler = keyInputHandler;
 
-        // engine이 null일 수 있으므로 임시 보드 크기 사용
-        int w = (engine != null) ? engine.getBoard().getWidth() : 10;
-        int h = (engine != null) ? engine.getBoard().getHeight() : 20;
+        root = new HBox(12);
+
+        Board board = engine.getBoard();
+        int w = board.getWidth();
+        int h = board.getHeight();
 
         // 플레이 가능한 영역 주위에 1셀 테두리를 만들어 사용자의 요청대로 'X' 문자를 테두리로 표시합니다.
         boardGrid = new GridPane();

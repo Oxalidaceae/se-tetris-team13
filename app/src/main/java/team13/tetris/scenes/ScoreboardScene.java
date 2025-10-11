@@ -2,7 +2,7 @@ package team13.tetris.scenes;
 
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
-
+import team13.tetris.data.ScoreBoard;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,10 +12,12 @@ import javafx.scene.layout.VBox;
 public class ScoreboardScene {
 private final SceneManager manager;
 private final Settings settings;
+private final ScoreBoard scoreBoard;
 
     public ScoreboardScene(SceneManager manager, Settings settings) {
         this.manager = manager;
         this.settings = settings;
+        this.scoreBoard = new ScoreBoard();
     }
     
     public Scene getScene() {
@@ -25,14 +27,10 @@ private final Settings settings;
 
         // 점수 리스트 (임시 더미 데이터)
         ListView<String> scoreList = new ListView<>();
-        scoreList.getItems().addAll(
-                "AAA  score",
-                "BBB  score",
-                "CCC  score",
-                "DDD  score",
-                "EEE  score"
+        scoreBoard.getScores().forEach(entry ->
+            scoreList.getItems().add(String.format("%s : %d", entry.getName(), entry.getScore()))
         );
-        scoreList.setMaxHeight(200);
+        scoreList.setMaxHeight(250);
 
         // 뒤로가기 버튼
         Button backBtn = new Button("Back");
