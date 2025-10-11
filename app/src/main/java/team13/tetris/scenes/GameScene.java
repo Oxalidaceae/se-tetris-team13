@@ -24,9 +24,9 @@ import team13.tetris.input.KeyInputHandler;
  * Grid 기반의 GameScene으로, 각 셀을 Label로 렌더링하여 개별 색상을 적용할 수 있게 합니다 (Canvas 사용 금지).
  * 미리보기는 4x4 크기의 GridPane으로 표시됩니다.
  */
-public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCallback {
+public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCallback { // 수정: KeyInputCallback 인터페이스 구현
     private final GameEngine engine;
-    private final KeyInputHandler keyInputHandler;
+    private final KeyInputHandler keyInputHandler; // 수정: 키 입력 처리를 위한 핸들러 추가
     private final HBox root;
     private Scene scene;
 
@@ -36,9 +36,9 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
     private boolean paused = false;
     private boolean gameOver = false;
 
-    public GameScene(GameEngine engine, KeyInputHandler keyInputHandler) {
+    public GameScene(GameEngine engine, KeyInputHandler keyInputHandler) { // 수정: KeyInputHandler를 생성자 파라미터로 추가
         this.engine = engine;
-        this.keyInputHandler = keyInputHandler;
+        this.keyInputHandler = keyInputHandler; // 수정: 키 입력 핸들러 저장
         this.root = new HBox(12);
 
         Board b = engine.getBoard();
@@ -93,7 +93,8 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
 
     public Scene createScene() {
         this.scene = new Scene(root);
-        // KeyInputHandler를 Scene에 연결하고 이 클래스를 콜백으로 등록
+        // 수정: KeyInputHandler를 Scene에 연결하고 이 클래스를 콜백으로 등록
+        // 기존의 직접적인 키 이벤트 처리 대신 KeyInputHandler를 통한 간접 처리
         keyInputHandler.attachToScene(scene, this);
         return scene;
     }
@@ -110,34 +111,36 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
     }
 
     // ========== KeyInputCallback 인터페이스 구현 ==========
+    // 수정: 기존의 하드코딩된 키 처리(KeyCode.LEFT, KeyCode.RIGHT 등) 대신
+    // Settings에 정의된 키 매핑을 통한 동적 키 처리로 변경
     @Override
     public void onLeftPressed() {
-        engine.moveLeft();
+        engine.moveLeft(); // 설정된 키(기본값: A)가 눌렸을 때 왼쪽 이동
     }
 
     @Override
     public void onRightPressed() {
-        engine.moveRight();
+        engine.moveRight(); // 설정된 키(기본값: D)가 눌렸을 때 오른쪽 이동
     }
 
     @Override
     public void onRotatePressed() {
-        engine.rotateCW();
+        engine.rotateCW(); // 설정된 키(기본값: W)가 눌렸을 때 시계방향 회전
     }
 
     @Override
     public void onDropPressed() {
-        engine.softDrop();
+        engine.softDrop(); // 설정된 키(기본값: S)가 눌렸을 때 소프트 드롭
     }
 
     @Override
     public void onHardDropPressed() {
-        engine.hardDrop();
+        engine.hardDrop(); // 설정된 키(기본값: X)가 눌렸을 때 하드 드롭
     }
 
     @Override
     public void onPausePressed() {
-        if (!paused) {
+        if (!paused) { // 설정된 키(기본값: P)가 눌렸을 때 일시정지
             paused = true;
             engine.stopAutoDrop();
             showPauseWindow();
@@ -146,7 +149,8 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
 
     @Override
     public void onEscPressed() {
-        // ESC 키 처리 (필요시 구현)
+        // 수정: ESC 키 처리 (필요시 구현)
+        // 설정된 키(기본값: ESCAPE)가 눌렸을 때의 동작
     }
     // ========== KeyInputCallback 구현 끝 ==========
 
@@ -296,6 +300,8 @@ public class GameScene implements GameStateListener, KeyInputHandler.KeyInputCal
 
         Scene ds = new Scene(box);
         ds.setOnKeyPressed(ev -> {
+            // 주의: 일시정지 창에서는 여전히 하드코딩된 키 사용 (UP, DOWN, ENTER)
+            // 이 부분은 일시정지 창 전용 키 처리로 메인 게임과 별개
             if (ev.getCode() == KeyCode.UP || ev.getCode() == KeyCode.DOWN) {
                 // toggle selection
                 boolean selectResume = resume.getStyle().contains("-fx-font-weight: bold");
