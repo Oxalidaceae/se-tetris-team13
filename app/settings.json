@@ -1,1 +1,11 @@
-{"colorBlindMode":false,"windowSize":"LARGE","keyLeft":"A","keyRight":"D","keyDown":"S","keyRotate":"W","keyDrop":"X","pause":"P","exit":"ESC"}
+{
+  "colorBlindMode": false,
+  "windowSize": "LARGE",
+  "keyLeft": "A",
+  "keyRight": "D",
+  "keyDown": "S",
+  "keyRotate": "J",
+  "keyDrop": "K",
+  "pause": "P",
+  "exit": "ESCAPE"
+}

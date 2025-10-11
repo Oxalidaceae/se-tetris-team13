@@ -26,18 +26,21 @@ public class GameOverScene {
         nameField.setPromptText("Enter your name");
 
         Button saveBtn = new Button("Save Score");
-        //saveBtn.setOnAction(e -> {
-        //    String name = nameField.getText().trim();
-        //    if (!name.isEmpty()) {
-        //        ScoreRepository.addScore(name, finalScore);
-        //        manager.showScoreboard(settings);
-        //    }
-        //});
+        saveBtn.setOnAction(e -> {
+            String name = nameField.getText().trim();
+            if (!name.isEmpty()) {
+                // TODO: ScoreRepository.addScore(name, finalScore);
+                manager.showScoreboard(settings);
+            }
+        });
 
-        VBox layout = new VBox(15, title, scoreLabel, nameField, saveBtn);
+        Button backToMenuBtn = new Button("Back to Menu");
+        backToMenuBtn.setOnAction(e -> manager.showMainMenu(settings));
+
+        VBox layout = new VBox(15, title, scoreLabel, nameField, saveBtn, backToMenuBtn);
         layout.setStyle("-fx-alignment: center;");
         Scene scene = new Scene(layout, 600, 700);
-        
+
         return scene;
     }
 }
