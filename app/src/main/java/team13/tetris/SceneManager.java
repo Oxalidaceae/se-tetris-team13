@@ -7,6 +7,7 @@ import team13.tetris.game.controller.GameSceneController;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
+import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
 import team13.tetris.scenes.MainMenuScene;
@@ -50,7 +51,7 @@ public class SceneManager {
         KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
         
         // Create GameScene (View) and GameSceneController
-        GameScene gameScene = new GameScene(settings, engine);
+        GameScene gameScene = new GameScene(this,settings, engine);
         GameSceneController gameController = new GameSceneController(gameScene, settings, keyInputHandler);
         gameController.setEngine(engine);
         
@@ -63,6 +64,11 @@ public class SceneManager {
         engine.startNewGame();
 
         gameScene.requestFocus();
+    }
+
+    // 게임 오버 씬으로 전환
+    public void showGameOver(Settings settings, int finalScore) {
+        changeScene(new GameOverScene(this, settings, finalScore).getScene());
     }
 
     // 키 설정 씬으로 전환
