@@ -3,6 +3,7 @@ package team13.tetris;
 import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
 import team13.tetris.game.controller.CompositeGameStateListener;
+import team13.tetris.game.controller.GameSceneController;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
@@ -48,10 +49,17 @@ public class SceneManager {
         GameEngine engine = new GameEngine(board, composite);
         KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
         
-        GameScene gameScene = new GameScene(this, settings, engine, keyInputHandler);
-        composite.add(gameScene);
+        // Create GameScene (View) and GameSceneController
+        GameScene gameScene = new GameScene(settings, engine);
+        GameSceneController gameController = new GameSceneController(gameScene, settings, keyInputHandler);
+        gameController.setEngine(engine);
+        
+        // Register the controller as game state listener
+        composite.add(gameController);
 
-        stage.setScene(gameScene.createScene());
+        Scene scene = gameScene.createScene();
+        gameController.attachToScene(scene);
+        stage.setScene(scene);
         engine.startNewGame();
 
         gameScene.requestFocus();

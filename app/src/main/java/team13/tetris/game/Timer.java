@@ -90,4 +90,30 @@ public class Timer {
     public int getSpeedLevel() {
         return (int) speedFactor;
     }
+    
+    /**
+     * Calculate score for block drop based on distance and current speed
+     * @param dropDistance Number of cells the block dropped
+     * @return Points earned (10 points per cell * speed factor)
+     */
+    public int calculateDropScore(int dropDistance) {
+        return (int) (10 * dropDistance * speedFactor);
+    }
+    
+    /**
+     * Calculate score for soft drop (player manually drops one cell)
+     * @return Points earned for one cell soft drop
+     */
+    public int getSoftDropScore() {
+        return calculateDropScore(1);
+    }
+    
+    /**
+     * Calculate score for hard drop based on distance
+     * @param hardDropDistance Number of cells dropped in hard drop
+     * @return Points earned for hard drop
+     */
+    public int getHardDropScore(int hardDropDistance) {
+        return calculateDropScore(hardDropDistance);
+    }
 }
