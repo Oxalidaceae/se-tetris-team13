@@ -2,40 +2,51 @@ package team13.tetris;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-
 import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
-import team13.tetris.game.logic.GameEngine;
-import team13.tetris.game.model.Board;
-import team13.tetris.game.controller.CompositeGameStateListener;
-import team13.tetris.input.KeyInputHandler;
-import team13.tetris.scenes.GameScene;
 
-public class App extends Application {
-	@Override
-	public void start(Stage primaryStage) {
-		Board board = new Board(10, 20);
-		CompositeGameStateListener composite = new CompositeGameStateListener();
-		// 터미널에 보드 상태를 출력하지 않도록 콘솔 리스너는 추가하지 않습니다.
-		GameEngine engine = new GameEngine(board, composite);
-		engine.startNewGame();
+public class App extends Application{
 
-		// settings.json 파일에서 설정 로드
-		Settings settings = SettingsRepository.load();
-		KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
+    private SceneManager manager;
+    private Settings settings;
 
-		GameScene gs = new GameScene(engine, keyInputHandler);
-		composite.add(gs);
+    @Override
+    public void start(Stage primaryStage) {
 
-		primaryStage.setTitle("SE-Tetris - Test Scene");
-		primaryStage.setScene(gs.createScene());
-		primaryStage.show();
+        // 설정 불러오기 및 적용
+        settings = SettingsRepository.load();
+        manager = new SceneManager(primaryStage);
+        manager.showMainMenu(settings);
 
-		// ensure key input goes to the scene
-		gs.requestFocus();
-	}
+        // 색맹 모드 적용
+        manager.setColorBlindMode(settings.isColorBlindMode());
 
-	public static void main(String[] args) {
-		launch(args);
-	}
+        // 창 크기 적용
+        switch (settings.getWindowSize()) {
+            case "SMALL" -> manager.setWindowSize(400, 500);
+            case "LARGE" -> manager.setWindowSize(800, 900);
+            default -> manager.setWindowSize(600, 700);
+        }
+
+        primaryStage.setTitle("Tetris");
+        primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> {
+            settings.setColorBlindMode(manager.isColorBlindMode());
+            settings.setWindowSize(getCurrentWindowSize(primaryStage));
+            SettingsRepository.save(settings);
+        });
+    }
+
+    // 현재 창 크기에 따른 설정 문자열 반환(OS별로 약간의 픽셀 차이 존재 가능 -> 범위로 판단)
+    private String getCurrentWindowSize(Stage stage) {
+        double width = stage.getWidth();
+        if (width <= 450) return "SMALL";
+        else if (width >= 750) return "LARGE";
+        else return "MEDIUM";
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

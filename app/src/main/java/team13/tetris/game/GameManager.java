@@ -161,6 +161,36 @@ public class GameManager {
         System.out.println(lines + " lines cleared! Points: " + points + " (Speed Level: " + gameTimer.getSpeedLevel() + ")");
     }
     
+    /**
+     * Add points for soft drop (player manually drops block one cell)
+     */
+    public void addSoftDropScore() {
+        int points = gameTimer.getSoftDropScore();
+        addScore(points);
+        // System.out.println("Soft drop! Points: " + points + " (Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x)");
+    }
+    
+    /**
+     * Add points for hard drop based on distance
+     * @param dropDistance Number of cells the block dropped
+     */
+    public void addHardDropScore(int dropDistance) {
+        int points = gameTimer.getHardDropScore(dropDistance);
+        addScore(points);
+        System.out.println("Hard drop! Distance: " + dropDistance + " cells, Points: " + points + " (Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x)");
+    }
+    
+    /**
+     * Add points for automatic drop (when block falls naturally)
+     * @param dropDistance Number of cells the block dropped automatically
+     */
+    public void addAutoDropScore(int dropDistance) {
+        int points = gameTimer.calculateDropScore(dropDistance);
+        addScore(points);
+        // Uncomment below for debugging automatic drops
+        // System.out.println("Auto drop! Distance: " + dropDistance + " cells, Points: " + points);
+    }
+    
     // Getters
     public GameState getState() { return state; }
     public int getCurrentScore() { return currentScore; }

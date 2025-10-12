@@ -3,6 +3,7 @@ package team13.tetris.game.logic;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
+import team13.tetris.game.Timer;
 
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,6 +23,7 @@ public class GameEngine {
     private int px, py;
     private final Random rnd = new Random();
     private int score = 0;
+    private final Timer gameTimer; // 점수 계산을 위한 타이머
 
     // 자동 하강 간격(초) - 설정 가능
     private volatile double dropIntervalSeconds = 1.0;
@@ -34,6 +36,7 @@ public class GameEngine {
     public GameEngine(Board board, GameStateListener listener) {
         this.board = board;
         this.listener = listener;
+        this.gameTimer = new Timer(); // 점수 계산용 타이머 초기화
     }
 
     public void startNewGame() {
@@ -183,6 +186,8 @@ public class GameEngine {
         if (current == null) return false;
         if (board.fits(current.getShape(), px, py + 1)) {
             py++;
+            // 소프트 드롭 점수 추가 (한 칸 하강)
+            addDropScore(1);
             listener.onBoardUpdated(board);
             return true;
         } else {
@@ -201,7 +206,15 @@ public class GameEngine {
 
     public void hardDrop() {
         if (current == null) return;
+        int startY = py; // 시작 위치 기록
         while (board.fits(current.getShape(), px, py + 1)) py++;
+        int dropDistance = py - startY; // 떨어진 거리 계산
+        
+        // 하드 드롭 점수 추가 (거리 > 0일 때만)
+        if (dropDistance > 0) {
+            addHardDropScore(dropDistance);
+        }
+        
         board.placePiece(current.getShape(), px, py, current.getId());
         int cleared = board.clearLinesAndReturnCount();
         if (cleared > 0) listener.onLinesCleared(cleared);
@@ -223,6 +236,53 @@ public class GameEngine {
             case 3: score += 500; break;
             case 4: score += 1000; break;
             default: if (cleared > 4) score += 1000 + (cleared - 4) * 250; break; // graceful handling
+        }
+    }
+
+    /**
+     * 블록 하강에 따른 점수 추가 (10점 × 거리 × 속도 계수)
+     * @param dropDistance 하강한 칸 수
+     */
+    public void addDropScore(int dropDistance) {
+        int dropPoints = gameTimer.calculateDropScore(dropDistance);
+        score += dropPoints;
+        listener.onScoreChanged(score);
+        // 소프트 드롭과 자동 드롭은 너무 빈번하므로 로그 비활성화
+        // System.out.println("Drop score: " + dropPoints + " (Distance: " + dropDistance + ", Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x)");
+    }
+
+    /**
+     * 하드 드롭에 따른 점수 추가
+     * @param dropDistance 하강한 칸 수
+     */
+    public void addHardDropScore(int dropDistance) {
+        int dropPoints = gameTimer.getHardDropScore(dropDistance);
+        score += dropPoints;
+        listener.onScoreChanged(score);
+    }
+
+    /**
+     * 게임 타이머 접근자 (속도 조정용)
+     * @return 게임 타이머 인스턴스
+     */
+    public Timer getGameTimer() {
+        return gameTimer;
+    }
+
+    /**
+     * 라인 클리어 시 게임 속도 증가 (10줄마다)
+     * Timer의 속도와 GameEngine의 드롭 간격을 동기화합니다.
+     * @param clearedLines 이번에 클리어된 라인 수
+     * @param totalLinesCleared 총 클리어된 라인 수
+     */
+    public void updateSpeedForLinesCleared(int clearedLines, int totalLinesCleared) {
+        // 10줄마다 속도 증가
+        int newSpeedLevel = totalLinesCleared / 10;
+        if (newSpeedLevel > (totalLinesCleared - clearedLines) / 10) {
+            gameTimer.increaseSpeed();
+            // Timer의 새로운 속도로 드롭 간격 업데이트
+            double newInterval = gameTimer.getInterval() / 1000.0; // milliseconds to seconds
+            setDropIntervalSeconds(newInterval);
         }
     }
 

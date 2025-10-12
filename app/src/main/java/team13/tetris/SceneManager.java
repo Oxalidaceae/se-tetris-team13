@@ -2,6 +2,12 @@ package team13.tetris;
 
 import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
+import team13.tetris.game.controller.CompositeGameStateListener;
+import team13.tetris.game.controller.GameSceneController;
+import team13.tetris.game.logic.GameEngine;
+import team13.tetris.game.model.Board;
+import team13.tetris.input.KeyInputHandler;
+import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
 import team13.tetris.scenes.MainMenuScene;
@@ -39,25 +45,30 @@ public class SceneManager {
 
     // 게임 씬으로 전환
     public void showGame(Settings settings) {
-        // Board와 KeyInputHandler 생성
-        team13.tetris.game.model.Board board = new team13.tetris.game.model.Board(10, 20);
-        team13.tetris.input.KeyInputHandler keyInputHandler = new team13.tetris.input.KeyInputHandler(settings);
+        Board board = new Board(10, 20);
+        CompositeGameStateListener composite = new CompositeGameStateListener();
+        GameEngine engine = new GameEngine(board, composite);
+        KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
+        
+        // Create GameScene (View) and GameSceneController
+        GameScene gameScene = new GameScene(this,settings, engine);
+        GameSceneController gameController = new GameSceneController(gameScene, settings, keyInputHandler);
+        gameController.setEngine(engine);
+        
+        // Register the controller as game state listener
+        composite.add(gameController);
 
-        // GameScene을 먼저 생성 (GameEngine은 null로 시작)
-        GameScene gameScene = new GameScene(null, keyInputHandler);
+        Scene scene = gameScene.createScene();
+        gameController.attachToScene(scene);
+        stage.setScene(scene);
+        engine.startNewGame();
 
-        // GameEngine을 생성하고 GameScene을 listener로 등록
-        team13.tetris.game.logic.GameEngine gameEngine = new team13.tetris.game.logic.GameEngine(board, gameScene);
-
-        // GameScene에 GameEngine 설정
-        gameScene.setEngine(gameEngine);
-
-        // Scene 생성 및 전환
-        changeScene(gameScene.createScene());
         gameScene.requestFocus();
+    }
 
-        // 게임 시작
-        gameEngine.startNewGame();
+    // 게임 오버 씬으로 전환
+    public void showGameOver(Settings settings, int finalScore) {
+        changeScene(new GameOverScene(this, settings, finalScore).getScene());
     }
 
     // 키 설정 씬으로 전환
