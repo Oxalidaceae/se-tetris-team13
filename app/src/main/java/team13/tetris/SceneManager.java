@@ -60,7 +60,7 @@ public class SceneManager {
 
         Scene scene = gameScene.createScene();
         gameController.attachToScene(scene);
-        stage.setScene(scene);
+        changeScene(scene);  // CSS를 적용하기 위해 changeScene() 사용
         engine.startNewGame();
 
         gameScene.requestFocus();

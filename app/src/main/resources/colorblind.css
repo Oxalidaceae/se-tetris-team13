@@ -1,59 +1,120 @@
-/* 색맹(색각이상) 모드용 CSS */
-/* 명도와 패턴을 강조하여 구분성을 높임 */
+/* ================================
+   색맹(색각이상) 모드용 CSS
+   - Paul Tol의 색맹 안전 팔레트 사용
+   - 명도와 채도 차이로 구분 가능
+   ================================ */
 
-/* 전체 레이아웃 */
 .root {
-    -fx-background-color: #222222; /* 더 밝은 블랙 */
+    -fx-background-color: #1a1a1a;
     -fx-font-family: "Roboto", "Noto Sans", sans-serif;
-    -fx-text-fill: #F5F5F5; /* 밝은 회색 */
+    -fx-text-fill: #F5F5F5;
 }
 
-/* 기본 Label */
 .label {
     -fx-text-fill: #F5F5F5;
     -fx-font-size: 16px;
 }
 
-/* 타이틀 Label */
 .label-title {
     -fx-text-fill: #F5F5F5;
     -fx-font-size: 28px;
     -fx-font-weight: bold;
     -fx-padding: 20 0 20 0;
-    -fx-effect: dropshadow(gaussian, #000000, 2, 0.5, 0, 1); /* 그림자 효과로 가독성 향상 */
 }
 
-/* 버튼 기본 */
 .button {
     -fx-background-color: linear-gradient(to bottom, #F5F5F5 60%, #BDBDBD 100%);
     -fx-text-fill: #222222;
-    -fx-border-color: #222222;
+    -fx-border-color: #F5F5F5;
     -fx-border-width: 2;
+    -fx-border-style: segments(6, 3) line-cap round; /* 점선 패턴으로 상태 인지 도움 */
     -fx-font-size: 16px;
     -fx-padding: 8 16;
     -fx-cursor: hand;
     -fx-background-radius: 0;
-    -fx-border-style: dashed; /* 패턴 강조 */
 }
 
-/* 버튼 hover 효과 */
 .button:hover {
-    -fx-background-color: #FFD600; /* 노란색: 색각이상자에게도 잘 보임 */
-    -fx-text-fill: #222222;
-    -fx-border-color: #222222;
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF 60%, #D9D9D9 100%);
+    -fx-text-fill: #1A1A1A;
+    -fx-border-color: #FFFFFF;
+    -fx-border-width: 3;
 }
 
-/* 버튼 포커스 효과 */
 .button:focused {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
-    -fx-border-color: white;
+    -fx-background-color: #0072B2;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #FFFFFF;
     -fx-border-width: 2px;
 }
 
-/* 버튼 눌렀을 때 */
 .button:pressed {
-    -fx-background-color: #00B8D4; /* 청록색: 색각이상자에게도 잘 보임 */
-    -fx-text-fill: #222222;
-    -fx-border-color: #222222;
+    -fx-background-color: #00B8D4;
+    -fx-text-fill: #1A1A1A;
+    -fx-border-color: #FFFFFF;
 }
+
+/* ================================
+   일시정지 다이얼로그
+   ================================ */
+.pause-box {
+    -fx-background-color: rgba(20,20,20,0.9);
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255,255,255,0.25);
+    -fx-border-radius: 6;
+}
+
+.pause-option {
+    -fx-text-fill: #F5F5F5;
+    -fx-font-size: 16px;
+    -fx-padding: 6 10;
+}
+
+.pause-option.selected {
+    -fx-text-fill: #56B4E9;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 4, 0.5, 0, 1);
+}
+
+.pause-option.disabled {
+    -fx-text-fill: #777777;
+}
+
+/* ================================
+   게임 보드 셀 스타일
+   ================================ */
+.cell {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-min-width: 20px;
+    -fx-min-height: 16px;
+}
+
+.cell-empty {
+    -fx-text-fill: rgba(255,255,255,0.15);
+}
+
+.cell-border {
+    -fx-text-fill: rgba(255,255,255,0.75);
+}
+
+.score-label {
+    -fx-text-fill: white;
+}
+
+/* ================================
+   블록 색상 (Paul Tol 색맹 안전 팔레트)
+   명도: 밝음(90%) → 중간(60%) → 어두움(30%)
+   채도: 높음 → 중간 → 낮음
+   ================================ */
+.tetris-i-text { -fx-text-fill: #56B4E9 !important; } /* I - 밝은 스카이 블루 (명도 90%, 채도 높음) */
+.tetris-o-text { -fx-text-fill: #F0E442 !important; } /* O - 밝은 노랑 (명도 95%, 채도 높음) */
+.tetris-t-text { -fx-text-fill: #CC79A7 !important; } /* T - 로즈 핑크 (명도 70%, 채도 중간) */
+.tetris-s-text { -fx-text-fill: #009E73 !important; } /* S - 청록 그린 (명도 60%, 채도 높음) */
+.tetris-z-text { -fx-text-fill: #E69F00 !important; } /* Z - 진한 오렌지 (명도 75%, 채도 높음) */
+.tetris-j-text { -fx-text-fill: #0072B2 !important; } /* J - 진한 블루 (명도 50%, 채도 높음) */
+.tetris-l-text { -fx-text-fill: #D55E00 !important; } /* L - 버밀리온 (명도 65%, 채도 높음) */
