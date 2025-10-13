@@ -25,7 +25,7 @@ private final ScoreBoard scoreBoard;
         Label title = new Label("Scoreboard");
         title.getStyleClass().add("label-title");
 
-        // 점수 리스트 (임시 더미 데이터)
+        // 점수 리스트
         ListView<String> scoreList = new ListView<>();
         scoreBoard.getScores().forEach(entry ->
             scoreList.getItems().add(String.format("%s : %d", entry.getName(), entry.getScore()))
