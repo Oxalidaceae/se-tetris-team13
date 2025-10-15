@@ -36,6 +36,7 @@ public class GameScene {
         this.difficulty = difficulty;
 
         root = new HBox(12);
+        root.getStyleClass().add("game-root");
 
         Board board = engine.getBoard();
         int w = board.getWidth();
@@ -43,7 +44,7 @@ public class GameScene {
 
         // 메인보드 생성
         boardGrid = new GridPane();
-        boardGrid.setStyle("-fx-background-color: black; -fx-padding: 6;");
+        boardGrid.getStyleClass().add("board-grid");
 
         // 테두리 포함 (w+2)x(h+2) 그리드
         for (int gy = 0; gy < h + 2; gy++) {
@@ -52,8 +53,7 @@ public class GameScene {
                 // border cells
                 if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
                     cell.setText("X");
-                    cell.setStyle(
-                            "-fx-background-color: black; -fx-text-fill: white; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+                    applyCellBorder(cell); // CSS 클래스 적용
                 }
                 boardGrid.add(cell, gx, gy);
             }
@@ -61,7 +61,7 @@ public class GameScene {
 
         // 미리보기 영역
         previewGrid = new GridPane();
-        previewGrid.setStyle("-fx-background-color: black; -fx-padding: 6;");
+        previewGrid.getStyleClass().add("preview-grid");
         for (int r = 0; r < 4; r++)
             for (int c = 0; c < 4; c++)
                 previewGrid.add(makeCellLabel(), c, r);
@@ -69,9 +69,11 @@ public class GameScene {
         // 점수 레이블
         scoreLabel = new Label("Score:\n0");
         scoreLabel.setFont(Font.font("Monospaced", 14));
-        scoreLabel.setStyle("-fx-text-fill: darkred; -fx-padding: 8;");
+        scoreLabel.getStyleClass().add("score-label");
 
         VBox right = new VBox(8, previewGrid, scoreLabel);
+        right.getStyleClass().add("right-panel");
+
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
         root.getChildren().addAll(boardGrid, right);
 
@@ -85,12 +87,11 @@ public class GameScene {
         lbl.setMinSize(20, 16);
         lbl.setPrefSize(20, 16);
         lbl.setAlignment(Pos.CENTER);
-        lbl.setStyle(
-                "-fx-background-color: black; -fx-text-fill: white; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+        lbl.getStyleClass().add("cell");
         return lbl;
     }
 
-    // Scene  생성
+    // Scene 생성
     public Scene createScene() {
         this.scene = new Scene(root);
         return scene;
@@ -112,44 +113,39 @@ public class GameScene {
         });
     }
 
-    // 게임 상태에 따라 그리드 업데이트 (Controller에서 호출)
     public void updateGrid() {
         if (engine == null)
-            return; // null 체크 추가
+            return;
 
         Board b = engine.getBoard();
         int w = b.getWidth();
         int h = b.getHeight();
 
         Platform.runLater(() -> {
-            // 보드 그리드 업데이트
+            // 1) 고정된 보드 타일
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     int val = b.getCell(x, y);
                     Label cell = (Label) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
                     if (val == 0) {
                         cell.setText(" ");
-                        cell.setStyle(
-                                "-fx-background-color: black; -fx-text-fill: white; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
-                    } 
-                    else {
+                        applyCellEmpty(cell);
+                    } else {
                         Tetromino.Kind kind = Tetromino.kindForId(val);
-                        String color = (kind != null) ? kind.getColorCss() : "white";
+                        String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
                         cell.setText("O");
-                        // show colored character on black background (no grid lines)
-                        cell.setStyle("-fx-background-color: black; -fx-text-fill: " + color
-                                + "; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+                        applyCellBlockText(cell, textClass);
                     }
                 }
             }
 
-            // 현재 블록
+            // 2) 현재 조각 오버레이
             Tetromino cur = engine.getCurrent();
             if (cur != null) {
                 int[][] shape = cur.getShape();
                 int px = engine.getPieceX();
                 int py = engine.getPieceY();
-                String color = cur.getColorCss();
+                String textClass = cur.getTextStyleClass();
                 for (int r = 0; r < shape.length; r++) {
                     for (int c = 0; c < shape[r].length; c++) {
                         if (shape[r][c] != 0) {
@@ -158,37 +154,35 @@ public class GameScene {
                             if (x >= 0 && x < w && y >= 0 && y < h) {
                                 Label cell = (Label) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
                                 cell.setText("O");
-                                cell.setStyle("-fx-background-color: black; -fx-text-fill: " + color
-                                        + "; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+                                applyCellBlockText(cell, textClass);
                             }
                         }
                     }
                 }
             }
 
-            // 다음 블록 미리보기
-            for (int r = 0; r < 4; r++){
+            // 3) 다음 블록 미리보기
+            for (int r = 0; r < 4; r++) {
                 for (int c = 0; c < 4; c++) {
                     Label cell = (Label) getNodeByRowColumnIndex(r, c, previewGrid);
                     cell.setText(" ");
-                    cell.setStyle("-fx-background-color: black; -fx-text-fill: white; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+                    applyCellEmpty(cell);
                 }
             }
 
             Tetromino next = engine.getNext();
             if (next != null) {
                 int[][] s = next.getShape();
-                String color = next.getColorCss();
-        
-                for (int r = 0; r < s.length && r < 4; r++)
+                String textClass = next.getTextStyleClass();
+                for (int r = 0; r < s.length && r < 4; r++) {
                     for (int c = 0; c < s[r].length && c < 4; c++) {
                         if (s[r][c] != 0) {
                             Label cell = (Label) getNodeByRowColumnIndex(r, c, previewGrid);
                             cell.setText("O");
-                            cell.setStyle("-fx-background-color: black; -fx-text-fill: " + color
-                                    + "; -fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;");
+                            applyCellBlockText(cell, textClass);
                         }
                     }
+                }
             }
 
             scoreLabel.setText("Score:\n" + engine.getScore());
@@ -212,5 +206,28 @@ public class GameScene {
     public void showGameOver() {
         Platform.runLater(() -> scoreLabel.setText("GAME OVER\n" + engine.getScore()));
         manager.showGameOver(settings, engine.getScore(), difficulty);
+    }
+
+    // 스타일 헬퍼
+    private void applyCellEmpty(Label cell) {
+        var sc = cell.getStyleClass();
+        // 기존 블록/테두리 텍스트 클래스 제거
+        sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-border"));
+        if (!sc.contains("cell-empty"))
+            sc.add("cell-empty");
+    }
+
+    private void applyCellBorder(Label cell) {
+        var sc = cell.getStyleClass();
+        sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-empty"));
+        if (!sc.contains("cell-border"))
+            sc.add("cell-border");
+    }
+
+    private void applyCellBlockText(Label cell, String textClass) {
+        var sc = cell.getStyleClass();
+        sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-empty"));
+        if (!sc.contains(textClass))
+            sc.add(textClass);
     }
 }
