@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
+import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
@@ -20,6 +21,7 @@ public class GameScene {
     private final SceneManager manager;
     private final Settings settings;
     private GameEngine engine;
+    private final ScoreBoard.ScoreEntry.Mode difficulty;
 
     private final HBox root;
     private Scene scene;
@@ -27,10 +29,11 @@ public class GameScene {
     private final GridPane previewGrid;
     private final Label scoreLabel;
 
-    public GameScene(SceneManager manager, Settings settings, GameEngine engine) {
+    public GameScene(SceneManager manager, Settings settings, GameEngine engine, ScoreBoard.ScoreEntry.Mode difficulty) {
         this.manager = manager;
         this.settings = settings;
         this.engine = engine;
+        this.difficulty = difficulty;
 
         root = new HBox(12);
         root.getStyleClass().add("game-root");
@@ -202,7 +205,7 @@ public class GameScene {
     // 게임 오버 표시 (Controller에서 호출)
     public void showGameOver() {
         Platform.runLater(() -> scoreLabel.setText("GAME OVER\n" + engine.getScore()));
-        manager.showGameOver(settings, engine.getScore());
+        manager.showGameOver(settings, engine.getScore(), difficulty);
     }
 
     // 스타일 헬퍼

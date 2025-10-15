@@ -25,10 +25,11 @@ private final ScoreBoard scoreBoard;
         Label title = new Label("Scoreboard");
         title.getStyleClass().add("label-title");
 
-        // 점수 리스트
+        // 점수 리스트 (일반 게임 모드만: EASY, NORMAL, HARD)
         ListView<String> scoreList = new ListView<>();
-        scoreBoard.getScores().forEach(entry ->
-            scoreList.getItems().add(String.format("%s : %d", entry.getName(), entry.getScore()))
+        scoreBoard.getNormalGameScores().forEach(entry ->
+            scoreList.getItems().add(String.format("[%s] %s : %d", 
+                entry.getMode().name(), entry.getName(), entry.getScore()))
         );
         scoreList.setMaxHeight(250);
 

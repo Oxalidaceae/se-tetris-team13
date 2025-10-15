@@ -1,4 +1,1 @@
-Alice,12000
-Bob,9500
-kim,1010
-
+sss,12345,NORMAL

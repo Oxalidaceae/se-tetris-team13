@@ -1,5 +1,6 @@
 package team13.tetris.game.logic;
 
+import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
@@ -24,6 +25,7 @@ public class GameEngine {
     private final Random rnd = new Random();
     private int score = 0;
     private final Timer gameTimer; // 점수 계산을 위한 타이머
+    private final ScoreBoard.ScoreEntry.Mode difficulty; // 난이도 정보
 
     // 자동 하강 간격(초) - 설정 가능
     private volatile double dropIntervalSeconds = 1.0;
@@ -34,8 +36,13 @@ public class GameEngine {
     private ScheduledFuture<?> autoDropFuture;
 
     public GameEngine(Board board, GameStateListener listener) {
+        this(board, listener, ScoreBoard.ScoreEntry.Mode.NORMAL);
+    }
+
+    public GameEngine(Board board, GameStateListener listener, ScoreBoard.ScoreEntry.Mode difficulty) {
         this.board = board;
         this.listener = listener;
+        this.difficulty = difficulty;
         this.gameTimer = new Timer(); // 점수 계산용 타이머 초기화
     }
 
@@ -50,17 +57,70 @@ public class GameEngine {
         startAutoDrop();
     }
 
+    /**
+     * Roulette Wheel Selection을 사용하여 난이도별 가중치로 블록을 선택합니다.
+     * EASY: I블록 12, 나머지 10 (I블록이 20% 더 자주)
+     * NORMAL: 모두 10 (균등 분포)
+     * HARD: I블록 8, 나머지 10 (I블록이 20% 덜 자주)
+     */
     private Tetromino randomPiece() {
-        // Use full 7-piece set from Tetromino.Kind
-        int choice = rnd.nextInt(7);
-        switch (choice) {
+        // 난이도별 가중치 배열 [I, O, T, S, Z, J, L]
+        int[] weights = getWeightsByDifficulty();
+        
+        // 총 가중치 계산
+        int totalWeight = 0;
+        for (int weight : weights) {
+            totalWeight += weight;
+        }
+        
+        // Roulette Wheel Selection
+        int randomValue = rnd.nextInt(totalWeight);
+        int cumulativeWeight = 0;
+        
+        for (int i = 0; i < weights.length; i++) {
+            cumulativeWeight += weights[i];
+            if (randomValue < cumulativeWeight) {
+                return getPieceByIndex(i);
+            }
+        }
+        
+        // Fallback (should never reach here)
+        return Tetromino.of(Tetromino.Kind.I);
+    }
+    
+    /**
+     * 난이도에 따른 블록 가중치 배열 반환
+     * @return [I, O, T, S, Z, J, L] 순서의 가중치 배열
+     */
+    private int[] getWeightsByDifficulty() {
+        switch (difficulty) {
+            case EASY:
+                // I블록 12, 나머지 10 (I블록이 20% 더 자주 등장)
+                return new int[]{12, 10, 10, 10, 10, 10, 10};
+            case HARD:
+                // I블록 8, 나머지 10 (I블록이 20% 덜 등장)
+                return new int[]{8, 10, 10, 10, 10, 10, 10};
+            case NORMAL:
+            default:
+                // 모두 동일 가중치
+                return new int[]{10, 10, 10, 10, 10, 10, 10};
+        }
+    }
+    
+    /**
+     * 인덱스에 해당하는 Tetromino 반환
+     * @param index 0:I, 1:O, 2:T, 3:S, 4:Z, 5:J, 6:L
+     */
+    private Tetromino getPieceByIndex(int index) {
+        switch (index) {
             case 0: return Tetromino.of(Tetromino.Kind.I);
             case 1: return Tetromino.of(Tetromino.Kind.O);
             case 2: return Tetromino.of(Tetromino.Kind.T);
             case 3: return Tetromino.of(Tetromino.Kind.S);
             case 4: return Tetromino.of(Tetromino.Kind.Z);
             case 5: return Tetromino.of(Tetromino.Kind.J);
-            default: return Tetromino.of(Tetromino.Kind.L);
+            case 6: return Tetromino.of(Tetromino.Kind.L);
+            default: return Tetromino.of(Tetromino.Kind.I);
         }
     }
 
@@ -272,6 +332,10 @@ public class GameEngine {
     /**
      * 라인 클리어 시 게임 속도 증가 (10줄마다)
      * Timer의 속도와 GameEngine의 드롭 간격을 동기화합니다.
+     * 난이도에 따라 속도 증가율이 달라집니다:
+     * - EASY: 20% 덜 증가 (0.8배)
+     * - NORMAL: 기본 증가 (1.0배)
+     * - HARD: 20% 더 증가 (1.2배)
      * @param clearedLines 이번에 클리어된 라인 수
      * @param totalLinesCleared 총 클리어된 라인 수
      */
@@ -279,10 +343,28 @@ public class GameEngine {
         // 10줄마다 속도 증가
         int newSpeedLevel = totalLinesCleared / 10;
         if (newSpeedLevel > (totalLinesCleared - clearedLines) / 10) {
-            gameTimer.increaseSpeed();
+            // 난이도에 따른 속도 증가 배율 적용
+            double speedMultiplier = getSpeedIncreaseMultiplier();
+            gameTimer.increaseSpeed(speedMultiplier);
             // Timer의 새로운 속도로 드롭 간격 업데이트
             double newInterval = gameTimer.getInterval() / 1000.0; // milliseconds to seconds
             setDropIntervalSeconds(newInterval);
+        }
+    }
+    
+    /**
+     * 난이도에 따른 속도 증가 배율을 반환합니다.
+     * @return EASY: 0.8, NORMAL: 1.0, HARD: 1.2
+     */
+    private double getSpeedIncreaseMultiplier() {
+        switch (difficulty) {
+            case EASY:
+                return 0.8;  // 20% 덜 증가
+            case HARD:
+                return 1.2;  // 20% 더 증가
+            case NORMAL:
+            default:
+                return 1.0;  // 기본 증가율
         }
     }
 
@@ -293,4 +375,12 @@ public class GameEngine {
     public Tetromino getCurrent() { return current; }
     public int getPieceX() { return px; }
     public int getPieceY() { return py; }
+    
+    /**
+     * 테스트용: 난이도 기반 랜덤 피스를 생성합니다.
+     * 이 메서드는 Roulette Wheel Selection 알고리즘을 테스트하기 위해 사용됩니다.
+     */
+    public Tetromino generateTestPiece() {
+        return randomPiece();
+    }
 }

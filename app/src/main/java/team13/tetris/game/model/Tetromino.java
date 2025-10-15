@@ -174,6 +174,13 @@ public class Tetromino {
     public static Tetromino of(Kind k) {
         return new Tetromino(k, 0);
     }
+    
+    /**
+     * 이 테트로미노의 Kind를 반환합니다. raw shape로 생성된 경우 null을 반환할 수 있습니다.
+     */
+    public Kind getKind() {
+        return kind;
+    }
 
     /** 뷰(노드)가 붙일 블록용 CSS 클래스명 (예: "block-L") */
     public String getBlockStyleClass() {

@@ -121,7 +121,7 @@ public class GameManager {
     
     /** Handles game over - adds score and shows leaderboard */
     public void handleGameOver() {
-        scoreBoard.addScore("Player", currentScore);
+        scoreBoard.addScore("Player", currentScore, ScoreBoard.ScoreEntry.Mode.NORMAL);
         System.out.println("Game Over! Final Score: " + currentScore);
         System.out.println("\n=== High Scores ===");
         scoreBoard.getScores().stream()

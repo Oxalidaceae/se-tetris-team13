@@ -50,6 +50,12 @@ application {
 tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
     useJUnitPlatform()
+    
+    // Show standard output and error during test execution
+    testLogging {
+        showStandardStreams = true
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
 }
 
 // 추가

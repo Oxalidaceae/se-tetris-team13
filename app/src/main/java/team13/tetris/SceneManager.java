@@ -2,11 +2,13 @@ package team13.tetris;
 
 import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
+import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.CompositeGameStateListener;
 import team13.tetris.game.controller.GameSceneController;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
+import team13.tetris.scenes.DifficultySelectionScene;
 import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
@@ -43,15 +45,20 @@ public class SceneManager {
         changeScene(new ScoreboardScene(this, settings).getScene());
     }
 
+    // 난이도 선택 씬으로 전환
+    public void showDifficultySelection(Settings settings) {
+        changeScene(new DifficultySelectionScene(this, settings).getScene());
+    }
+
     // 게임 씬으로 전환
-    public void showGame(Settings settings) {
+    public void showGame(Settings settings, ScoreBoard.ScoreEntry.Mode difficulty) {
         Board board = new Board(10, 20);
         CompositeGameStateListener composite = new CompositeGameStateListener();
-        GameEngine engine = new GameEngine(board, composite);
+        GameEngine engine = new GameEngine(board, composite, difficulty);
         KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
         
         // Create GameScene (View) and GameSceneController
-        GameScene gameScene = new GameScene(this,settings, engine);
+        GameScene gameScene = new GameScene(this, settings, engine, difficulty);
         GameSceneController gameController = new GameSceneController(gameScene, settings, keyInputHandler);
         gameController.setEngine(engine);
         
@@ -67,8 +74,8 @@ public class SceneManager {
     }
 
     // 게임 오버 씬으로 전환
-    public void showGameOver(Settings settings, int finalScore) {
-        changeScene(new GameOverScene(this, settings, finalScore).getScene());
+    public void showGameOver(Settings settings, int finalScore, ScoreBoard.ScoreEntry.Mode difficulty) {
+        changeScene(new GameOverScene(this, settings, finalScore, difficulty).getScene());
     }
 
     // 키 설정 씬으로 전환
