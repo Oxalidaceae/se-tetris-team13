@@ -132,6 +132,13 @@ public class Tetromino {
         if (kind != null) return kind.getColorCss();
         return "white";
     }
+    
+    /**
+     * 이 테트로미노의 Kind를 반환합니다. raw shape로 생성된 경우 null을 반환할 수 있습니다.
+     */
+    public Kind getKind() {
+        return kind;
+    }
 
     /**
      * id 값을 통해 Kind를 조회합니다. 찾지 못하면 null을 반환합니다.

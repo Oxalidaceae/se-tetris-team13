@@ -1,4 +1,2 @@
-Alice,12000
-Bob,9500
-kim,1010
-
+kkk,1340,NORMAL
+Player,500,NORMAL

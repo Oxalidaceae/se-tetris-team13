@@ -30,8 +30,16 @@ public class Timer {
      * Increases game speed by SPEED_INCREMENT, up to MAX_SPEED_FACTOR
      */
     public void increaseSpeed() {
+        increaseSpeed(1.0);
+    }
+    
+    /**
+     * Increases game speed by SPEED_INCREMENT * multiplier, up to MAX_SPEED_FACTOR
+     * @param multiplier Speed increase multiplier (e.g., 0.8 for 20% slower increase, 1.2 for 20% faster increase)
+     */
+    public void increaseSpeed(double multiplier) {
         if (speedFactor < MAX_SPEED_FACTOR) {
-            speedFactor += SPEED_INCREMENT;
+            speedFactor += SPEED_INCREMENT * multiplier;
         }
     }
     

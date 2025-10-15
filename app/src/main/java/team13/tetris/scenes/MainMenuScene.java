@@ -30,10 +30,10 @@ public class MainMenuScene {
         // 게임오버시 화면 전환 테스트용 버튼
         Button testGameOverBtn = new Button("Test Game Over");
         testGameOverBtn.setOnAction(e ->
-            manager.changeScene(new GameOverScene(manager, settings, 12345).getScene())
+            manager.changeScene(new GameOverScene(manager, settings, 12345, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.NORMAL).getScene())
         );
 
-        startBtn.setOnAction(e -> manager.showGame(settings));
+        startBtn.setOnAction(e -> manager.showDifficultySelection(settings));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
         exitBtn.setOnAction(e -> manager.exitWithSave(settings));
