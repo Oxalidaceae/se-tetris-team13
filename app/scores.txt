@@ -1,2 +1,1 @@
-kkk,1340,NORMAL
-Player,500,NORMAL
+sss,12345,NORMAL

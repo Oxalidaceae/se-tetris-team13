@@ -2,9 +2,12 @@ package team13.tetris.scenes;
 
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
+import team13.tetris.data.ScoreBoard;
 
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
@@ -12,10 +15,12 @@ import javafx.scene.layout.VBox;
 public class SettingsScene {
     private final SceneManager manager;
     private final Settings settings;
+    private final ScoreBoard scoreBoard;
 
     public SettingsScene(SceneManager manager, Settings settings) {
         this.manager = manager;
         this.settings = settings;
+        this.scoreBoard = new ScoreBoard();
     }
 
     public Scene getScene() {
@@ -65,7 +70,26 @@ public class SettingsScene {
         // 스코어보드 초기화
         Button resetBtn = new Button("Reset Scoreboard");
         resetBtn.setOnAction(e -> {
-            System.out.println("Scoreboard reset requested (TODO)");
+            // 확인 대화상자 표시
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Reset Scoreboard");
+            confirmAlert.setHeaderText("Are you sure you want to reset all scores?");
+            confirmAlert.setContentText("This action cannot be undone.");
+            
+            confirmAlert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    scoreBoard.resetScores();
+                    
+                    // 성공 메시지 표시
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("Scoreboard Reset");
+                    successAlert.setHeaderText(null);
+                    successAlert.setContentText("Scoreboard has been reset successfully!");
+                    successAlert.showAndWait();
+                    
+                    System.out.println("Scoreboard has been reset.");
+                }
+            });
         });
 
         // 기본 설정 복원
