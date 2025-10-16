@@ -111,3 +111,4 @@
 .tetris-z-text { -fx-text-fill: #FF0000 !important; } /* Z - 순수 빨강 */
 .tetris-j-text { -fx-text-fill: #4169E1 !important; } /* J - 로얄 블루 */
 .tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 오렌지 */
+.tetris-flash-text { -fx-text-fill: #FFFFFF !important; }

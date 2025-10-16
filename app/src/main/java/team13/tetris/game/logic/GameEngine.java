@@ -66,28 +66,28 @@ public class GameEngine {
     private Tetromino randomPiece() {
         // 난이도별 가중치 배열 [I, O, T, S, Z, J, L]
         int[] weights = getWeightsByDifficulty();
-        
+
         // 총 가중치 계산
         int totalWeight = 0;
         for (int weight : weights) {
             totalWeight += weight;
         }
-        
+
         // Roulette Wheel Selection
         int randomValue = rnd.nextInt(totalWeight);
         int cumulativeWeight = 0;
-        
+
         for (int i = 0; i < weights.length; i++) {
             cumulativeWeight += weights[i];
             if (randomValue < cumulativeWeight) {
                 return getPieceByIndex(i);
             }
         }
-        
+
         // Fallback (should never reach here)
         return Tetromino.of(Tetromino.Kind.I);
     }
-    
+
     /**
      * 난이도에 따른 블록 가중치 배열 반환
      * @return [I, O, T, S, Z, J, L] 순서의 가중치 배열
@@ -96,31 +96,39 @@ public class GameEngine {
         switch (difficulty) {
             case EASY:
                 // I블록 12, 나머지 10 (I블록이 20% 더 자주 등장)
-                return new int[]{12, 10, 10, 10, 10, 10, 10};
+                return new int[] { 12, 10, 10, 10, 10, 10, 10 };
             case HARD:
                 // I블록 8, 나머지 10 (I블록이 20% 덜 등장)
-                return new int[]{8, 10, 10, 10, 10, 10, 10};
+                return new int[] { 8, 10, 10, 10, 10, 10, 10 };
             case NORMAL:
             default:
                 // 모두 동일 가중치
-                return new int[]{10, 10, 10, 10, 10, 10, 10};
+                return new int[] { 10, 10, 10, 10, 10, 10, 10 };
         }
     }
-    
+
     /**
      * 인덱스에 해당하는 Tetromino 반환
      * @param index 0:I, 1:O, 2:T, 3:S, 4:Z, 5:J, 6:L
      */
     private Tetromino getPieceByIndex(int index) {
         switch (index) {
-            case 0: return Tetromino.of(Tetromino.Kind.I);
-            case 1: return Tetromino.of(Tetromino.Kind.O);
-            case 2: return Tetromino.of(Tetromino.Kind.T);
-            case 3: return Tetromino.of(Tetromino.Kind.S);
-            case 4: return Tetromino.of(Tetromino.Kind.Z);
-            case 5: return Tetromino.of(Tetromino.Kind.J);
-            case 6: return Tetromino.of(Tetromino.Kind.L);
-            default: return Tetromino.of(Tetromino.Kind.I);
+            case 0:
+                return Tetromino.of(Tetromino.Kind.I);
+            case 1:
+                return Tetromino.of(Tetromino.Kind.O);
+            case 2:
+                return Tetromino.of(Tetromino.Kind.T);
+            case 3:
+                return Tetromino.of(Tetromino.Kind.S);
+            case 4:
+                return Tetromino.of(Tetromino.Kind.Z);
+            case 5:
+                return Tetromino.of(Tetromino.Kind.J);
+            case 6:
+                return Tetromino.of(Tetromino.Kind.L);
+            default:
+                return Tetromino.of(Tetromino.Kind.I);
         }
     }
 
@@ -187,13 +195,16 @@ public class GameEngine {
         }
     }
 
-    public double getDropIntervalSeconds() { return dropIntervalSeconds; }
+    public double getDropIntervalSeconds() {
+        return dropIntervalSeconds;
+    }
 
     /**
      * 자동 하강 간격(초)을 설정합니다. 자동 하강이 동작 중이면 새로운 간격으로 재스케줄링됩니다.
      */
     public void setDropIntervalSeconds(double seconds) {
-        if (seconds <= 0) throw new IllegalArgumentException("drop interval must be > 0");
+        if (seconds <= 0)
+            throw new IllegalArgumentException("drop interval must be > 0");
         synchronized (schedulerLock) {
             this.dropIntervalSeconds = seconds;
             // if running, restart with new interval
@@ -201,14 +212,19 @@ public class GameEngine {
                 autoDropFuture.cancel(false);
                 long periodMillis = Math.max(1L, (long) (dropIntervalSeconds * 1000.0));
                 autoDropFuture = scheduler.scheduleAtFixedRate(() -> {
-                    try { softDrop(); } catch (Throwable t) { t.printStackTrace(); }
+                    try {
+                        softDrop();
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
                 }, periodMillis, periodMillis, TimeUnit.MILLISECONDS);
             }
         }
     }
 
     public void moveLeft() {
-        if (current == null) return;
+        if (current == null)
+            return;
         if (board.fits(current.getShape(), px - 1, py)) {
             px--;
             listener.onBoardUpdated(board);
@@ -216,7 +232,8 @@ public class GameEngine {
     }
 
     public void moveRight() {
-        if (current == null) return;
+        if (current == null)
+            return;
         if (board.fits(current.getShape(), px + 1, py)) {
             px++;
             listener.onBoardUpdated(board);
@@ -224,26 +241,28 @@ public class GameEngine {
     }
 
     public void rotateCW() {
-        if (current == null) return;
+        if (current == null)
+            return;
         Tetromino rotated = current.rotateClockwise();
-        // try wall-kick offsets: prefer no-offset, then left/right small kicks, then larger kicks, then upward kick
-        int[][] offsets = new int[][] { {0,0}, {-1,0}, {1,0}, {-2,0}, {2,0}, {0,-1} };
+        // try wall-kick offsets: prefer no-offset, then left/right small kicks, then
+        // larger kicks, then upward kick
+        int[][] offsets = new int[][] { { 0, 0 }, { -1, 0 }, { 1, 0 }, { -2, 0 }, { 2, 0 }, { 0, -1 } };
         for (int[] off : offsets) {
             int nx = px + off[0];
             int ny = py + off[1];
             if (board.fits(rotated.getShape(), nx, ny)) {
                 current = rotated;
-                px = nx; py = ny;
+                px = nx;
+                py = ny;
                 listener.onBoardUpdated(board);
                 return;
             }
         }
     }
 
-    
-
     public boolean softDrop() {
-        if (current == null) return false;
+        if (current == null)
+            return false;
         if (board.fits(current.getShape(), px, py + 1)) {
             py++;
             // 소프트 드롭 점수 추가 (한 칸 하강)
@@ -253,36 +272,60 @@ public class GameEngine {
         } else {
             // place
             board.placePiece(current.getShape(), px, py, current.getId());
-            int cleared = board.clearLinesAndReturnCount();
-            if (cleared > 0) listener.onLinesCleared(cleared);
-            if (cleared > 0) {
-                addScoreForClearedLines(cleared);
-                listener.onScoreChanged(score);
-            }
-            spawnNext();
+            handleLockedPiece();
             return false;
         }
     }
 
     public void hardDrop() {
-        if (current == null) return;
+        if (current == null)
+            return;
         int startY = py; // 시작 위치 기록
-        while (board.fits(current.getShape(), px, py + 1)) py++;
+        while (board.fits(current.getShape(), px, py + 1))
+            py++;
         int dropDistance = py - startY; // 떨어진 거리 계산
-        
+
         // 하드 드롭 점수 추가 (거리 > 0일 때만)
         if (dropDistance > 0) {
             addHardDropScore(dropDistance);
         }
-        
+
         board.placePiece(current.getShape(), px, py, current.getId());
-        int cleared = board.clearLinesAndReturnCount();
-        if (cleared > 0) listener.onLinesCleared(cleared);
-        if (cleared > 0) {
-            addScoreForClearedLines(cleared);
-            listener.onScoreChanged(score);
+        handleLockedPiece();
+    }
+
+    // Handles animation + scoring after the falling piece is fixed to the board.
+    private void handleLockedPiece() {
+        java.util.List<Integer> fullLines = board.getFullLineIndices();
+        current = null; // 잠시 조작을 막고, 보드에는 고정된 조각만 남김
+
+        if (fullLines.isEmpty()) {
+            spawnNext();
+            return;
         }
-        spawnNext();
+
+        for (int row : fullLines) {
+            board.fillLineWith(row, -1); // 흰색 플래시 마커
+        }
+        listener.onBoardUpdated(board);
+
+        // 잠깐(150ms) 보여준 뒤에 실제로 라인을 제거하고 다음 조각을 소환
+        javafx.application.Platform.runLater(() -> {
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                    javafx.util.Duration.millis(150));
+            pause.setOnFinished(e -> {
+                int cleared = board.clearFullLines();
+                if (cleared > 0)
+                    listener.onLinesCleared(cleared);
+                if (cleared > 0) {
+                    addScoreForClearedLines(cleared);
+                    listener.onScoreChanged(score);
+                }
+                listener.onBoardUpdated(board);
+                spawnNext();
+            });
+            pause.play();
+        });
     }
 
     /**
@@ -291,11 +334,22 @@ public class GameEngine {
      */
     public void addScoreForClearedLines(int cleared) {
         switch (cleared) {
-            case 1: score += 100; break;
-            case 2: score += 250; break;
-            case 3: score += 500; break;
-            case 4: score += 1000; break;
-            default: if (cleared > 4) score += 1000 + (cleared - 4) * 250; break; // graceful handling
+            case 1:
+                score += 100;
+                break;
+            case 2:
+                score += 250;
+                break;
+            case 3:
+                score += 500;
+                break;
+            case 4:
+                score += 1000;
+                break;
+            default:
+                if (cleared > 4)
+                    score += 1000 + (cleared - 4) * 250;
+                break; // graceful handling
         }
     }
 
@@ -308,7 +362,9 @@ public class GameEngine {
         score += dropPoints;
         listener.onScoreChanged(score);
         // 소프트 드롭과 자동 드롭은 너무 빈번하므로 로그 비활성화
-        // System.out.println("Drop score: " + dropPoints + " (Distance: " + dropDistance + ", Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x)");
+        // System.out.println("Drop score: " + dropPoints + " (Distance: " +
+        // dropDistance + ", Speed: " + String.format("%.1f",
+        // gameTimer.getSpeedFactor()) + "x)");
     }
 
     /**
@@ -351,7 +407,7 @@ public class GameEngine {
             setDropIntervalSeconds(newInterval);
         }
     }
-    
+
     /**
      * 난이도에 따른 속도 증가 배율을 반환합니다.
      * @return EASY: 0.8, NORMAL: 1.0, HARD: 1.2
@@ -359,23 +415,39 @@ public class GameEngine {
     private double getSpeedIncreaseMultiplier() {
         switch (difficulty) {
             case EASY:
-                return 0.8;  // 20% 덜 증가
+                return 0.8; // 20% 덜 증가
             case HARD:
-                return 1.2;  // 20% 더 증가
+                return 1.2; // 20% 더 증가
             case NORMAL:
             default:
-                return 1.0;  // 기본 증가율
+                return 1.0; // 기본 증가율
         }
     }
 
-    public Tetromino getNext() { return next; }
-    public int getScore() { return score; }
+    public Tetromino getNext() {
+        return next;
+    }
 
-    public Board getBoard() { return board; }
-    public Tetromino getCurrent() { return current; }
-    public int getPieceX() { return px; }
-    public int getPieceY() { return py; }
-    
+    public int getScore() {
+        return score;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+
+    public Tetromino getCurrent() {
+        return current;
+    }
+
+    public int getPieceX() {
+        return px;
+    }
+
+    public int getPieceY() {
+        return py;
+    }
+
     /**
      * 테스트용: 난이도 기반 랜덤 피스를 생성합니다.
      * 이 메서드는 Roulette Wheel Selection 알고리즘을 테스트하기 위해 사용됩니다.
