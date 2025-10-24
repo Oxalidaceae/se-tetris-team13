@@ -45,6 +45,11 @@ public class SceneManager {
         changeScene(new ScoreboardScene(this, settings).getScene());
     }
 
+    public void showScoreboard(Settings settings, String name, int score, ScoreBoard.ScoreEntry.Mode difficulty) {
+        ScoreboardScene scene = new ScoreboardScene(this, settings, name, score, difficulty);
+        changeScene(scene.getScene());
+    }
+
     // 난이도 선택 씬으로 전환
     public void showDifficultySelection(Settings settings) {
         changeScene(new DifficultySelectionScene(this, settings).getScene());
