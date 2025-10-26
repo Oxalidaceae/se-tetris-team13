@@ -593,12 +593,19 @@ public class GameEngine {
         
         px = (board.getWidth() - current.getWidth()) / 2;
         py = 0;
+        
+        // 게임오버 조건: 새 블록이 생성 위치에 배치될 수 없을 때
         if (!board.fits(current.getShape(), px, py)) {
-            // 게임 오버: 알리고 자동 하강을 중지합니다
-            listener.onGameOver();
-            stopAutoDrop();
+            // 게임오버 즉시 처리
+            System.out.println("게임오버 감지: 블록을 배치할 수 없음");
+            current = null; // current를 null로 설정하여 더 이상의 조작 방지
+            listener.onGameOver(); // 게임오버 이벤트 발생
+            stopAutoDrop(); // 자동 하강 중지
+            System.out.println("게임오버 처리 완료");
             return;
         }
+        
+        // 정상적으로 생성된 경우에만 리스너 호출
         listener.onPieceSpawned(current, px, py);
         listener.onNextPiece(next);
         listener.onBoardUpdated(board);

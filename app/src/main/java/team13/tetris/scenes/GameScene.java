@@ -315,8 +315,27 @@ public class GameScene {
 
     // 게임 오버 표시 (Controller에서 호출)
     public void showGameOver() {
-        Platform.runLater(() -> scoreLabel.setText("GAME OVER\n" + engine.getScore()));
-        manager.showGameOver(settings, engine.getScore(), difficulty);
+        System.out.println("GameScene.showGameOver() 호출됨");
+        
+        // UI 업데이트는 Platform.runLater로
+        Platform.runLater(() -> {
+            scoreLabel.setText("GAME OVER\n" + engine.getScore());
+            System.out.println("점수 라벨 업데이트 완료");
+        });
+        
+        // 게임오버 씬 전환은 즉시 실행
+        try {
+            if (manager != null) {
+                System.out.println("SceneManager.showGameOver() 호출 시도");
+                manager.showGameOver(settings, engine.getScore(), difficulty);
+                System.out.println("SceneManager.showGameOver() 호출 완료");
+            } else {
+                System.err.println("SceneManager가 null입니다!");
+            }
+        } catch (Exception e) {
+            System.err.println("게임오버 창 표시 중 오류: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // 스타일 헬퍼

@@ -70,35 +70,35 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
 
     @Override
     public void moveLeft() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.moveLeft();
         }
     }
 
     @Override
     public void moveRight() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.moveRight();
         }
     }
 
     @Override
     public void softDrop() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.softDrop();
         }
     }
 
     @Override
     public void hardDrop() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.hardDrop();
         }
     }
 
     @Override
     public void rotateCW() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.rotateCW();
         }
     }
@@ -162,7 +162,18 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
 
     @Override
     public void onGameOver() {
+        System.out.println("GameSceneController.onGameOver() 호출됨");
         gameOver = true;
+        paused = false; // 일시정지 상태 해제
+        
+        // 엔진의 자동 하강도 확실히 중지
+        if (engine != null) {
+            engine.stopAutoDrop();
+            System.out.println("엔진 자동 하강 중지됨");
+        }
+        
+        // 게임오버 화면 표시
+        System.out.println("게임오버 화면 표시 시도");
         gameScene.showGameOver();
     }
 
