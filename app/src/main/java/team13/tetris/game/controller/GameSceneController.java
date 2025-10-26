@@ -3,6 +3,9 @@ package team13.tetris.game.controller;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
@@ -239,13 +242,22 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                         resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     } else {
                         paused = false;
-                        Platform.exit();
-                    }
-                } else if (ev.getCode() == KeyCode.ESCAPE) {
-                    // ESC: 일단 다이얼로그 닫고 게임 재개(게임오버 아니면)
-                    dialog.close();
-                    if (!gameOver) {
-                        resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
+                        // Quit 선택 시 게임 종료 확인 다이얼로그 표시
+                        Platform.runLater(() -> {
+                            Alert confirmExit = new Alert(Alert.AlertType.CONFIRMATION);
+                            confirmExit.setTitle("Confirm Exit");
+                            confirmExit.setHeaderText("게임을 종료하시겠습니까?");
+                            confirmExit.setContentText("진행 중인 게임이 저장되지 않습니다.");
+
+                            confirmExit.showAndWait().ifPresent(response -> {
+                                if (response == ButtonType.OK) {
+                                    Platform.exit();
+                                } else {
+                                    if (!gameOver) {
+                                        pause();                                    }
+                                }
+                            });
+                        });
                     }
                 }
             });
