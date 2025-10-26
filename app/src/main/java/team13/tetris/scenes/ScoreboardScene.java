@@ -43,7 +43,7 @@ public class ScoreboardScene {
             scoreList.getItems().add(String.format("[%s] %s : %d", 
                 entry.getMode().name(), entry.getName(), entry.getScore()))
         );
-        scoreList.setMaxHeight(250);
+        scoreList.setMaxHeight(300);
 
         // 뒤로가기 버튼
         Button backBtn = new Button("Back");
