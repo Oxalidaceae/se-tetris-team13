@@ -254,6 +254,15 @@ public class GameEngine {
                 px = (board.getWidth() - current.getWidth()) / 2;
                 py = 0;
                 
+                // COPY 효과에서도 게임오버 체크
+                if (!board.fits(current.getShape(), px, py)) {
+                    current = null;
+                    javafx.application.Platform.runLater(() -> {
+                        listener.onGameOver();
+                    });
+                    stopAutoDrop();
+                    return;
+                }
                 
                 // 리스너에게 알림
                 listener.onPieceSpawned(current, px, py);
@@ -597,11 +606,21 @@ public class GameEngine {
         // 게임오버 조건: 새 블록이 생성 위치에 배치될 수 없을 때
         if (!board.fits(current.getShape(), px, py)) {
             // 게임오버 즉시 처리
-            System.out.println("게임오버 감지: 블록을 배치할 수 없음");
+            System.out.println("[DEBUG] 게임오버 감지: 블록을 배치할 수 없음 (px=" + px + ", py=" + py + ")");
+            
+            // 자동 하강을 먼저 완전히 중지
+            stopAutoDrop();
+            System.out.println("[DEBUG] 자동 하강 중지됨");
+            
             current = null; // current를 null로 설정하여 더 이상의 조작 방지
-            listener.onGameOver(); // 게임오버 이벤트 발생
-            stopAutoDrop(); // 자동 하강 중지
-            System.out.println("게임오버 처리 완료");
+            
+            // JavaFX Application Thread에서 안전하게 게임오버 처리
+            javafx.application.Platform.runLater(() -> {
+                System.out.println("[DEBUG] listener.onGameOver() 호출 (FX Thread)");
+                listener.onGameOver(); // 게임오버 이벤트 발생
+            });
+            
+            System.out.println("[DEBUG] 게임오버 처리 완료");
             return;
         }
         
@@ -833,6 +852,8 @@ public class GameEngine {
         if (current == null)
             return;
         
+        System.out.println("[DEBUG] hardDrop() 시작");
+        
         // 하드드롭 플래그 설정
         isHardDrop = true;
         
@@ -884,14 +905,23 @@ public class GameEngine {
             // 일반 미노는 일반 블록으로 배치
             board.placePiece(current.getShape(), px, py, current.getId());
         }
+        
+        System.out.println("[DEBUG] hardDrop() 블록 배치 완료, handleLockedPiece() 호출");
         handleLockedPiece();
         
         // 하드드롭 플래그 해제
         isHardDrop = false;
+        System.out.println("[DEBUG] hardDrop() 완료");
     }
 
     // Handles animation + scoring after the falling piece is fixed to the board.
     private void handleLockedPiece() {
+        // 이미 게임오버 상태라면 더 이상 처리하지 않음
+        if (current == null) {
+            System.out.println("[DEBUG] handleLockedPiece(): current가 null이므로 처리 중단");
+            return;
+        }
+        
         // 아이템이 착지한 경우 즉시 효과 발동 (current를 null로 만들기 전에)
         if (itemModeEnabled && current != null && current.isItemPiece()) {
             Tetromino.Kind kind = current.getKind();
