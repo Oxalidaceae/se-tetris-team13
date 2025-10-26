@@ -183,7 +183,7 @@ public class GameEngine {
     }
     
     /**
-     * 5줄이 삭제될 때마다 호출되어 다음 미노를 아이템 미노로 설정합니다.
+     * 10줄이 삭제될 때마다 호출되어 다음 미노를 아이템 미노로 설정합니다.
      * 현재 구현된 5가지 아이템 중 하나를 20% 확률로 선택합니다.
      */
     private void generateItemPiece() {
@@ -1021,10 +1021,10 @@ public class GameEngine {
         if (itemModeEnabled && cleared > 0) {
             totalLinesCleared += cleared;
             
-            // 5줄마다 아이템 미노 생성 (5, 10, 15, ... 의 배수마다)
+            // 10줄마다 아이템 미노 생성 (10, 20, 30, ... 의 배수마다)
             int beforeClear = totalLinesCleared - cleared;
-            int currentGroup = totalLinesCleared / 5;
-            int previousGroup = beforeClear / 5;
+            int currentGroup = totalLinesCleared / 10;
+            int previousGroup = beforeClear / 10;
             
             if (currentGroup > previousGroup) {
                 generateItemPiece();

@@ -174,10 +174,7 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     @Override
     public void onScoreChanged(int score) {
         gameScene.updateGrid();
-        // 아이템 모드일 때 라인 정보 업데이트
-        if (engine != null) {
-            gameScene.updateItemModeInfo(engine.getTotalLinesCleared());
-        }
+        // 아이템 모드 줄 수 표시 제거로 인해 updateItemModeInfo 호출 비활성화
     }
 
     // ========== 일시정지 다이얼로그 ==========

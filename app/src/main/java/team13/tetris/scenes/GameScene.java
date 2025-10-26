@@ -78,14 +78,8 @@ public class GameScene {
         itemModeLabel.setFont(Font.font("Monospaced", 12));
         itemModeLabel.getStyleClass().add("item-mode-label");
         
-        // 아이템 모드일 때만 표시
-        VBox right;
-        if (difficulty == ScoreBoard.ScoreEntry.Mode.ITEM) {
-            itemModeLabel.setText("Lines: 0/10\nNext Item: 10");
-            right = new VBox(8, previewGrid, scoreLabel, itemModeLabel);
-        } else {
-            right = new VBox(8, previewGrid, scoreLabel);
-        }
+        // 아이템 모드와 일반 모드 모두 동일하게 표시 (줄 수 정보 제거)
+        VBox right = new VBox(8, previewGrid, scoreLabel);
         right.getStyleClass().add("right-panel");
 
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
@@ -127,16 +121,9 @@ public class GameScene {
         });
     }
 
-    // 아이템 모드 정보 업데이트
+    // 아이템 모드 정보 업데이트 (비활성화됨)
     public void updateItemModeInfo(int totalLinesCleared) {
-        if (difficulty == ScoreBoard.ScoreEntry.Mode.ITEM) {
-            Platform.runLater(() -> {
-                int currentCycle = totalLinesCleared % 10;
-                int nextItem = 10 - currentCycle;
-                if (nextItem == 10) nextItem = 0; // 정확히 10의 배수일 때
-                itemModeLabel.setText("Lines: " + currentCycle + "/10\nNext Item: " + nextItem);
-            });
-        }
+        // 줄 수 표시 제거로 인해 아무것도 하지 않음
     }
 
     public void updateGrid() {
