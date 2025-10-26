@@ -103,12 +103,14 @@
 
 /* ================================
    블록 색상 (선명한 클래식 팔레트)
+   - 어두운 배경에 최적화
+   - 고채도 원색 계열로 강렬한 대비 제공
    ================================ */
-.tetris-i-text { -fx-text-fill: #00FFFF !important; } /* I - 밝은 시안 */
-.tetris-o-text { -fx-text-fill: #FFFF00 !important; } /* O - 순수 노랑 */
+.tetris-i-text { -fx-text-fill: #80FF00 !important; } /* I - 네온 그린 */
+.tetris-o-text { -fx-text-fill: #FFFF00 !important; } /* O - 선명한 옐로우 */
 .tetris-t-text { -fx-text-fill: #FF00FF !important; } /* T - 마젠타 */
-.tetris-s-text { -fx-text-fill: #00FF00 !important; } /* S - 라임 그린 */
-.tetris-z-text { -fx-text-fill: #FF0000 !important; } /* Z - 순수 빨강 */
-.tetris-j-text { -fx-text-fill: #4169E1 !important; } /* J - 로얄 블루 */
-.tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 오렌지 */
+.tetris-s-text { -fx-text-fill: #00FFFF !important; } /* S - 시안 */
+.tetris-z-text { -fx-text-fill: #FF0000 !important; } /* Z - 레드 (S와 보색) */
+.tetris-j-text { -fx-text-fill: #005AFF !important; } /* J - 블루 */
+.tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
