@@ -315,13 +315,9 @@ public class GameScene {
 
     // 게임 오버 표시 (Controller에서 호출)
     public void showGameOver() {
-        System.out.println("[DEBUG] GameScene.showGameOver() 호출됨");
         // UI 스레드에서 안전하게 처리
         if (manager != null) {
-            System.out.println("[DEBUG] SceneManager로 게임오버 처리 위임");
             manager.showGameOver(settings, engine.getScore(), difficulty);
-        } else {
-            System.err.println("[ERROR] SceneManager가 null입니다!");
         }
     }
 

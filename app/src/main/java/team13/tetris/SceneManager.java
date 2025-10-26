@@ -75,17 +75,7 @@ public class SceneManager {
 
     // 게임 오버 씬으로 전환
     public void showGameOver(Settings settings, int finalScore, ScoreBoard.ScoreEntry.Mode difficulty) {
-        System.out.println("[DEBUG] SceneManager.showGameOver() 호출됨 - 점수: " + finalScore + ", 난이도: " + difficulty);
-        try {
-            GameOverScene gameOverScene = new GameOverScene(this, settings, finalScore, difficulty);
-            Scene scene = gameOverScene.getScene();
-            System.out.println("[DEBUG] GameOverScene 생성 완료, changeScene 호출");
-            changeScene(scene);
-            System.out.println("[DEBUG] 게임오버 씬 전환 완료");
-        } catch (Exception e) {
-            System.err.println("[ERROR] 게임오버 씬 생성 중 오류: " + e.getMessage());
-            e.printStackTrace();
-        }
+        changeScene(new GameOverScene(this, settings, finalScore, difficulty).getScene());
     }
 
     // 키 설정 씬으로 전환

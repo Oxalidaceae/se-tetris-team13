@@ -96,12 +96,9 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
             // 하드드롭 throttling: 100ms 간격으로 제한
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastHardDropTime >= 100) {
-                System.out.println("[DEBUG] GameSceneController.hardDrop() 호출");
                 engine.hardDrop();
                 lastHardDropTime = currentTime;
-            } else {
-                System.out.println("[DEBUG] hardDrop throttled");
-            }
+            } 
         }
     }
 
@@ -171,18 +168,15 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
 
     @Override
     public void onGameOver() {
-        System.out.println("[DEBUG] GameSceneController.onGameOver() 호출됨");
         gameOver = true;
         paused = false; // 일시정지 상태 해제
         
         // 엔진의 자동 하강도 확실히 중지
         if (engine != null) {
             engine.stopAutoDrop();
-            System.out.println("[DEBUG] 엔진 자동 하강 중지됨");
         }
         
         // 게임오버 화면 표시
-        System.out.println("[DEBUG] GameScene.showGameOver() 호출");
         gameScene.showGameOver();
     }
 
