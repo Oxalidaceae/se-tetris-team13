@@ -45,6 +45,7 @@ public class SceneManager {
         changeScene(new ScoreboardScene(this, settings).getScene());
     }
 
+    // 하이라이트된 점수와 함께 스코어보드 씬으로 전환
     public void showScoreboard(Settings settings, String name, int score, ScoreBoard.ScoreEntry.Mode difficulty) {
         ScoreboardScene scene = new ScoreboardScene(this, settings, name, score, difficulty);
         changeScene(scene.getScene());
