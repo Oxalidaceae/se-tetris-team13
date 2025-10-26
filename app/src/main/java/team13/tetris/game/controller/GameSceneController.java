@@ -28,6 +28,7 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     private boolean paused = false;
     private boolean gameOver = false;
     private int totalLinesCleared = 0; // 총 클리어된 라인 수 추적
+    private long lastHardDropTime = 0; // 마지막 하드드롭 시간
 
     public GameSceneController(GameScene gameScene, Settings settings, KeyInputHandler keyInputHandler) {
         this.gameScene = gameScene;
@@ -70,35 +71,40 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
 
     @Override
     public void moveLeft() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.moveLeft();
         }
     }
 
     @Override
     public void moveRight() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.moveRight();
         }
     }
 
     @Override
     public void softDrop() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.softDrop();
         }
     }
 
     @Override
     public void hardDrop() {
-        if (engine != null) {
-            engine.hardDrop();
+        if (engine != null && !gameOver) {
+            // 하드드롭 throttling: 100ms 간격으로 제한
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastHardDropTime >= 100) {
+                engine.hardDrop();
+                lastHardDropTime = currentTime;
+            } 
         }
     }
 
     @Override
     public void rotateCW() {
-        if (engine != null) {
+        if (engine != null && !gameOver) {
             engine.rotateCW();
         }
     }
@@ -163,6 +169,14 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     @Override
     public void onGameOver() {
         gameOver = true;
+        paused = false; // 일시정지 상태 해제
+        
+        // 엔진의 자동 하강도 확실히 중지
+        if (engine != null) {
+            engine.stopAutoDrop();
+        }
+        
+        // 게임오버 화면 표시
         gameScene.showGameOver();
     }
 
@@ -174,6 +188,7 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     @Override
     public void onScoreChanged(int score) {
         gameScene.updateGrid();
+        // 아이템 모드 줄 수 표시 제거로 인해 updateItemModeInfo 호출 비활성화
     }
 
     // ========== 일시정지 다이얼로그 ==========
@@ -220,18 +235,17 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                     applySelection(resume, quit, selected[0]);
                 } else if (ev.getCode() == KeyCode.ENTER) {
                     dialog.close();
-                    paused = false;
                     if (selected[0] == 0 && !gameOver) {
-                        resume();
+                        resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     } else {
+                        paused = false;
                         Platform.exit();
                     }
                 } else if (ev.getCode() == KeyCode.ESCAPE) {
                     // ESC: 일단 다이얼로그 닫고 게임 재개(게임오버 아니면)
                     dialog.close();
                     if (!gameOver) {
-                        paused = false;
-                        resume();
+                        resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     }
                 }
             });

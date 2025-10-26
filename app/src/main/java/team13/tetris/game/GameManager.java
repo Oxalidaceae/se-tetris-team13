@@ -25,6 +25,7 @@ public class GameManager {
     private int linesCleared;
     private long lastDropTime;
     private int lastDifficultyLevel;
+    private long pauseStartTime;
     
     // TODO: Game components to be implemented by other teams
     // private Board board, currentBlock, nextBlock;
@@ -41,6 +42,7 @@ public class GameManager {
         this.linesCleared = 0;
         this.lastDropTime = 0;
         this.lastDifficultyLevel = 0;
+        this.pauseStartTime = 0;
         // Executor will be created when game starts
     }
     
@@ -80,7 +82,10 @@ public class GameManager {
         
         gameTimer.tick(0.016); // Fixed 16ms delta time
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastDropTime >= gameTimer.getInterval()) {
+        long timeSinceLastDrop = currentTime - lastDropTime;
+        long dropInterval = (long) gameTimer.getInterval();
+        
+        if (timeSinceLastDrop >= dropInterval) {
             dropCurrentBlock();
             lastDropTime = currentTime;
         }
@@ -98,10 +103,13 @@ public class GameManager {
     public void togglePause() {
         if (state == GameState.PLAYING) {
             state = GameState.PAUSED;
+            pauseStartTime = System.currentTimeMillis();
             System.out.println("Game paused.");
         } else if (state == GameState.PAUSED) {
             state = GameState.PLAYING;
-            lastDropTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
+            long pauseDuration = currentTime - pauseStartTime;
+            lastDropTime += pauseDuration;
             System.out.println("Game resumed.");
         }
     }
