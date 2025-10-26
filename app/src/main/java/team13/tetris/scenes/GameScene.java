@@ -29,7 +29,8 @@ public class GameScene {
     private final GridPane previewGrid;
     private final Label scoreLabel;
 
-    public GameScene(SceneManager manager, Settings settings, GameEngine engine, ScoreBoard.ScoreEntry.Mode difficulty) {
+    public GameScene(SceneManager manager, Settings settings, GameEngine engine,
+            ScoreBoard.ScoreEntry.Mode difficulty) {
         this.manager = manager;
         this.settings = settings;
         this.engine = engine;
@@ -130,6 +131,9 @@ public class GameScene {
                     if (val == 0) {
                         cell.setText(" ");
                         applyCellEmpty(cell);
+                    } else if (val < 0) {
+                        cell.setText("O");
+                        applyCellBlockText(cell, "tetris-flash-text");
                     } else {
                         Tetromino.Kind kind = Tetromino.kindForId(val);
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";

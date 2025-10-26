@@ -118,3 +118,4 @@
 .tetris-z-text { -fx-text-fill: #E69F00 !important; } /* Z - 진한 오렌지 (명도 75%, 채도 높음) */
 .tetris-j-text { -fx-text-fill: #0072B2 !important; } /* J - 진한 블루 (명도 50%, 채도 높음) */
 .tetris-l-text { -fx-text-fill: #D55E00 !important; } /* L - 버밀리온 (명도 65%, 채도 높음) */
+.tetris-flash-text { -fx-text-fill: #FFFFFF !important; }

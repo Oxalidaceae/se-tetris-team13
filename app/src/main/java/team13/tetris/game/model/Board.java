@@ -16,31 +16,40 @@ public class Board {
     private final Object lock = new Object();
 
     public Board(int width, int height) {
-        if (width <= 0 || height <= 0) throw new IllegalArgumentException("Invalid board size");
+        if (width <= 0 || height <= 0)
+            throw new IllegalArgumentException("Invalid board size");
         this.width = width;
         this.height = height;
         this.cells = new int[height][width];
     }
 
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public int getCell(int x, int y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return -1;
+        if (x < 0 || x >= width || y < 0 || y >= height)
+            return -1;
         synchronized (lock) {
             return cells[y][x];
         }
     }
 
     public boolean isOccupied(int x, int y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return true;
+        if (x < 0 || x >= width || y < 0 || y >= height)
+            return true;
         synchronized (lock) {
             return cells[y][x] != 0;
         }
     }
 
     public void setCell(int x, int y, int value) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return;
+        if (x < 0 || x >= width || y < 0 || y >= height)
+            return;
         synchronized (lock) {
             cells[y][x] = value;
         }
@@ -49,7 +58,8 @@ public class Board {
     public void clear() {
         synchronized (lock) {
             for (int r = 0; r < height; r++) {
-                for (int c = 0; c < width; c++) cells[r][c] = 0;
+                for (int c = 0; c < width; c++)
+                    cells[r][c] = 0;
             }
         }
     }
@@ -57,10 +67,10 @@ public class Board {
     /**
      * 주어진 모양(shape)을 보드에 놓습니다.
      *
-     * @param shape  블록을 1로 표시한 2차원 배열
-     * @param px     보드에서 모양의 왼쪽 열(열 인덱스)
-     * @param py     보드에서 모양의 위쪽 행(행 인덱스)
-     * @param value  채워진 셀에 저장할 값(예: 블록 id)
+     * @param shape 블록을 1로 표시한 2차원 배열
+     * @param px    보드에서 모양의 왼쪽 열(열 인덱스)
+     * @param py    보드에서 모양의 위쪽 행(행 인덱스)
+     * @param value 채워진 셀에 저장할 값(예: 블록 id)
      *
      * 보드 경계를 넘어가는 칸은 무시합니다. 이 메서드는 내부 락을 사용하여 동기화됩니다.
      */
@@ -96,12 +106,49 @@ public class Board {
                     if (shape[r][c] != 0) {
                         int x = px + c;
                         int y = py + r;
-                        if (x < 0 || x >= width || y < 0 || y >= height) return false;
-                        if (cells[y][x] != 0) return false;
+                        if (x < 0 || x >= width || y < 0 || y >= height)
+                            return false;
+                        if (cells[y][x] != 0)
+                            return false;
                     }
                 }
             }
             return true;
+        }
+    }
+
+    /**
+     * 현재 보드에서 가득 찬 모든 행의 인덱스를 찾아 반환합니다.
+     */
+    public java.util.List<Integer> getFullLineIndices() {
+        synchronized (lock) {
+            java.util.List<Integer> fullLines = new java.util.ArrayList<>();
+            for (int r = height - 1; r >= 0; r--) {
+                boolean full = true;
+                for (int c = 0; c < width; c++) {
+                    if (cells[r][c] == 0) {
+                        full = false;
+                        break;
+                    }
+                }
+                if (full) {
+                    fullLines.add(r);
+                }
+            }
+            return fullLines;
+        }
+    }
+
+    /**
+     * 지정된 행 전체를 주어진 값으로 채웁니다.
+     */
+    public void fillLineWith(int row, int value) {
+        synchronized (lock) {
+            if (row < 0 || row >= height)
+                return;
+            for (int c = 0; c < width; c++) {
+                cells[row][c] = value;
+            }
         }
     }
 
@@ -118,7 +165,10 @@ public class Board {
             for (int r = height - 1; r >= 0; r--) {
                 boolean full = true;
                 for (int c = 0; c < width; c++) {
-                    if (cells[r][c] == 0) { full = false; break; }
+                    if (cells[r][c] == 0) {
+                        full = false;
+                        break;
+                    }
                 }
                 if (full) {
                     // shift everything above down
@@ -126,7 +176,8 @@ public class Board {
                         System.arraycopy(cells[rr - 1], 0, cells[rr], 0, width);
                     }
                     // clear top row
-                    for (int c = 0; c < width; c++) cells[0][c] = 0;
+                    for (int c = 0; c < width; c++)
+                        cells[0][c] = 0;
                     cleared++;
                     r++; // recheck same row index as lines moved down
                 }
@@ -155,7 +206,8 @@ public class Board {
     public int[][] snapshot() {
         int[][] snap = new int[height][width];
         synchronized (lock) {
-            for (int r = 0; r < height; r++) System.arraycopy(cells[r], 0, snap[r], 0, width);
+            for (int r = 0; r < height; r++)
+                System.arraycopy(cells[r], 0, snap[r], 0, width);
         }
         return snap;
     }
