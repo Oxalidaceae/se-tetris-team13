@@ -23,6 +23,7 @@ public class MainMenuScene {
         title.getStyleClass().add("label-title");
 
         Button startBtn = new Button("Start Game");
+        Button itemModeBtn = new Button("Start Item Mode");
         Button optionBtn = new Button("Options");
         Button scoreBtn = new Button("Scoreboard");
         Button exitBtn = new Button("Exit");
@@ -34,11 +35,12 @@ public class MainMenuScene {
         );
 
         startBtn.setOnAction(e -> manager.showDifficultySelection(settings));
+        itemModeBtn.setOnAction(e -> manager.showGame(settings, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
         exitBtn.setOnAction(e -> manager.exitWithSave(settings));
 
-        VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn, testGameOverBtn);
+        VBox layout = new VBox(10, title, startBtn, itemModeBtn, optionBtn, scoreBtn, exitBtn, testGameOverBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);

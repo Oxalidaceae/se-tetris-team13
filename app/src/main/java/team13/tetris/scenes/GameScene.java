@@ -28,6 +28,7 @@ public class GameScene {
     private final GridPane boardGrid;
     private final GridPane previewGrid;
     private final Label scoreLabel;
+    private final Label itemModeLabel; // 아이템 모드 정보 표시용
 
     public GameScene(SceneManager manager, Settings settings, GameEngine engine,
             ScoreBoard.ScoreEntry.Mode difficulty) {
@@ -72,7 +73,19 @@ public class GameScene {
         scoreLabel.setFont(Font.font("Monospaced", 14));
         scoreLabel.getStyleClass().add("score-label");
 
-        VBox right = new VBox(8, previewGrid, scoreLabel);
+        // 아이템 모드 정보 레이블
+        itemModeLabel = new Label("");
+        itemModeLabel.setFont(Font.font("Monospaced", 12));
+        itemModeLabel.getStyleClass().add("item-mode-label");
+        
+        // 아이템 모드일 때만 표시
+        VBox right;
+        if (difficulty == ScoreBoard.ScoreEntry.Mode.ITEM) {
+            itemModeLabel.setText("Lines: 0/10\nNext Item: 10");
+            right = new VBox(8, previewGrid, scoreLabel, itemModeLabel);
+        } else {
+            right = new VBox(8, previewGrid, scoreLabel);
+        }
         right.getStyleClass().add("right-panel");
 
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
@@ -114,6 +127,18 @@ public class GameScene {
         });
     }
 
+    // 아이템 모드 정보 업데이트
+    public void updateItemModeInfo(int totalLinesCleared) {
+        if (difficulty == ScoreBoard.ScoreEntry.Mode.ITEM) {
+            Platform.runLater(() -> {
+                int currentCycle = totalLinesCleared % 10;
+                int nextItem = 10 - currentCycle;
+                if (nextItem == 10) nextItem = 0; // 정확히 10의 배수일 때
+                itemModeLabel.setText("Lines: " + currentCycle + "/10\nNext Item: " + nextItem);
+            });
+        }
+    }
+
     public void updateGrid() {
         if (engine == null)
             return;
@@ -134,7 +159,34 @@ public class GameScene {
                     } else if (val < 0) {
                         cell.setText("O");
                         applyCellBlockText(cell, "tetris-flash-text");
+                    } else if (val >= 100 && val < 200) {
+                        // COPY 아이템 블록 (100번대 값)
+                        cell.setText("C");
+                        applyCellBlockText(cell, "item-copy-block");
+                    } else if (val >= 200 && val < 300) {
+                        // LINE_CLEAR 아이템 블록 (200번대 값)
+                        cell.setText("L");
+                        applyCellBlockText(cell, "item-copy-block");
+                    } else if (val >= 300 && val < 400) {
+                        // WEIGHT 아이템 블록 (300번대 값)
+                        cell.setText("W");
+                        Tetromino.Kind kind = Tetromino.kindForId(val - 300);
+                        String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+                        applyCellBlockText(cell, textClass);
+                    } else if (val >= 400 && val < 500) {
+                        // GRAVITY 아이템 블록 (400번대 값)
+                        cell.setText("G");
+                        Tetromino.Kind kind = Tetromino.kindForId(val - 400);
+                        String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+                        applyCellBlockText(cell, textClass);
+                    } else if (val >= 500 && val < 600) {
+                        // SPLIT 아이템 블록 (500번대 값)
+                        cell.setText("S");
+                        Tetromino.Kind kind = Tetromino.kindForId(val - 500);
+                        String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+                        applyCellBlockText(cell, textClass);
                     } else {
+                        // 일반 블록
                         Tetromino.Kind kind = Tetromino.kindForId(val);
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
                         cell.setText("O");
@@ -150,6 +202,8 @@ public class GameScene {
                 int px = engine.getPieceX();
                 int py = engine.getPieceY();
                 String textClass = cur.getTextStyleClass();
+                int blockIndex = 0; // 블록 인덱스 카운터
+                
                 for (int r = 0; r < shape.length; r++) {
                     for (int c = 0; c < shape[r].length; c++) {
                         if (shape[r][c] != 0) {
@@ -157,9 +211,41 @@ public class GameScene {
                             int y = py + r;
                             if (x >= 0 && x < w && y >= 0 && y < h) {
                                 Label cell = (Label) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
-                                cell.setText("O");
-                                applyCellBlockText(cell, textClass);
+                                
+                                // 아이템 미노 표시 로직
+                                if (cur.isItemPiece()) {
+                                    if (cur.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY && blockIndex == cur.getCopyBlockIndex()) {
+                                        // COPY 아이템: 특정 블록만 C 표시
+                                        cell.setText("C");
+                                        applyCellBlockText(cell, "item-copy-block");
+                                    } else if (cur.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR && blockIndex == cur.getLineClearBlockIndex()) {
+                                        // LINE_CLEAR 아이템: 특정 블록만 L 표시
+                                        cell.setText("L");
+                                        applyCellBlockText(cell, "item-copy-block");
+                                    } else if (cur.getItemType() == team13.tetris.game.model.Tetromino.ItemType.WEIGHT) {
+                                        // WEIGHT 아이템: 모든 블록 W 표시
+                                        cell.setText("W");
+                                        applyCellBlockText(cell, textClass);
+                                    } else if (cur.getItemType() == team13.tetris.game.model.Tetromino.ItemType.GRAVITY) {
+                                        // GRAVITY 아이템: 모든 블록 G 표시
+                                        cell.setText("G");
+                                        applyCellBlockText(cell, textClass);
+                                    } else if (cur.getItemType() == team13.tetris.game.model.Tetromino.ItemType.SPLIT) {
+                                        // SPLIT 아이템: 모든 블록 S 표시
+                                        cell.setText("S");
+                                        applyCellBlockText(cell, textClass);
+                                    } else {
+                                        // 기타 아이템 블록은 O 표시
+                                        cell.setText("O");
+                                        applyCellBlockText(cell, textClass);
+                                    }
+                                } else {
+                                    // 일반 미노는 O 표시
+                                    cell.setText("O");
+                                    applyCellBlockText(cell, textClass);
+                                }
                             }
+                            blockIndex++;
                         }
                     }
                 }
@@ -178,12 +264,46 @@ public class GameScene {
             if (next != null) {
                 int[][] s = next.getShape();
                 String textClass = next.getTextStyleClass();
+                int blockIndex = 0; // 블록 인덱스 카운터
+                
                 for (int r = 0; r < s.length && r < 4; r++) {
                     for (int c = 0; c < s[r].length && c < 4; c++) {
                         if (s[r][c] != 0) {
                             Label cell = (Label) getNodeByRowColumnIndex(r, c, previewGrid);
-                            cell.setText("O");
-                            applyCellBlockText(cell, textClass);
+                            
+                            // 아이템 미노 표시 로직
+                            if (next.isItemPiece()) {
+                                if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY && blockIndex == next.getCopyBlockIndex()) {
+                                    // COPY 아이템: 특정 블록만 C 표시
+                                    cell.setText("C");
+                                    applyCellBlockText(cell, "item-copy-block");
+                                } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR && blockIndex == next.getLineClearBlockIndex()) {
+                                    // LINE_CLEAR 아이템: 특정 블록만 L 표시
+                                    cell.setText("L");
+                                    applyCellBlockText(cell, "item-copy-block");
+                                } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.WEIGHT) {
+                                    // WEIGHT 아이템: 모든 블록 W 표시
+                                    cell.setText("W");
+                                    applyCellBlockText(cell, textClass);
+                                } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.GRAVITY) {
+                                    // GRAVITY 아이템: 모든 블록 G 표시
+                                    cell.setText("G");
+                                    applyCellBlockText(cell, textClass);
+                                } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.SPLIT) {
+                                    // SPLIT 아이템: 모든 블록 S 표시
+                                    cell.setText("S");
+                                    applyCellBlockText(cell, textClass);
+                                } else {
+                                    // 기타 아이템 블록은 O 표시
+                                    cell.setText("O");
+                                    applyCellBlockText(cell, textClass);
+                                }
+                            } else {
+                                // 일반 미노는 O 표시
+                                cell.setText("O");
+                                applyCellBlockText(cell, textClass);
+                            }
+                            blockIndex++;
                         }
                     }
                 }

@@ -174,6 +174,10 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     @Override
     public void onScoreChanged(int score) {
         gameScene.updateGrid();
+        // 아이템 모드일 때 라인 정보 업데이트
+        if (engine != null) {
+            gameScene.updateItemModeInfo(engine.getTotalLinesCleared());
+        }
     }
 
     // ========== 일시정지 다이얼로그 ==========
@@ -220,18 +224,17 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                     applySelection(resume, quit, selected[0]);
                 } else if (ev.getCode() == KeyCode.ENTER) {
                     dialog.close();
-                    paused = false;
                     if (selected[0] == 0 && !gameOver) {
-                        resume();
+                        resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     } else {
+                        paused = false;
                         Platform.exit();
                     }
                 } else if (ev.getCode() == KeyCode.ESCAPE) {
                     // ESC: 일단 다이얼로그 닫고 게임 재개(게임오버 아니면)
                     dialog.close();
                     if (!gameOver) {
-                        paused = false;
-                        resume();
+                        resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     }
                 }
             });
