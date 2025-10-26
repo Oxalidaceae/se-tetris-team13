@@ -107,15 +107,16 @@
 }
 
 /* ================================
-   블록 색상 (Paul Tol 색맹 안전 팔레트)
-   명도: 밝음(90%) → 중간(60%) → 어두움(30%)
-   채도: 높음 → 중간 → 낮음
+   블록 색상 (색약 친화/다크 배경 최적화)
+   배경: #1A1A1A 기준 가독성 확보
+   - I vs J: 색상군 분리(하늘색 ↔ 보라기운 블루)
+   - S vs Z, J vs L: 색 + 명도/채도 차이로 구분 용이
    ================================ */
-.tetris-i-text { -fx-text-fill: #56B4E9 !important; } /* I - 밝은 스카이 블루 (명도 90%, 채도 높음) */
-.tetris-o-text { -fx-text-fill: #F0E442 !important; } /* O - 밝은 노랑 (명도 95%, 채도 높음) */
-.tetris-t-text { -fx-text-fill: #CC79A7 !important; } /* T - 로즈 핑크 (명도 70%, 채도 중간) */
-.tetris-s-text { -fx-text-fill: #009E73 !important; } /* S - 청록 그린 (명도 60%, 채도 높음) */
-.tetris-z-text { -fx-text-fill: #E69F00 !important; } /* Z - 진한 오렌지 (명도 75%, 채도 높음) */
-.tetris-j-text { -fx-text-fill: #0072B2 !important; } /* J - 진한 블루 (명도 50%, 채도 높음) */
-.tetris-l-text { -fx-text-fill: #D55E00 !important; } /* L - 버밀리온 (명도 65%, 채도 높음) */
-.tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
+.tetris-i-text { -fx-text-fill: #56B4E9 !important; } /* I - 밝은 스카이 블루 (밝고 선명; J와 색상군 분리) */
+.tetris-o-text { -fx-text-fill: #F0E442 !important; } /* O - 아주 밝은 노랑 (고명도/고채도, 어두운 배경에서 뛰어난 가독성) */
+.tetris-t-text { -fx-text-fill: #E377C2 !important; } /* T - 로즈 핑크 (중상 명도, 약간 밝힌 톤으로 가독성 향상) */
+.tetris-s-text { -fx-text-fill: #009E73 !important; } /* S - 청록 그린 (중간 명도, Z와 색상군 차이 뚜렷) */
+.tetris-z-text { -fx-text-fill: #E69F00 !important; } /* Z - 진한 오렌지 (고명도 계열, S와 상보 느낌으로 대비) */
+.tetris-j-text { -fx-text-fill: #7B68EE !important; } /* J - 슬레이트 블루(보라 기운) - I(하늘색)와 색상군 분리되어 색약 모드에서도 혼동 최소화 */
+.tetris-l-text { -fx-text-fill: #FF7F0E !important; } /* L - 밝은 오렌지 (J와 색/명도 모두 차이, 어두운 배경에서 선명) */
+.tetris-flash-text { -fx-text-fill: #FFFFFF !important; } /* 라인 클리어 플래시/하이라이트: 순백(최대 대비) */

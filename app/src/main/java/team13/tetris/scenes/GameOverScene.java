@@ -46,7 +46,7 @@ public class GameOverScene {
             statusLabel.setText("✅ Score saved successfully!");
 
             // 저장 후 scoreboard로 이동
-            manager.showScoreboard(settings);
+             manager.showScoreboard(settings, name, finalScore, difficulty);
         });
 
         Button backToMenuBtn = new Button("Back to Menu");
