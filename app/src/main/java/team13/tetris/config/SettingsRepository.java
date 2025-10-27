@@ -1,6 +1,7 @@
 package team13.tetris.config;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +26,9 @@ public class SettingsRepository {
         } catch (IOException e) {
             System.out.println("[SettingsRepository] No settings.json found, using defaults");
             return new Settings(); // 기본값으로 새로 생성
+        } catch (JsonSyntaxException e) {
+            System.err.println("[SettingsRepository] Corrupted settings.json, using defaults: " + e.getMessage());
+            return new Settings(); // 손상된 파일이면 기본값 사용
         }
     }
 }
