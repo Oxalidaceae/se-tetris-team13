@@ -32,9 +32,50 @@
     -fx-background-radius: 0;
 }
 
+.button:hover {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.button:focused {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+}
+
+.button:pressed {
+    -fx-background-color: #1E90FF;
+    -fx-text-fill: white;
+}
+
+/* ================================
+   ListView 스타일
+   ================================ */
+.list-view {
+    -fx-background-color: #000000;
+    -fx-border-color: white;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.list-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.list-cell:focused {
+    -fx-background-color: #3498db;
+}
+
 /* ================================
    화면 크기별 스타일
    ================================ */
+
 /* Small 크기 (400x500) */
 .window-small .label {
     -fx-font-size: 12px;
@@ -69,6 +110,10 @@
 
 .window-small .item-mode-label {
     -fx-font-size: 10px;
+}
+
+.window-small .list-cell {
+    -fx-font-size: 12px;
 }
 
 /* Medium 크기 (600x700) - 기본값 유지 */
@@ -107,6 +152,10 @@
     -fx-font-size: 12px;
 }
 
+.window-medium .list-cell {
+    -fx-font-size: 16px;
+}
+
 /* Large 크기 (800x900) */
 .window-large .label {
     -fx-font-size: 20px;
@@ -143,21 +192,8 @@
     -fx-font-size: 16px;
 }
 
-.button:hover {
-    -fx-background-color: white;
-    -fx-text-fill: black;
-}
-
-.button:focused {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
-    -fx-border-color: white;
-    -fx-border-width: 2px;
-}
-
-.button:pressed {
-    -fx-background-color: #1E90FF;
-    -fx-text-fill: white;
+.window-large .list-cell {
+    -fx-font-size: 20px;
 }
 
 /* ================================
@@ -219,6 +255,8 @@
     -fx-font-family: "Monospaced";
     -fx-font-size: 12px;
 }
+
+
 
 /* ================================
    블록 색상 (선명한 클래식 팔레트)
