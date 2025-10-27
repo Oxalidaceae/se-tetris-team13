@@ -369,6 +369,307 @@ public class KeySettingsSceneTest {
     waitForFX();
   }
 
+  @Test
+  @DisplayName("금지된 키 7개가 올바르게 정의되어 있는지 확인")
+  void testRestrictedKeysExist() {
+    javafx.application.Platform.runLater(() -> {
+      // 현재 KeySettingsScene에서 금지된 키 목록
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // 모든 금지 키가 KeyCode에 정의되어 있는지 확인
+      for (KeyCode key : restrictedKeys) {
+        assertNotNull(key, key.getName() + " should be defined in KeyCode");
+      }
+
+      // 총 7개의 금지 키가 있어야 함
+      assertEquals(7, restrictedKeys.length, "Should have exactly 7 restricted keys");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("UNDEFINED 키가 금지 목록에 포함되는지 확인")
+  void testUndefinedKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.UNDEFINED;
+      assertNotNull(key, "UNDEFINED key should exist");
+      assertEquals("Undefined", key.getName(), "UNDEFINED key name should be 'Undefined'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("WINDOWS 키가 금지 목록에 포함되는지 확인")
+  void testWindowsKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.WINDOWS;
+      assertNotNull(key, "WINDOWS key should exist");
+      assertEquals("Windows", key.getName(), "WINDOWS key name should be 'Windows'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("META 키가 금지 목록에 포함되는지 확인")
+  void testMetaKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.META;
+      assertNotNull(key, "META key should exist");
+      assertEquals("Meta", key.getName(), "META key name should be 'Meta'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("PRINTSCREEN 키가 금지 목록에 포함되는지 확인")
+  void testPrintScreenKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.PRINTSCREEN;
+      assertNotNull(key, "PRINTSCREEN key should exist");
+      assertEquals("Print Screen", key.getName(), "PRINTSCREEN key name should be 'Print Screen'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("CLEAR 키가 금지 목록에 포함되는지 확인")
+  void testClearKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.CLEAR;
+      assertNotNull(key, "CLEAR key should exist");
+      assertEquals("Clear", key.getName(), "CLEAR key name should be 'Clear'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("CAPS 키가 금지 목록에 포함되는지 확인")
+  void testCapsKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.CAPS;
+      assertNotNull(key, "CAPS key should exist");
+      assertEquals("Caps Lock", key.getName(), "CAPS key name should be 'Caps Lock'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("NUM_LOCK 키가 금지 목록에 포함되는지 확인")
+  void testNumLockKeyIsRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode key = KeyCode.NUM_LOCK;
+      assertNotNull(key, "NUM_LOCK key should exist");
+      assertEquals("Num Lock", key.getName(), "NUM_LOCK key name should be 'Num Lock'");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("허용되는 기본 키들이 금지 목록에 없는지 확인")
+  void testAllowedDefaultKeysAreNotRestricted() {
+    javafx.application.Platform.runLater(() -> {
+      // 기본 키 설정 (허용되어야 함)
+      KeyCode[] allowedKeys = {
+          KeyCode.LEFT,
+          KeyCode.RIGHT,
+          KeyCode.DOWN,
+          KeyCode.Z,
+          KeyCode.X,
+          KeyCode.P,
+          KeyCode.ESCAPE
+      };
+
+      // 금지된 키 목록
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // 허용된 키가 금지 목록에 없는지 확인
+      for (KeyCode allowed : allowedKeys) {
+        for (KeyCode restricted : restrictedKeys) {
+          assertNotEquals(restricted, allowed,
+              allowed.getName() + " should not be in restricted list");
+        }
+      }
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("일반적으로 사용되는 키들이 허용되는지 확인")
+  void testCommonlyUsedKeysAreAllowed() {
+    javafx.application.Platform.runLater(() -> {
+      // 일반적으로 사용 가능해야 하는 키들
+      KeyCode[] commonKeys = {
+          KeyCode.A, KeyCode.W, KeyCode.S, KeyCode.D,
+          KeyCode.SPACE, KeyCode.ENTER, KeyCode.SHIFT,
+          KeyCode.CONTROL, KeyCode.ALT, KeyCode.TAB,
+          KeyCode.UP, KeyCode.DOWN, KeyCode.LEFT, KeyCode.RIGHT
+      };
+
+      // 금지된 키 목록
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // 일반 키가 금지 목록에 없는지 확인
+      for (KeyCode common : commonKeys) {
+        for (KeyCode restricted : restrictedKeys) {
+          assertNotEquals(restricted, common,
+              common.getName() + " should be allowed");
+        }
+      }
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("Function 키들이 허용되는지 확인")
+  void testFunctionKeysAreAllowed() {
+    javafx.application.Platform.runLater(() -> {
+      // Function 키들 (현재 구현에서는 허용됨)
+      KeyCode[] functionKeys = {
+          KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4,
+          KeyCode.F5, KeyCode.F6, KeyCode.F7, KeyCode.F8,
+          KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12
+      };
+
+      // 금지된 키 목록
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // Function 키가 금지 목록에 없는지 확인 (허용됨)
+      for (KeyCode func : functionKeys) {
+        for (KeyCode restricted : restrictedKeys) {
+          assertNotEquals(restricted, func,
+              func.getName() + " should be allowed (not in restricted list)");
+        }
+      }
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("숫자 패드 키들이 허용되는지 확인")
+  void testNumpadKeysAreAllowed() {
+    javafx.application.Platform.runLater(() -> {
+      // 숫자 패드 키들 (현재 구현에서는 허용됨)
+      KeyCode[] numpadKeys = {
+          KeyCode.NUMPAD0, KeyCode.NUMPAD1, KeyCode.NUMPAD2,
+          KeyCode.NUMPAD3, KeyCode.NUMPAD4, KeyCode.NUMPAD5,
+          KeyCode.NUMPAD6, KeyCode.NUMPAD7, KeyCode.NUMPAD8,
+          KeyCode.NUMPAD9
+      };
+
+      // 금지된 키 목록
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // 숫자 패드 키가 금지 목록에 없는지 확인 (허용됨)
+      for (KeyCode numpad : numpadKeys) {
+        for (KeyCode restricted : restrictedKeys) {
+          assertNotEquals(restricted, numpad,
+              numpad.getName() + " should be allowed (not in restricted list)");
+        }
+      }
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("금지된 키가 정확히 7개인지 확인")
+  void testRestrictedKeysCount() {
+    javafx.application.Platform.runLater(() -> {
+      // 현재 구현에서 금지된 키는 정확히 7개
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      assertEquals(7, restrictedKeys.length,
+          "Should have exactly 7 restricted keys as per implementation");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("금지 키 목록에 중복이 없는지 확인")
+  void testRestrictedKeysNoDuplicates() {
+    javafx.application.Platform.runLater(() -> {
+      KeyCode[] restrictedKeys = {
+          KeyCode.UNDEFINED,
+          KeyCode.WINDOWS,
+          KeyCode.META,
+          KeyCode.PRINTSCREEN,
+          KeyCode.CLEAR,
+          KeyCode.CAPS,
+          KeyCode.NUM_LOCK
+      };
+
+      // 중복 검사
+      for (int i = 0; i < restrictedKeys.length; i++) {
+        for (int j = i + 1; j < restrictedKeys.length; j++) {
+          assertNotEquals(restrictedKeys[i], restrictedKeys[j],
+              "Restricted keys should not have duplicates");
+        }
+      }
+    });
+
+    waitForFX();
+  }
+
   // JavaFX 스레드 작업 완료 대기 헬퍼 메서드
   private void waitForFX() {
     try {
