@@ -32,7 +32,7 @@ public class MainMenuScene {
         itemModeBtn.setOnAction(e -> manager.showGame(settings, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
-        exitBtn.setOnAction(e -> manager.exitWithSave(settings));
+        exitBtn.setOnAction(e -> manager.showExitScene(settings, () -> manager.showMainMenu(settings)));
 
         VBox layout = new VBox(10, title, startBtn, itemModeBtn, optionBtn, scoreBtn, exitBtn);
         layout.setStyle("-fx-alignment: center;");

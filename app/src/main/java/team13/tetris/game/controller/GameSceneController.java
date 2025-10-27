@@ -3,14 +3,12 @@ package team13.tetris.game.controller;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
@@ -27,16 +25,18 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
     private final Settings settings;
     private final KeyInputHandler keyInputHandler;
     private GameEngine engine;
+    private final SceneManager manager;
     
     private boolean paused = false;
     private boolean gameOver = false;
     private int totalLinesCleared = 0; // 총 클리어된 라인 수 추적
     private long lastHardDropTime = 0; // 마지막 하드드롭 시간
 
-    public GameSceneController(GameScene gameScene, Settings settings, KeyInputHandler keyInputHandler) {
+    public GameSceneController(GameScene gameScene, SceneManager manager, Settings settings, KeyInputHandler keyInputHandler) {
         this.gameScene = gameScene;
         this.settings = settings;
         this.keyInputHandler = keyInputHandler;
+        this.manager = manager;
     }
 
     public void setEngine(GameEngine engine) {
@@ -241,22 +241,12 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                     if (selected[0] == 0 && !gameOver) {
                         resume(); // paused를 먼저 설정하지 말고 resume()에서 처리하도록
                     } else {
-                        paused = false;
-                        // Quit 선택 시 게임 종료 확인 다이얼로그 표시
-                        Platform.runLater(() -> {
-                            Alert confirmExit = new Alert(Alert.AlertType.CONFIRMATION);
-                            confirmExit.setTitle("Confirm Exit");
-                            confirmExit.setHeaderText("게임을 종료하시겠습니까?");
-                            confirmExit.setContentText("진행 중인 게임이 저장되지 않습니다.");
-
-                            confirmExit.showAndWait().ifPresent(response -> {
-                                if (response == ButtonType.OK) {
-                                    Platform.exit();
-                                } else {
-                                    if (!gameOver) {
-                                        pause();                                    }
-                                }
-                            });
+                        // Quit 선택 시 ExitScene으로 이동
+                        // Cancel 시 게임 화면으로 돌아와서 일시정지 다이얼로그 재표시
+                        manager.showExitScene(settings, () -> {
+                            manager.restorePreviousScene();
+                            paused = true;
+                            showPauseWindow();
                         });
                     }
                 }
