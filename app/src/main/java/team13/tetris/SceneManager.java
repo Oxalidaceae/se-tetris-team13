@@ -25,6 +25,7 @@ import javafx.stage.Stage;
 public class SceneManager {
     private final Stage stage;
     private boolean colorBlindMode = false; // 색맹 모드 상태 변수
+    private String windowSizeClass = "window-medium"; // 현재 창 크기 클래스
 
     public SceneManager(Stage stage) {
         this.stage = stage;
@@ -116,6 +117,20 @@ public class SceneManager {
     public void setWindowSize(int width, int height) {
         stage.setWidth(width);
         stage.setHeight(height);
+        
+        // 창 크기에 따른 CSS 클래스 결정
+        if (width <= 400) {
+            windowSizeClass = "window-small";
+        } else if (width <= 600) {
+            windowSizeClass = "window-medium";
+        } else {
+            windowSizeClass = "window-large";
+        }
+        
+        // 현재 씬에 크기 클래스 적용
+        if (stage.getScene() != null) {
+            applyWindowSizeClass(stage.getScene());
+        }
     }
 
     // 씬에 맞는 스타일시트 적용 메서드
@@ -128,6 +143,17 @@ public class SceneManager {
 
         scene.getStylesheets().add(
                 getClass().getResource(cssPath).toExternalForm());
+        
+        // 창 크기 클래스도 함께 적용
+        applyWindowSizeClass(scene);
+    }
+    
+    // 씬의 루트 노드에 창 크기 클래스 적용
+    private void applyWindowSizeClass(Scene scene) {
+        if (scene != null && scene.getRoot() != null) {
+            scene.getRoot().getStyleClass().removeAll("window-small", "window-medium", "window-large");
+            scene.getRoot().getStyleClass().add(windowSizeClass);
+        }
     }
 
     // 키보드로 버튼들 간 이동 및 선택 기능 활성화 메서드
