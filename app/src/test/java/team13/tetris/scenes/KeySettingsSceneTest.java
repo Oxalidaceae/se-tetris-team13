@@ -287,7 +287,6 @@ public class KeySettingsSceneTest {
       Button rotateBtn = (Button) layout.getChildren().get(4);
       Button dropBtn = (Button) layout.getChildren().get(5);
       Button pauseBtn = (Button) layout.getChildren().get(6);
-      Button exitBtn = (Button) layout.getChildren().get(7);
 
       // 버튼 텍스트에 키 이름이 포함되어 있는지 확인
       assertTrue(leftBtn.getText().contains(KeyCode.valueOf(settings.getKeyLeft()).getName()),
@@ -302,8 +301,6 @@ public class KeySettingsSceneTest {
           "Drop button should display current key setting");
       assertTrue(pauseBtn.getText().contains(KeyCode.valueOf(settings.getPause()).getName()),
           "Pause button should display current key setting");
-      assertTrue(exitBtn.getText().contains(KeyCode.valueOf(settings.getExit()).getName()),
-          "Exit button should display current key setting");
     });
 
     waitForFX();
@@ -335,7 +332,6 @@ public class KeySettingsSceneTest {
       assertNotNull(settings.getKeyRotate(), "Key rotate setting should exist");
       assertNotNull(settings.getKeyDrop(), "Key drop setting should exist");
       assertNotNull(settings.getPause(), "Pause key setting should exist");
-      assertNotNull(settings.getExit(), "Exit key setting should exist");
     });
 
     waitForFX();

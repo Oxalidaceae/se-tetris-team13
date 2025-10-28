@@ -143,11 +143,6 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
         pause();
     }
 
-    @Override
-    public void onEscPressed() {
-        // ESC 키 처리 (필요시 구현)
-    }
-
     // ========== GameStateListener 인터페이스 구현 ==========
     @Override
     public void onBoardUpdated(Board board) {

@@ -109,7 +109,5 @@ public class KeyInputHandler {
         void onHardDropPressed();
 
         void onPausePressed();
-
-        void onEscPressed();
     }
 }

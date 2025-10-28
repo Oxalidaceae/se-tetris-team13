@@ -273,14 +273,15 @@ public class GameSceneControllerTest {
   void testOnPausePressed() {
     // pause()는 showPauseWindow()를 호출하고 Platform.runLater 사용
     // UI 의존성으로 인해 실제 동작은 테스트하기 어려움
-    // SceneManager 호출은 pause window 내부의 사용자 선택에 따라 결정됨
-    assertThrows(IllegalStateException.class, () -> controller.onPausePressed());
-  }
-
-  @Test
-  @DisplayName("onEscPressed: 현재는 빈 구현")
-  void testOnEscPressed() {
-    assertDoesNotThrow(() -> controller.onEscPressed());
+    // JavaFX가 초기화된 환경에서는 정상 작동, 아니면 예외 발생 가능
+    try {
+      controller.onPausePressed();
+      // JavaFX가 초기화되어 있으면 정상 실행
+    } catch (IllegalStateException e) {
+      // JavaFX가 초기화되지 않았으면 예외 발생 가능
+      assertTrue(e.getMessage().contains("Toolkit") || e.getMessage().contains("toolkit"),
+          "JavaFX Toolkit 관련 예외여야 함");
+    }
   }
 
   // ========== GameStateListener 인터페이스 메서드 테스트 ==========

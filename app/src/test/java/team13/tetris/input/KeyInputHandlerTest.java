@@ -37,7 +37,6 @@ class KeyInputHandlerTest {
     assertTrue(handler.isRotateClicked(KeyCode.Z), "Z 키가 회전과 매칭되어야 함");
     assertTrue(handler.isHardDropClicked(KeyCode.X), "X 키가 하드 드롭과 매칭되어야 함");
     assertTrue(handler.isPauseClicked(KeyCode.P), "P 키가 일시정지와 매칭되어야 함");
-    assertTrue(handler.isEscClicked(KeyCode.ESCAPE), "ESCAPE 키가 종료와 매칭되어야 함");
 
     // WASD는 기본 키가 아님
     assertFalse(handler.isLeftClicked(KeyCode.A), "A 키는 기본 키가 아님");
@@ -71,7 +70,6 @@ class KeyInputHandlerTest {
   void testSpecialKeyMatching() {
     // given
     settings.setKeyDrop("SPACE");
-    settings.setExit("ESCAPE");
     settings.setPause("P");
 
     // when & then
@@ -79,11 +77,6 @@ class KeyInputHandlerTest {
         "SPACE 키가 하드 드롭과 매칭되어야 함");
     assertFalse(keyInputHandler.isHardDropClicked(KeyCode.ENTER),
         "ENTER 키는 하드 드롭과 매칭되지 않아야 함");
-
-    assertTrue(keyInputHandler.isEscClicked(KeyCode.ESCAPE),
-        "ESCAPE 키가 종료와 매칭되어야 함");
-    assertFalse(keyInputHandler.isEscClicked(KeyCode.SPACE),
-        "SPACE 키는 종료와 매칭되지 않아야 함");
 
     assertTrue(keyInputHandler.isPauseClicked(KeyCode.P),
         "P 키가 일시정지와 매칭되어야 함");
@@ -229,7 +222,6 @@ class KeyInputHandlerTest {
     settings.setKeyRotate("W");
     settings.setKeyDrop("X");
     settings.setPause("P");
-    settings.setExit("ESCAPE");
 
     // when & then - 모든 메서드가 정상 동작해야 함
     assertDoesNotThrow(() -> keyInputHandler.isLeftClicked(KeyCode.A));
@@ -238,7 +230,6 @@ class KeyInputHandlerTest {
     assertDoesNotThrow(() -> keyInputHandler.isRotateClicked(KeyCode.W));
     assertDoesNotThrow(() -> keyInputHandler.isHardDropClicked(KeyCode.X));
     assertDoesNotThrow(() -> keyInputHandler.isPauseClicked(KeyCode.P));
-    assertDoesNotThrow(() -> keyInputHandler.isEscClicked(KeyCode.ESCAPE));
   }
 
   @Test
