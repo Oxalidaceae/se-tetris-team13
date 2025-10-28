@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
@@ -31,7 +32,28 @@ public class GameSceneControllerTest {
   private GameSceneController controller;
   private Settings settings;
   private KeyInputHandler keyInputHandler;
+  private TestSceneManager mockSceneManager;
   private TestEngine testEngine;
+
+  // 테스트용 SceneManager (메서드 호출 추적)
+  private static class TestSceneManager extends SceneManager {
+    int showExitSceneCalled = 0;
+    int restorePreviousSceneCalled = 0;
+
+    public TestSceneManager() {
+      super(null); // Stage는 테스트에서 필요 없음
+    }
+
+    @Override
+    public void showExitScene(Settings settings, Runnable onCancel) {
+      showExitSceneCalled++;
+    }
+
+    @Override
+    public void restorePreviousScene() {
+      restorePreviousSceneCalled++;
+    }
+  }
 
   // 테스트용 GameEngine (메서드 호출 추적)
   private static class TestEngine extends GameEngine {
@@ -106,8 +128,11 @@ public class GameSceneControllerTest {
     settings = new Settings();
     keyInputHandler = new KeyInputHandler(settings);
 
+    // 테스트용 SceneManager
+    mockSceneManager = new TestSceneManager();
+
     // GameScene을 null로 전달 (UI 의존성 회피)
-    controller = new GameSceneController(null, settings, keyInputHandler);
+    controller = new GameSceneController(null, mockSceneManager, settings, keyInputHandler);
 
     Board board = new Board(10, 20);
     testEngine = new TestEngine(board, controller);
@@ -123,6 +148,7 @@ public class GameSceneControllerTest {
     testEngine = null;
     settings = null;
     keyInputHandler = null;
+    mockSceneManager = null;
   }
 
   // ========== GameController 인터페이스 메서드 테스트 ==========
@@ -243,10 +269,11 @@ public class GameSceneControllerTest {
   }
 
   @Test
-  @DisplayName("onPausePressed: Platform.runLater로 인해 IllegalStateException 발생")
+  @DisplayName("onPausePressed: pause 메서드 호출하지만 UI 의존성으로 제한적 테스트")
   void testOnPausePressed() {
     // pause()는 showPauseWindow()를 호출하고 Platform.runLater 사용
-    // 단위 테스트 환경에서는 JavaFX Application Thread가 없어서 IllegalStateException 발생
+    // UI 의존성으로 인해 실제 동작은 테스트하기 어려움
+    // SceneManager 호출은 pause window 내부의 사용자 선택에 따라 결정됨
     assertThrows(IllegalStateException.class, () -> controller.onPausePressed());
   }
 
@@ -393,5 +420,37 @@ public class GameSceneControllerTest {
     assertEquals(1, newEngine.moveRightCalled); // 새 엔진에 전달됨
 
     newEngine.shutdown();
+  }
+
+  // ========== SceneManager 연동 테스트 ==========
+
+  @Test
+  @DisplayName("SceneManager와 함께 생성되는지 확인")
+  void testSceneManagerIntegration() {
+    // 생성자에서 SceneManager를 받았는지 확인
+    assertNotNull(controller);
+
+    // SceneManager가 정상적으로 설정되었는지 간접 확인
+    // (실제 호출은 pause window에서 사용자 선택에 따라 결정됨)
+    assertEquals(0, mockSceneManager.showExitSceneCalled);
+    assertEquals(0, mockSceneManager.restorePreviousSceneCalled);
+  }
+
+  @Test
+  @DisplayName("리팩토링된 생성자 시그니처 확인")
+  void testRefactoredConstructor() {
+    // 새로운 생성자가 SceneManager를 포함하는지 확인
+    Settings newSettings = new Settings();
+    KeyInputHandler newKeyHandler = new KeyInputHandler(newSettings);
+    TestSceneManager newSceneManager = new TestSceneManager();
+
+    GameSceneController newController = new GameSceneController(
+        null, // GameScene
+        newSceneManager, // SceneManager
+        newSettings, // Settings
+        newKeyHandler // KeyInputHandler
+    );
+
+    assertNotNull(newController);
   }
 }

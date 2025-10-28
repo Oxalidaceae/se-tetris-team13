@@ -69,8 +69,8 @@ public class MainMenuSceneTest {
       Scene scene = mainMenuScene.getScene();
       VBox layout = (VBox) scene.getRoot();
 
-      assertEquals(7, layout.getChildren().size(),
-          "Layout should have 7 children (title + 6 buttons)");
+      assertEquals(6, layout.getChildren().size(),
+          "Layout should have 6 children (title + 5 buttons)");
       assertEquals("-fx-alignment: center;", layout.getStyle(), "Layout should be centered");
     });
 
@@ -182,25 +182,6 @@ public class MainMenuSceneTest {
   }
 
   @Test
-  @DisplayName("Test Game Over 버튼이 올바르게 생성되는지 확인")
-  void testGameOverButton() {
-    javafx.application.Platform.runLater(() -> {
-      Scene scene = mainMenuScene.getScene();
-      VBox layout = (VBox) scene.getRoot();
-
-      assertTrue(layout.getChildren().get(6) instanceof Button, "Seventh child should be Button");
-      Button testGameOverBtn = (Button) layout.getChildren().get(6);
-
-      assertEquals("Test Game Over", testGameOverBtn.getText(),
-          "Test Game Over button text should be 'Test Game Over'");
-      assertNotNull(testGameOverBtn.getOnAction(),
-          "Test Game Over button should have action handler");
-    });
-
-    waitForFX();
-  }
-
-  @Test
   @DisplayName("모든 버튼이 존재하는지 확인")
   void testAllButtonsExist() {
     javafx.application.Platform.runLater(() -> {
@@ -211,7 +192,7 @@ public class MainMenuSceneTest {
           .filter(node -> node instanceof Button)
           .count();
 
-      assertEquals(6, buttonCount, "Should have exactly 6 buttons");
+      assertEquals(5, buttonCount, "Should have exactly 5 buttons");
     });
 
     waitForFX();
@@ -229,14 +210,12 @@ public class MainMenuSceneTest {
       Button optionBtn = (Button) layout.getChildren().get(3);
       Button scoreBtn = (Button) layout.getChildren().get(4);
       Button exitBtn = (Button) layout.getChildren().get(5);
-      Button testGameOverBtn = (Button) layout.getChildren().get(6);
 
       assertNotNull(startBtn.getOnAction(), "Start button should have action handler");
       assertNotNull(itemModeBtn.getOnAction(), "Item mode button should have action handler");
       assertNotNull(optionBtn.getOnAction(), "Options button should have action handler");
       assertNotNull(scoreBtn.getOnAction(), "Scoreboard button should have action handler");
       assertNotNull(exitBtn.getOnAction(), "Exit button should have action handler");
-      assertNotNull(testGameOverBtn.getOnAction(), "Test Game Over button should have action handler");
     });
 
     waitForFX();
@@ -259,8 +238,6 @@ public class MainMenuSceneTest {
           "Fourth button should be Scoreboard");
       assertEquals("Exit", ((Button) layout.getChildren().get(5)).getText(),
           "Fifth button should be Exit");
-      assertEquals("Test Game Over", ((Button) layout.getChildren().get(6)).getText(),
-          "Sixth button should be Test Game Over");
     });
 
     waitForFX();
@@ -317,7 +294,7 @@ public class MainMenuSceneTest {
       assertTrue(layout.getChildren().get(0) instanceof Label,
           "First child should be Label");
 
-      for (int i = 1; i <= 6; i++) {
+      for (int i = 1; i <= 5; i++) {
         assertTrue(layout.getChildren().get(i) instanceof Button,
             "Child " + i + " should be Button");
       }

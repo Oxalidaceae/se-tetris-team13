@@ -110,7 +110,7 @@ public class ScoreboardSceneTest {
       ListView<String> scoreList = (ListView<String>) layout.getChildren().get(1);
 
       assertNotNull(scoreList, "Score list should not be null");
-      assertEquals(250, scoreList.getMaxHeight(), 0.1, "Score list max height should be 250");
+      assertEquals(300, scoreList.getMaxHeight(), 0.1, "Score list max height should be 300");
     });
 
     waitForFX();
@@ -126,7 +126,7 @@ public class ScoreboardSceneTest {
       assertTrue(layout.getChildren().get(2) instanceof Button, "Third child should be Button");
       Button backBtn = (Button) layout.getChildren().get(2);
 
-      assertEquals("Back", backBtn.getText(), "Back button text should be 'Back'");
+      assertEquals("Back to Main Menu", backBtn.getText(), "Back button text should be 'Back to Main Menu'");
       assertNotNull(backBtn.getOnAction(), "Back button should have action handler");
     });
 
@@ -312,6 +312,75 @@ public class ScoreboardSceneTest {
       // ScoreBoard는 내부적으로 생성되므로 Scene이 정상 생성되면 OK
       Scene scene = scoreboardScene.getScene();
       assertNotNull(scene, "Scene creation should succeed with internal ScoreBoard");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("하이라이트 모드에서 Exit 버튼이 추가되는지 확인")
+  void testExitButtonInHighlightMode() {
+    javafx.application.Platform.runLater(() -> {
+      ScoreboardScene scene = new ScoreboardScene(sceneManager, settings,
+          "TestPlayer", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
+
+      Scene sceneObj = scene.getScene();
+      VBox layout = (VBox) sceneObj.getRoot();
+
+      assertEquals(4, layout.getChildren().size(),
+          "Layout should have 4 children with highlight (title, list, back, exit)");
+      assertTrue(layout.getChildren().get(3) instanceof Button,
+          "Fourth child should be Exit button");
+
+      Button exitBtn = (Button) layout.getChildren().get(3);
+      assertEquals("Exit", exitBtn.getText(), "Exit button text should be 'Exit'");
+      assertNotNull(exitBtn.getOnAction(), "Exit button should have action handler");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("하이라이트 없는 모드에서는 Exit 버튼이 없는지 확인")
+  void testNoExitButtonWithoutHighlight() {
+    javafx.application.Platform.runLater(() -> {
+      Scene scene = scoreboardScene.getScene();
+      VBox layout = (VBox) scene.getRoot();
+
+      assertEquals(3, layout.getChildren().size(),
+          "Layout should have 3 children without highlight (title, list, back)");
+      // 네 번째 자식이 없어야 함
+      assertFalse(layout.getChildren().size() > 3,
+          "Should not have Exit button without highlight parameters");
+    });
+
+    waitForFX();
+  }
+
+  @Test
+  @DisplayName("부분 하이라이트 파라미터로 호출시 Exit 버튼이 없는지 확인")
+  void testNoExitButtonWithPartialHighlight() {
+    javafx.application.Platform.runLater(() -> {
+      // name만 null이 아닌 경우
+      ScoreboardScene scene1 = new ScoreboardScene(sceneManager, settings,
+          "TestPlayer", null, null);
+      VBox layout1 = (VBox) scene1.getScene().getRoot();
+      assertEquals(3, layout1.getChildren().size(),
+          "Should have 3 children when score is null");
+
+      // score만 null이 아닌 경우
+      ScoreboardScene scene2 = new ScoreboardScene(sceneManager, settings,
+          null, 1000, null);
+      VBox layout2 = (VBox) scene2.getScene().getRoot();
+      assertEquals(3, layout2.getChildren().size(),
+          "Should have 3 children when name is null");
+
+      // mode만 null이 아닌 경우
+      ScoreboardScene scene3 = new ScoreboardScene(sceneManager, settings,
+          null, null, ScoreBoard.ScoreEntry.Mode.NORMAL);
+      VBox layout3 = (VBox) scene3.getScene().getRoot();
+      assertEquals(3, layout3.getChildren().size(),
+          "Should have 3 children when name and score are null");
     });
 
     waitForFX();

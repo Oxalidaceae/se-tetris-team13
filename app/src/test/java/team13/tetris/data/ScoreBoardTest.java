@@ -3,40 +3,63 @@ package team13.tetris.data;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
 // Test class for ScoreBoard functionality
+@DisplayName("ScoreBoard 테스트")
 public class ScoreBoardTest {
 
     private ScoreBoard scoreBoard;
+    private String originalWorkingDir;
 
     @TempDir
     Path tempDir;
 
     @BeforeEach
-    void setUp() {
-        // Change working directory to temp directory for isolated testing
+    void setUp(@TempDir Path tempDir) throws IOException {
+        this.tempDir = tempDir;
+
+        // Save original working directory
+        originalWorkingDir = System.getProperty("user.dir");
+
+        // Change working directory to temp directory BEFORE creating ScoreBoard
         System.setProperty("user.dir", tempDir.toString());
-        scoreBoard = new ScoreBoard();
+
+        // Create fresh ScoreBoard instance with test-specific file name
+        // This prevents interference with actual game's scores.txt
+        scoreBoard = new ScoreBoard("test_scores.txt");
     }
 
     @AfterEach
     void tearDown() {
-        // Clean up any created files
-        File scoreFile = new File("scores.txt");
-        if (scoreFile.exists()) {
-            scoreFile.delete();
+        // Restore original working directory
+        System.setProperty("user.dir", originalWorkingDir);
+
+        // Clean up test-specific score files only
+        File tempScoreFile = tempDir.resolve("test_scores.txt").toFile();
+        if (tempScoreFile.exists()) {
+            tempScoreFile.delete();
+        }
+
+        // Clean up test_scores.txt in current directory if it exists
+        // (DO NOT delete scores.txt - that's the actual game data!)
+        File currentTestScoreFile = new File("test_scores.txt");
+        if (currentTestScoreFile.exists()) {
+            currentTestScoreFile.delete();
         }
     }
 
     @Test
+    @DisplayName("점수 추가: 단일 점수 추가 테스트")
     void testAddScore() {
         // Test adding a single score
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -49,6 +72,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("점수 추가: 여러 점수 추가 및 정렬 테스트")
     void testAddMultipleScores() {
         // Test adding multiple scores
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -68,6 +92,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("점수 정렬: 내림차순 자동 정렬 확인")
     void testScoreSorting() {
         // Test that scores are automatically sorted
         scoreBoard.addScore("Low", 100, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -86,6 +111,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("점수 초기화: 모든 점수 삭제")
     void testResetScores() {
         // Add some scores
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -100,12 +126,14 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("ScoreEntry toString: 문자열 변환 형식 확인")
     void testScoreEntryToString() {
         ScoreBoard.ScoreEntry entry = new ScoreBoard.ScoreEntry("TestPlayer", 12345, ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertEquals("TestPlayer: 12345 (NORMAL)", entry.toString());
     }
 
     @Test
+    @DisplayName("파일 저장/로딩: 점수 영속성 테스트")
     void testSaveAndLoadScores() {
         // Add some scores
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -116,7 +144,7 @@ public class ScoreBoardTest {
         scoreBoard.saveScores();
 
         // Create new ScoreBoard instance to test loading
-        ScoreBoard newScoreBoard = new ScoreBoard();
+        ScoreBoard newScoreBoard = new ScoreBoard("test_scores.txt");
         List<ScoreBoard.ScoreEntry> loadedScores = newScoreBoard.getScores();
 
         // Verify loaded scores
@@ -133,19 +161,21 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("파일 로딩: 존재하지 않는 파일 처리")
     void testLoadNonExistentFile() {
-        // Ensure no scores.txt file exists
-        File scoreFile = new File("scores.txt");
+        // Ensure no test_scores.txt file exists
+        File scoreFile = new File("test_scores.txt");
         if (scoreFile.exists()) {
             scoreFile.delete();
         }
 
         // Create new ScoreBoard - should handle missing file gracefully
-        ScoreBoard newScoreBoard = new ScoreBoard();
+        ScoreBoard newScoreBoard = new ScoreBoard("test_scores.txt");
         assertEquals(0, newScoreBoard.getScores().size());
     }
 
     @Test
+    @DisplayName("엣지 케이스: 빈 플레이어 이름 처리")
     void testEmptyPlayerName() {
         scoreBoard.addScore("", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         scoreBoard.addScore("ValidName", 500, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -159,6 +189,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("엣지 케이스: 0점 및 음수 점수 처리")
     void testZeroAndNegativeScores() {
         scoreBoard.addScore("Zero", 0, ScoreBoard.ScoreEntry.Mode.NORMAL);
         scoreBoard.addScore("Negative", -100, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -174,6 +205,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("엣지 케이스: 동일한 점수 여러 개 처리")
     void testDuplicateScores() {
         scoreBoard.addScore("Player1", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         scoreBoard.addScore("Player2", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -189,6 +221,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 인덱스: 기본 동작 확인")
     void testGetLastAddedIndexBasic() {
         assertEquals(-1, scoreBoard.getLastAddedIndex());
         scoreBoard.addScore("Alice", 500, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -198,6 +231,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 인덱스: 정렬 후 위치 추적")
     void testGetLastAddedIndexWithSorting() {
         scoreBoard.addScore("Low", 100, ScoreBoard.ScoreEntry.Mode.NORMAL);
         scoreBoard.addScore("High", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -209,6 +243,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 인덱스: 초기화 후 상태")
     void testGetLastAddedIndexAfterReset() {
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertTrue(scoreBoard.getLastAddedIndex() >= 0);
@@ -217,15 +252,17 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 인덱스: 파일 재로드 후 상태")
     void testGetLastAddedIndexAfterReload() {
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         scoreBoard.saveScores();
         // New instance will load from file and should not track lastAddedEntry
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         assertEquals(-1, newBoard.getLastAddedIndex());
     }
 
     @Test
+    @DisplayName("마지막 추가 엔트리: 가장 최근 추가된 항목 조회")
     void testGetLastAddedEntry() {
         // Initially should be null
         assertNull(scoreBoard.getLastAddedEntry());
@@ -248,6 +285,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 엔트리: 초기화 후 상태")
     void testGetLastAddedEntryAfterReset() {
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertNotNull(scoreBoard.getLastAddedEntry());
@@ -257,17 +295,19 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("마지막 추가 엔트리: 파일 재로드 후 상태")
     void testGetLastAddedEntryAfterReload() {
         scoreBoard.addScore("Alice", 1000, ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertNotNull(scoreBoard.getLastAddedEntry());
         scoreBoard.saveScores();
 
         // New instance will load from file and should not track lastAddedEntry
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         assertNull(newBoard.getLastAddedEntry());
     }
 
     @Test
+    @DisplayName("모드별 점수 조회: 필터링 기능 테스트")
     void testGetScoresByMode() {
         // Clear any existing scores
         scoreBoard.resetScores();
@@ -294,6 +334,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("게임 모드별 점수 조회: 올바른 필터링 및 정렬 확인")
     void testGetGameScores() {
         // Clear any existing scores
         scoreBoard.resetScores();
@@ -304,37 +345,42 @@ public class ScoreBoardTest {
         scoreBoard.addScore("HardPlayer", 1500, ScoreBoard.ScoreEntry.Mode.HARD);
         scoreBoard.addScore("ItemPlayer", 2000, ScoreBoard.ScoreEntry.Mode.ITEM);
 
-        // Get normal game scores (should exclude ITEM)
-        List<ScoreBoard.ScoreEntry> normalGameScores = scoreBoard.getGameScores();
+        // Get game scores
+        List<ScoreBoard.ScoreEntry> gameScores = scoreBoard.getGameScores();
 
-        // Should only have 3 entries (EASY, NORMAL, HARD)
-        assertEquals(3, normalGameScores.size());
+        // Should have 4 entries (EASY, NORMAL, HARD, ITEM)
+        assertEquals(4, gameScores.size());
 
-        // Verify ITEM mode is not included
-        for (ScoreBoard.ScoreEntry entry : normalGameScores) {
-            assertNotEquals(ScoreBoard.ScoreEntry.Mode.ITEM, entry.getMode());
-        }
-        
         // Verify entries are sorted by score (descending)
-        assertEquals("HardPlayer", normalGameScores.get(0).getName());
-        assertEquals(1500, normalGameScores.get(0).getScore());
-        assertEquals("NormalPlayer", normalGameScores.get(1).getName());
-        assertEquals(1000, normalGameScores.get(1).getScore());
-        assertEquals("EasyPlayer", normalGameScores.get(2).getName());
-        assertEquals(800, normalGameScores.get(2).getScore());
+        assertEquals("ItemPlayer", gameScores.get(0).getName());
+        assertEquals(2000, gameScores.get(0).getScore());
+        assertEquals(ScoreBoard.ScoreEntry.Mode.ITEM, gameScores.get(0).getMode());
+
+        assertEquals("HardPlayer", gameScores.get(1).getName());
+        assertEquals(1500, gameScores.get(1).getScore());
+        assertEquals(ScoreBoard.ScoreEntry.Mode.HARD, gameScores.get(1).getMode());
+
+        assertEquals("NormalPlayer", gameScores.get(2).getName());
+        assertEquals(1000, gameScores.get(2).getScore());
+        assertEquals(ScoreBoard.ScoreEntry.Mode.NORMAL, gameScores.get(2).getMode());
+
+        assertEquals("EasyPlayer", gameScores.get(3).getName());
+        assertEquals(800, gameScores.get(3).getScore());
+        assertEquals(ScoreBoard.ScoreEntry.Mode.EASY, gameScores.get(3).getMode());
     }
 
     @Test
+    @DisplayName("파일 로딩: 구버전 포맷 처리")
     void testLoadOldFormatFile() throws Exception {
         // Create old format file (name,score without mode)
-        File scoreFile = new File("scores.txt");
+        File scoreFile = new File("test_scores.txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             writer.println("OldPlayer1,1000");
             writer.println("OldPlayer2,2000");
         }
 
         // Load scores - should default to NORMAL mode
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
 
         assertEquals(2, scores.size());
@@ -347,9 +393,10 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("파일 로딩: 신버전 포맷 처리")
     void testLoadNewFormatFile() throws Exception {
         // Create new format file (name,score,mode)
-        File scoreFile = new File("scores.txt");
+        File scoreFile = new File("test_scores.txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             writer.println("Player1,1000,EASY");
             writer.println("Player2,2000,HARD");
@@ -357,7 +404,7 @@ public class ScoreBoardTest {
         }
 
         // Load scores
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
 
         assertEquals(3, scores.size());
@@ -370,16 +417,17 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("파일 로딩: 혼합 포맷 처리")
     void testLoadMixedFormatFile() throws Exception {
         // Create mixed format file (some old, some new)
-        File scoreFile = new File("scores.txt");
+        File scoreFile = new File("test_scores.txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             writer.println("OldPlayer,1000"); // Old format
             writer.println("NewPlayer,2000,HARD"); // New format
         }
 
         // Load scores
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
 
         assertEquals(2, scores.size());
@@ -390,9 +438,10 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("파일 로딩: 손상된 데이터 처리")
     void testLoadCorruptedFile() throws Exception {
         // Create file with corrupted data
-        File scoreFile = new File("scores.txt");
+        File scoreFile = new File("test_scores.txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             writer.println("ValidPlayer,1000,NORMAL");
             writer.println("InvalidLine"); // Corrupted line
@@ -401,7 +450,7 @@ public class ScoreBoardTest {
         }
 
         // Load scores - should handle errors gracefully
-        ScoreBoard newBoard = new ScoreBoard();
+        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
         List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
 
         // Should only load valid entry
@@ -410,6 +459,7 @@ public class ScoreBoardTest {
     }
 
     @Test
+    @DisplayName("모든 게임 모드 점수 추가 및 조회 테스트")
     void testAllGameModes() {
         // Test all 4 game modes
         scoreBoard.addScore("EasyPlayer", 100, ScoreBoard.ScoreEntry.Mode.EASY);
