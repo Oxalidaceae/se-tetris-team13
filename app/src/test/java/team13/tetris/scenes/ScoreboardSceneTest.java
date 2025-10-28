@@ -10,9 +10,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.io.TempDir;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
+
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +26,9 @@ public class ScoreboardSceneTest {
   private SceneManager sceneManager;
   private Settings settings;
   private ScoreboardScene scoreboardScene;
+
+  @TempDir
+  Path tempDir;
 
   @BeforeAll
   static void initJavaFX() {
@@ -167,8 +173,9 @@ public class ScoreboardSceneTest {
   @DisplayName("점수 리스트 형식이 올바른지 확인")
   void testScoreListFormat() {
     javafx.application.Platform.runLater(() -> {
-      // 테스트용 점수 추가
-      ScoreBoard testBoard = new ScoreBoard();
+      // 임시 디렉토리 내 파일로 ScoreBoard 생성 (테스트 후 자동 삭제)
+      String testFilePath = tempDir.resolve("test_scores.txt").toString();
+      ScoreBoard testBoard = new ScoreBoard(testFilePath);
       testBoard.addScore("Player1", 1000, ScoreBoard.ScoreEntry.Mode.EASY);
       testBoard.addScore("Player2", 2000, ScoreBoard.ScoreEntry.Mode.NORMAL);
 
