@@ -55,6 +55,153 @@
 }
 
 /* ================================
+   ListView 스타일
+   ================================ */
+.list-view {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: white;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #F5F5F5;
+    -fx-font-size: 16px;
+}
+
+.list-cell:selected {
+    -fx-background-color: #0072B2;
+    -fx-text-fill: white;
+}
+
+.list-cell:focused {
+    -fx-background-color: #0072B2;
+}
+
+/* ================================
+   화면 크기별 스타일
+   ================================ */
+
+/* Small 크기 (400x500) */
+.window-small .label {
+    -fx-font-size: 12px;
+}
+
+.window-small .label-title {
+    -fx-font-size: 20px;
+    -fx-padding: 12 0 12 0;
+}
+
+.window-small .button {
+    -fx-font-size: 12px;
+    -fx-padding: 6 12;
+}
+
+.window-small .pause-option {
+    -fx-font-size: 12px;
+    -fx-padding: 4 8;
+}
+
+.window-small .cell {
+    -fx-font-size: 24px;
+    -fx-min-width: 14px;
+    -fx-min-height: 12px;
+    -fx-pref-width: 28px;
+    -fx-pref-height: 24px;
+}
+
+.window-small .score-label {
+    -fx-font-size: 11px;
+}
+
+.window-small .item-mode-label {
+    -fx-font-size: 10px;
+}
+
+.window-small .list-cell {
+    -fx-font-size: 12px;
+}
+
+/* Medium 크기 (600x700) - 기본값 유지 */
+.window-medium .label {
+    -fx-font-size: 16px;
+}
+
+.window-medium .label-title {
+    -fx-font-size: 28px;
+    -fx-padding: 20 0 20 0;
+}
+
+.window-medium .button {
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+}
+
+.window-medium .pause-option {
+    -fx-font-size: 16px;
+    -fx-padding: 6 10;
+}
+
+.window-medium .cell {
+    -fx-font-size: 34px;
+    -fx-min-width: 20px;
+    -fx-min-height: 16px;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 32px;
+}
+
+.window-medium .score-label {
+    -fx-font-size: 14px;
+}
+
+.window-medium .item-mode-label {
+    -fx-font-size: 12px;
+}
+
+.window-medium .list-cell {
+    -fx-font-size: 16px;
+}
+
+/* Large 크기 (800x900) */
+.window-large .label {
+    -fx-font-size: 20px;
+}
+
+.window-large .label-title {
+    -fx-font-size: 36px;
+    -fx-padding: 28 0 28 0;
+}
+
+.window-large .button {
+    -fx-font-size: 20px;
+    -fx-padding: 10 20;
+}
+
+.window-large .pause-option {
+    -fx-font-size: 20px;
+    -fx-padding: 8 12;
+}
+
+.window-large .cell {
+    -fx-font-size: 44px;
+    -fx-min-width: 26px;
+    -fx-min-height: 20px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 40px;
+}
+
+.window-large .score-label {
+    -fx-font-size: 18px;
+}
+
+.window-large .item-mode-label {
+    -fx-font-size: 16px;
+}
+
+.window-large .list-cell {
+    -fx-font-size: 20px;
+}
+
+/* ================================
    일시정지 다이얼로그
    ================================ */
 .pause-box {
@@ -104,6 +251,14 @@
 
 .score-label {
     -fx-text-fill: white;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14px;
+}
+
+.item-mode-label {
+    -fx-text-fill: white;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
 }
 
 /* ================================

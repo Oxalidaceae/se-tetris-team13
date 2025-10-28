@@ -39,18 +39,30 @@ public class ScoreboardScene {
 
         // 점수 리스트
         ListView<String> scoreList = new ListView<>();
-        scoreBoard.getNormalGameScores().forEach(entry ->
+        scoreBoard.getGameScores().forEach(entry ->
             scoreList.getItems().add(String.format("[%s] %s : %d", 
                 entry.getMode().name(), entry.getName(), entry.getScore()))
         );
-        scoreList.setMaxHeight(250);
+        scoreList.setMaxHeight(300);
 
         // 뒤로가기 버튼
-        Button backBtn = new Button("Back");
+        Button backBtn = new Button("Back to Main Menu");
         backBtn.setOnAction(e -> manager.showMainMenu(settings));
 
         // 레이아웃
-        VBox layout = new VBox(15, title, scoreList, backBtn);
+        VBox layout;
+        
+        // 하이라이트 생성자가 호출된 경우에만 추가 버튼 표시
+        if (highlightName != null && highlightScore != null && highlightMode != null) {
+            Button exitBtn = new Button("Exit");
+            exitBtn.setOnAction(e -> manager.showExitScene(settings, () -> manager.showScoreboard(settings, highlightName, highlightScore, highlightMode)));
+
+            layout = new VBox(15, title, scoreList, backBtn, exitBtn);
+        } 
+        else {
+            layout = new VBox(15, title, scoreList, backBtn);
+        }
+        
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);

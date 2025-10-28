@@ -9,7 +9,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
@@ -70,12 +69,12 @@ public class GameScene {
 
         // 점수 레이블
         scoreLabel = new Label("Score:\n0");
-        scoreLabel.setFont(Font.font("Monospaced", 14));
+        // CSS에서 폰트 크기를 조절하도록 하드코딩 제거
         scoreLabel.getStyleClass().add("score-label");
 
         // 아이템 모드 정보 레이블
         itemModeLabel = new Label("");
-        itemModeLabel.setFont(Font.font("Monospaced", 12));
+        // CSS에서 폰트 크기를 조절하도록 하드코딩 제거
         itemModeLabel.getStyleClass().add("item-mode-label");
         
         // 아이템 모드와 일반 모드 모두 동일하게 표시 (줄 수 정보 제거)
@@ -92,8 +91,7 @@ public class GameScene {
     // 셀 레이블 생성 헬퍼
     private Label makeCellLabel() {
         Label lbl = new Label(" ");
-        lbl.setMinSize(20, 16);
-        lbl.setPrefSize(20, 16);
+        // CSS에서 크기를 조절하도록 하드코딩 제거
         lbl.setAlignment(Pos.CENTER);
         lbl.getStyleClass().add("cell");
         return lbl;

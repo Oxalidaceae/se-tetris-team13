@@ -95,13 +95,31 @@ public class SettingsScene {
         // 기본 설정 복원
         Button defaultBtn = new Button("Restore Defaults");
         defaultBtn.setOnAction(e -> {
-            manager.setColorBlindMode(false);
-            manager.setWindowSize(600, 700);
-            settings.setColorBlindMode(false);
-            settings.setWindowSize("MEDIUM");
-            colorBlindBtn.setSelected(false);
-            colorBlindBtn.setText("Color Blind Mode: OFF");
-            settings.restoreDefaultKeys();
+
+            // 확인 대화상자 표시
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Restore Defaults");
+            confirmAlert.setHeaderText("Are you sure you want to restore default settings?");
+            confirmAlert.setContentText("This action cannot be undone.");
+
+            confirmAlert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    manager.setColorBlindMode(false);
+                    manager.setWindowSize(600, 700);
+                    settings.setColorBlindMode(false);
+                    settings.setWindowSize("MEDIUM");
+                    colorBlindBtn.setSelected(false);
+                    colorBlindBtn.setText("Color Blind Mode: OFF");
+                    settings.restoreDefaultKeys();
+
+                    // 성공 메시지 표시
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("Settings initialization completed");
+                    successAlert.setHeaderText(null);
+                    successAlert.setContentText("Settings have been restored to default successfully!");
+                    successAlert.showAndWait();
+                }
+            });
         });
 
         // 뒤로가기 버튼

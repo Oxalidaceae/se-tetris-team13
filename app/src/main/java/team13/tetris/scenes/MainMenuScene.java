@@ -28,19 +28,13 @@ public class MainMenuScene {
         Button scoreBtn = new Button("Scoreboard");
         Button exitBtn = new Button("Exit");
 
-        // 게임오버시 화면 전환 테스트용 버튼
-        Button testGameOverBtn = new Button("Test Game Over");
-        testGameOverBtn.setOnAction(e ->
-            manager.changeScene(new GameOverScene(manager, settings, 12345, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.NORMAL).getScene())
-        );
-
         startBtn.setOnAction(e -> manager.showDifficultySelection(settings));
         itemModeBtn.setOnAction(e -> manager.showGame(settings, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
-        exitBtn.setOnAction(e -> manager.exitWithSave(settings));
+        exitBtn.setOnAction(e -> manager.showExitScene(settings, () -> manager.showMainMenu(settings)));
 
-        VBox layout = new VBox(10, title, startBtn, itemModeBtn, optionBtn, scoreBtn, exitBtn, testGameOverBtn);
+        VBox layout = new VBox(10, title, startBtn, itemModeBtn, optionBtn, scoreBtn, exitBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);

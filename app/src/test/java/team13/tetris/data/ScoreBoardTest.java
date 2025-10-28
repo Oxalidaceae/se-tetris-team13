@@ -294,7 +294,7 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void testGetNormalGameScores() {
+    void testGetGameScores() {
         // Clear any existing scores
         scoreBoard.resetScores();
 
@@ -305,7 +305,7 @@ public class ScoreBoardTest {
         scoreBoard.addScore("ItemPlayer", 2000, ScoreBoard.ScoreEntry.Mode.ITEM);
 
         // Get normal game scores (should exclude ITEM)
-        List<ScoreBoard.ScoreEntry> normalGameScores = scoreBoard.getNormalGameScores();
+        List<ScoreBoard.ScoreEntry> normalGameScores = scoreBoard.getGameScores();
 
         // Should only have 3 entries (EASY, NORMAL, HARD)
         assertEquals(3, normalGameScores.size());
@@ -314,7 +314,7 @@ public class ScoreBoardTest {
         for (ScoreBoard.ScoreEntry entry : normalGameScores) {
             assertNotEquals(ScoreBoard.ScoreEntry.Mode.ITEM, entry.getMode());
         }
-
+        
         // Verify entries are sorted by score (descending)
         assertEquals("HardPlayer", normalGameScores.get(0).getName());
         assertEquals(1500, normalGameScores.get(0).getScore());
