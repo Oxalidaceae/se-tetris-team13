@@ -1109,7 +1109,7 @@ public class GameEngine {
      * @param totalLinesCleared 총 클리어된 라인 수
      */
     public void updateSpeedForLinesCleared(int clearedLines, int totalLinesCleared) {
-        // 10줄마다 속도 증가
+        // 3줄마다 속도 증가
         int newSpeedLevel = totalLinesCleared / speedPerClearLines;
         if (newSpeedLevel > (totalLinesCleared - clearedLines) / speedPerClearLines) {
             // 난이도에 따른 속도 증가 배율 적용
