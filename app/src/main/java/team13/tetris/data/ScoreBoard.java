@@ -16,20 +16,20 @@ public class ScoreBoard {
      * Represents a single score entry with player name and score.
      */
     public static class ScoreEntry {
-        public enum Mode{
+        public enum Mode {
             EASY, NORMAL, HARD, ITEM
         }
 
         private String name;
         private int score;
         private Mode mode;
-        
+
         public ScoreEntry(String name, int score, Mode mode) {
             this.name = name;
             this.score = score;
             this.mode = mode;
         }
-        
+
         public String getName() {
             return name;
         }
@@ -38,7 +38,7 @@ public class ScoreBoard {
             return score;
         }
 
-        public Mode getMode(){
+        public Mode getMode() {
             return mode;
         }
 
@@ -50,15 +50,22 @@ public class ScoreBoard {
 
     // Fields
     private List<ScoreEntry> scores;
-    private static final String SCORE_FILE = "scores.txt";
+    private static final String DEFAULT_SCORE_FILE = "scores.txt";
+    private String scoreFile;
     private ScoreEntry lastAddedEntry; // Tracks most recently added entry
 
     // Constructor
     public ScoreBoard() {
+        this(DEFAULT_SCORE_FILE);
+    }
+
+    // Constructor for testing with custom file path
+    public ScoreBoard(String scoreFilePath) {
         this.scores = new ArrayList<>();
+        this.scoreFile = scoreFilePath;
         loadScores();
     }
-    
+
     /**
      * Adds a new score entry to the scoreboard.
      * Automatically sorts scores in descending order and saves to file.
@@ -88,7 +95,7 @@ public class ScoreBoard {
      * Format: "playerName,score,mode" per line.
      */
     public void saveScores() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SCORE_FILE))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             for (ScoreEntry entry : scores) {
                 writer.println(entry.getName() + "," + entry.getScore() + "," + entry.getMode().name());
             }
@@ -96,18 +103,18 @@ public class ScoreBoard {
             System.err.println("Error saving scores: " + e.getMessage());
         }
     }
-    
+
     /**
      * Loads scores from CSV file during initialization.
      * Creates empty scoreboard if file doesn't exist or has format errors.
      * Supports both old format (name,score) and new format (name,score,mode).
      */
     public void loadScores() {
-        File file = new File(SCORE_FILE);
+        File file = new File(scoreFile);
         if (!file.exists()) {
             return;
         }
-        
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -131,7 +138,7 @@ public class ScoreBoard {
             System.err.println("Error loading scores: " + e.getMessage());
         }
     }
-    
+
     /**
      * Returns a defensive copy of the current scores list.
      *
@@ -145,7 +152,8 @@ public class ScoreBoard {
      * Returns scores filtered by game mode.
      *
      * @param mode The game mode to filter by
-     * @return List of score entries for the specified mode, sorted in descending order
+     * @return List of score entries for the specified mode, sorted in descending
+     *         order
      */
     public List<ScoreEntry> getScoresByMode(ScoreEntry.Mode mode) {
         List<ScoreEntry> filteredScores = new ArrayList<>();
@@ -162,7 +170,8 @@ public class ScoreBoard {
      * Returns scores for normal game modes only (EASY, NORMAL, HARD).
      * Excludes ITEM mode scores.
      *
-     * @return List of score entries for normal game modes, sorted in descending order
+     * @return List of score entries for normal game modes, sorted in descending
+     *         order
      */
     public List<ScoreEntry> getGameScores() {
         List<ScoreEntry> gameScores = new ArrayList<>();

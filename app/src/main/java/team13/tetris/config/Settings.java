@@ -77,6 +77,9 @@ public class Settings {
     }
 
     public boolean isKeyAlreadyUsed(String key) {
+        if (key == null || key.trim().isEmpty()) {
+            return false;  // null이나 빈 문자열은 사용되지 않은 것으로 처리
+        }
         key = key.toUpperCase();
         return key.equals(keyLeft.toUpperCase()) ||
             key.equals(keyRight.toUpperCase()) ||
