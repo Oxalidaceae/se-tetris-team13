@@ -164,15 +164,13 @@ public class ScoreBoard {
      *
      * @return List of score entries for normal game modes, sorted in descending order
      */
-    public List<ScoreEntry> getNormalGameScores() {
-        List<ScoreEntry> normalScores = new ArrayList<>();
+    public List<ScoreEntry> getGameScores() {
+        List<ScoreEntry> gameScores = new ArrayList<>();
         for (ScoreEntry entry : scores) {
-            if (entry.getMode() != ScoreEntry.Mode.ITEM) {
-                normalScores.add(entry);
-            }
+            gameScores.add(entry);
         }
-        normalScores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
-        return normalScores;
+        gameScores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
+        return gameScores;
     }
 
     /**

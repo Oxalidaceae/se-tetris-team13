@@ -39,7 +39,7 @@ public class ScoreboardScene {
 
         // 점수 리스트
         ListView<String> scoreList = new ListView<>();
-        scoreBoard.getNormalGameScores().forEach(entry ->
+        scoreBoard.getGameScores().forEach(entry ->
             scoreList.getItems().add(String.format("[%s] %s : %d", 
                 entry.getMode().name(), entry.getName(), entry.getScore()))
         );
