@@ -97,7 +97,7 @@
 }
 
 .window-small .cell {
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
     -fx-min-width: 14px;
     -fx-min-height: 12px;
     -fx-pref-width: 28px;  
@@ -137,7 +137,7 @@
 }
 
 .window-medium .cell {
-    -fx-font-size: 28px;
+    -fx-font-size: 34px;
     -fx-min-width: 20px;
     -fx-min-height: 16px;
     -fx-pref-width: 40px;
@@ -177,7 +177,7 @@
 }
 
 .window-large .cell {
-    -fx-font-size: 39px;
+    -fx-font-size: 44px;
     -fx-min-width: 26px;
     -fx-min-height: 20px;
     -fx-pref-width: 52px;
@@ -234,6 +234,8 @@
     -fx-alignment: center;
     -fx-min-width: 20px;
     -fx-min-height: 16px;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 16px;
 }
 
 .cell-empty {
