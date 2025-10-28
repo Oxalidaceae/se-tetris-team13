@@ -34,7 +34,6 @@ public class KeySettingsScene {
         Button dropBtn = new Button("Drop: " + KeyCode.valueOf(settings.getKeyDrop()).getName());
         Button pauseBtn = new Button("Pause: " + KeyCode.valueOf(settings.getPause()).getName());
         Button backBtn = new Button("Back");
-        Button exitBtn = new Button("Exit: " + KeyCode.valueOf(settings.getExit()).getName());
 
         // 키 변경 대기 모드
         leftBtn.setOnAction(e -> waitingForKey = "LEFT");
@@ -43,11 +42,10 @@ public class KeySettingsScene {
         rotateBtn.setOnAction(e -> waitingForKey = "ROTATE");
         dropBtn.setOnAction(e -> waitingForKey = "DROP");
         pauseBtn.setOnAction(e -> waitingForKey = "PAUSE");
-        exitBtn.setOnAction(e -> waitingForKey = "EXIT");
         backBtn.setOnAction(e -> manager.showSettings(settings));
 
         // 현재 Scene에서 키 입력을 감지
-        VBox layout = new VBox(15, title, leftBtn, rightBtn, downBtn, rotateBtn, dropBtn, pauseBtn, exitBtn, backBtn);
+        VBox layout = new VBox(15, title, leftBtn, rightBtn, downBtn, rotateBtn, dropBtn, pauseBtn, backBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 400, 400);
@@ -113,11 +111,6 @@ public class KeySettingsScene {
                 case "PAUSE" -> {
                     settings.setPause(key.toString());
                     pauseBtn.setText("Pause: " + key.getName());
-                    break;
-                }
-                case "EXIT" -> {
-                    settings.setExit(key.toString());
-                    exitBtn.setText("Exit: " + key.getName());
                     break;
                 }
             }

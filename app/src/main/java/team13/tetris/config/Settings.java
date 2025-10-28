@@ -11,7 +11,6 @@ public class Settings {
     private String keyRotate = "Z"; // 회전
     private String keyDrop = "X"; // hard drop
     private String pause = "P"; // 일시정지
-    private String exit = "ESCAPE"; // 게임 종료
 
     public boolean isColorBlindMode() {
         return colorBlindMode;
@@ -77,14 +76,6 @@ public class Settings {
         this.pause = pause;
     }
 
-    public String getExit() {
-        return exit;
-    }
-
-    public void setExit(String exit) {
-        this.exit = exit;
-    }
-
     public boolean isKeyAlreadyUsed(String key) {
         key = key.toUpperCase();
         return key.equals(keyLeft.toUpperCase()) ||
@@ -92,8 +83,7 @@ public class Settings {
             key.equals(keyDown.toUpperCase()) ||
             key.equals(keyRotate.toUpperCase()) ||
             key.equals(keyDrop.toUpperCase()) ||
-            key.equals(pause.toUpperCase()) ||
-            key.equals(exit.toUpperCase());
+            key.equals(pause.toUpperCase());
     }
 
     public void restoreDefaultKeys() {
@@ -103,6 +93,5 @@ public class Settings {
         setKeyRotate("Z");
         setKeyDrop("X");
         setPause("P");
-        setExit("ESCAPE");
     }
 }

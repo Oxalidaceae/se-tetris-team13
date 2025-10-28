@@ -50,8 +50,6 @@ public class KeyInputHandler {
             callback.onHardDropPressed();
         } else if (isPauseClicked(keyCode)) {
             callback.onPausePressed();
-        } else if (isEscClicked(keyCode)) {
-            callback.onEscPressed();
         }
     }
 
@@ -96,11 +94,6 @@ public class KeyInputHandler {
     // 일시정지
     public boolean isPauseClicked(KeyCode userPressedKey) {
         return isKeyMatch(userPressedKey, settings.getPause());
-    }
-
-    // 게임 종료
-    public boolean isEscClicked(KeyCode userPressedKey) {
-        return isKeyMatch(userPressedKey, settings.getExit());
     }
 
     // 키 입력 이벤트를 처리하기 위한 콜백 인터페이스
