@@ -15,7 +15,7 @@ import team13.tetris.game.model.Tetromino;
 /**
  * GameEngine의 라인 클리어 기능을 테스트합니다.
  * - 라인 클리어 점수 계산 (1줄: 100, 2줄: 250, 3줄: 500, 4줄: 1000)
- * - 10줄마다 속도 증가
+ * - 3줄마다 속도 증가
  * - 난이도별 속도 증가율 (EASY: 0.8x, NORMAL: 1.0x, HARD: 1.2x)
  * - totalLinesCleared 카운트
  */
@@ -29,22 +29,28 @@ public class GameEngineLineClearTest {
   // 테스트용 리스너 클래스
   private static class TestListener implements GameStateListener {
     @Override
-    public void onScoreChanged(int score) {}
+    public void onScoreChanged(int score) {
+    }
 
     @Override
-    public void onBoardUpdated(Board board) {}
+    public void onBoardUpdated(Board board) {
+    }
 
     @Override
-    public void onLinesCleared(int lines) {}
+    public void onLinesCleared(int lines) {
+    }
 
     @Override
-    public void onGameOver() {}
+    public void onGameOver() {
+    }
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {}
+    public void onPieceSpawned(Tetromino piece, int x, int y) {
+    }
 
     @Override
-    public void onNextPiece(Tetromino piece) {}
+    public void onNextPiece(Tetromino piece) {
+    }
   }
 
   @BeforeEach
@@ -154,44 +160,44 @@ public class GameEngineLineClearTest {
   // === 속도 증가 테스트 ===
 
   @Test
-  @DisplayName("10줄 클리어 시 속도 증가")
-  void testSpeedIncreaseAfter10Lines() {
+  @DisplayName("3줄 클리어 시 속도 증가")
+  void testSpeedIncreaseAfter3Lines() {
     double initialInterval = engine.getDropIntervalSeconds();
 
-    // 10줄 클리어 시뮬레이션
-    engine.updateSpeedForLinesCleared(10, 10);
+    // 3줄 클리어 시뮬레이션
+    engine.updateSpeedForLinesCleared(3, 3);
 
     double newInterval = engine.getDropIntervalSeconds();
     assertTrue(newInterval < initialInterval,
-        "10줄 클리어 후 드롭 간격이 감소(속도 증가)해야 함");
+        "3줄 클리어 후 드롭 간격이 감소(속도 증가)해야 함");
   }
 
   @Test
-  @DisplayName("10줄 미만에서는 속도 유지")
-  void testNoSpeedIncreaseBelow10Lines() {
+  @DisplayName("3줄 미만에서는 속도 유지")
+  void testNoSpeedIncreaseBelow3Lines() {
     double initialInterval = engine.getDropIntervalSeconds();
 
-    // 9줄 클리어
-    engine.updateSpeedForLinesCleared(9, 9);
+    // 2줄 클리어
+    engine.updateSpeedForLinesCleared(2, 2);
 
     double newInterval = engine.getDropIntervalSeconds();
     assertEquals(initialInterval, newInterval, 0.001,
-        "10줄 미만에서는 속도가 유지되어야 함");
+        "3줄 미만에서는 속도가 유지되어야 함");
   }
 
   @Test
-  @DisplayName("20줄 클리어 시 추가 속도 증가")
-  void testSpeedIncreaseAfter20Lines() {
-    // 첫 번째 속도 증가 (10줄)
-    engine.updateSpeedForLinesCleared(10, 10);
-    double intervalAfter10 = engine.getDropIntervalSeconds();
+  @DisplayName("6줄 클리어 시 추가 속도 증가")
+  void testSpeedIncreaseAfter6Lines() {
+    // 첫 번째 속도 증가 (3줄)
+    engine.updateSpeedForLinesCleared(3, 3);
+    double intervalAfter3 = engine.getDropIntervalSeconds();
 
-    // 두 번째 속도 증가 (20줄)
-    engine.updateSpeedForLinesCleared(10, 20);
-    double intervalAfter20 = engine.getDropIntervalSeconds();
+    // 두 번째 속도 증가 (6줄)
+    engine.updateSpeedForLinesCleared(3, 6);
+    double intervalAfter6 = engine.getDropIntervalSeconds();
 
-    assertTrue(intervalAfter20 < intervalAfter10,
-        "20줄 클리어 후 추가 속도 증가해야 함");
+    assertTrue(intervalAfter6 < intervalAfter3,
+        "6줄 클리어 후 추가 속도 증가해야 함");
   }
 
   // === 난이도별 속도 증가율 테스트 ===
@@ -204,7 +210,7 @@ public class GameEngineLineClearTest {
     easyEngine.startNewGame();
 
     double initialInterval = easyEngine.getDropIntervalSeconds();
-    easyEngine.updateSpeedForLinesCleared(10, 10);
+    easyEngine.updateSpeedForLinesCleared(3, 3);
     double newInterval = easyEngine.getDropIntervalSeconds();
 
     assertTrue(newInterval < initialInterval, "EASY 모드에서도 속도가 증가해야 함");
@@ -217,7 +223,7 @@ public class GameEngineLineClearTest {
   void testNormalModeSpeedIncrease() {
     double initialInterval = engine.getDropIntervalSeconds();
 
-    engine.updateSpeedForLinesCleared(10, 10);
+    engine.updateSpeedForLinesCleared(3, 3);
     double newInterval = engine.getDropIntervalSeconds();
 
     assertTrue(newInterval < initialInterval, "NORMAL 모드에서 속도가 증가해야 함");
@@ -231,7 +237,7 @@ public class GameEngineLineClearTest {
     hardEngine.startNewGame();
 
     double initialInterval = hardEngine.getDropIntervalSeconds();
-    hardEngine.updateSpeedForLinesCleared(10, 10);
+    hardEngine.updateSpeedForLinesCleared(3, 3);
     double newInterval = hardEngine.getDropIntervalSeconds();
 
     assertTrue(newInterval < initialInterval, "HARD 모드에서 속도가 증가해야 함");
@@ -257,10 +263,10 @@ public class GameEngineLineClearTest {
     double normalInitial = normalEngine.getDropIntervalSeconds();
     double hardInitial = hardEngine.getDropIntervalSeconds();
 
-    // 10줄 클리어 후 속도 증가
-    easyEngine.updateSpeedForLinesCleared(10, 10);
-    normalEngine.updateSpeedForLinesCleared(10, 10);
-    hardEngine.updateSpeedForLinesCleared(10, 10);
+    // 3줄 클리어 후 속도 증가
+    easyEngine.updateSpeedForLinesCleared(3, 3);
+    normalEngine.updateSpeedForLinesCleared(3, 3);
+    hardEngine.updateSpeedForLinesCleared(3, 3);
 
     double easyAfter = easyEngine.getDropIntervalSeconds();
     double normalAfter = normalEngine.getDropIntervalSeconds();
