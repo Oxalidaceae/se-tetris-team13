@@ -9,6 +9,7 @@ import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
 import team13.tetris.scenes.DifficultySelectionScene;
+import team13.tetris.scenes.ExitScene;
 import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
@@ -26,6 +27,7 @@ public class SceneManager {
     private final Stage stage;
     private boolean colorBlindMode = false; // 색맹 모드 상태 변수
     private String windowSizeClass = "window-medium"; // 현재 창 크기 클래스
+    private Scene previousScene = null; // 이전 씬 저장용
 
     public SceneManager(Stage stage) {
         this.stage = stage;
@@ -66,7 +68,7 @@ public class SceneManager {
         
         // Create GameScene (View) and GameSceneController
         GameScene gameScene = new GameScene(this, settings, engine, difficulty);
-        GameSceneController gameController = new GameSceneController(gameScene, settings, keyInputHandler);
+        GameSceneController gameController = new GameSceneController(gameScene, this, settings, keyInputHandler);
         gameController.setEngine(engine);
         
         // Register the controller as game state listener
@@ -90,6 +92,21 @@ public class SceneManager {
         changeScene(new KeySettingsScene(this, settings).getScene());
     }
 
+    // 게임 종료 씬으로 전환
+    public void showExitScene(Settings settings, Runnable onCancel) {
+        // 현재 씬을 저장
+        previousScene = stage.getScene();
+        changeScene(new ExitScene(this, settings, onCancel).getScene());
+    }
+    
+    // 이전 씬으로 복원
+    public void restorePreviousScene() {
+        if (previousScene != null) {
+            stage.setScene(previousScene);
+            previousScene = null;
+        }
+    }
+    
     // 씬 전환 메서드
     public void changeScene(Scene scene) {
         applyStylesheet(scene);

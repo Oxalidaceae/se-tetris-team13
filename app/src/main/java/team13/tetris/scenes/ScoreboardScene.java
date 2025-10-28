@@ -4,9 +4,7 @@ import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
@@ -57,16 +55,8 @@ public class ScoreboardScene {
         // 하이라이트 생성자가 호출된 경우에만 추가 버튼 표시
         if (highlightName != null && highlightScore != null && highlightMode != null) {
             Button exitBtn = new Button("Exit");
-            exitBtn.setOnAction(e -> {
-                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-                confirmAlert.setTitle("Exit Confirmation");
-                confirmAlert.setHeaderText("Are you sure you want to exit?");
-                confirmAlert.setContentText("");
-                confirmAlert.showAndWait().ifPresent(response -> {
-                    if(response == ButtonType.OK)
-                        manager.exitWithSave(settings);
-                });
-            });
+            exitBtn.setOnAction(e -> manager.showExitScene(settings, () -> manager.showScoreboard(settings, highlightName, highlightScore, highlightMode)));
+
             layout = new VBox(15, title, scoreList, backBtn, exitBtn);
         } 
         else {
