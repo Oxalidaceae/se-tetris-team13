@@ -28,65 +28,25 @@ public class GameEngineItemModeTest {
   private Board board;
   private TestListener listener;
 
-  // 테스트용 리스너 클래스
+  // 테스트용 리스너 클래스 (아이템 모드 테스트에서는 콜백을 추적하지 않음)
   private static class TestListener implements GameStateListener {
-    boolean scoreChanged = false;
-    boolean boardUpdated = false;
-    boolean linesCleared = false;
-    boolean gameOver = false;
-    boolean pieceSpawned = false;
-    boolean nextPieceChanged = false;
-    Tetromino lastSpawnedPiece = null;
-    Tetromino lastNextPiece = null;
-    int lastScore = 0;
-    int lastLinesCleared = 0;
+    @Override
+    public void onScoreChanged(int score) {}
 
     @Override
-    public void onScoreChanged(int score) {
-      scoreChanged = true;
-      lastScore = score;
-    }
+    public void onBoardUpdated(Board board) {}
 
     @Override
-    public void onBoardUpdated(Board board) {
-      boardUpdated = true;
-    }
+    public void onLinesCleared(int lines) {}
 
     @Override
-    public void onLinesCleared(int lines) {
-      linesCleared = true;
-      lastLinesCleared = lines;
-    }
+    public void onGameOver() {}
 
     @Override
-    public void onGameOver() {
-      gameOver = true;
-    }
+    public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {
-      pieceSpawned = true;
-      lastSpawnedPiece = piece;
-    }
-
-    @Override
-    public void onNextPiece(Tetromino piece) {
-      nextPieceChanged = true;
-      lastNextPiece = piece;
-    }
-
-    void reset() {
-      scoreChanged = false;
-      boardUpdated = false;
-      linesCleared = false;
-      gameOver = false;
-      pieceSpawned = false;
-      nextPieceChanged = false;
-      lastSpawnedPiece = null;
-      lastNextPiece = null;
-      lastScore = 0;
-      lastLinesCleared = 0;
-    }
+    public void onNextPiece(Tetromino piece) {}
   }
 
   @BeforeEach

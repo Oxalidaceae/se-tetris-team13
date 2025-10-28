@@ -28,6 +28,7 @@ public class GameEnginePieceGenerationTest {
   private TestListener listener;
 
   // 테스트용 리스너 클래스
+  @SuppressWarnings("unused")
   private static class TestListener implements GameStateListener {
     boolean pieceSpawned = false;
     boolean nextPieceChanged = false;
@@ -36,16 +37,13 @@ public class GameEnginePieceGenerationTest {
     Tetromino lastNextPiece = null;
 
     @Override
-    public void onScoreChanged(int score) {
-    }
+    public void onScoreChanged(int score) {}
 
     @Override
-    public void onBoardUpdated(Board board) {
-    }
+    public void onBoardUpdated(Board board) {}
 
     @Override
-    public void onLinesCleared(int lines) {
-    }
+    public void onLinesCleared(int lines) {}
 
     @Override
     public void onGameOver() {

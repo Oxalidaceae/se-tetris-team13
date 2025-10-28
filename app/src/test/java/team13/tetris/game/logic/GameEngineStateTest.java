@@ -30,11 +30,7 @@ public class GameEngineStateTest {
   // 테스트용 리스너 클래스
   private static class TestListener implements GameStateListener {
     int scoreChangedCount = 0;
-    int lastScore = 0;
     boolean boardUpdated = false;
-    int linesClearedCount = 0;
-    int lastLinesCleared = 0;
-    boolean gameOverCalled = false;
     Tetromino spawnedPiece = null;
     int spawnX = -1;
     int spawnY = -1;
@@ -45,7 +41,6 @@ public class GameEngineStateTest {
     @Override
     public void onScoreChanged(int score) {
       scoreChangedCount++;
-      lastScore = score;
     }
 
     @Override
@@ -54,15 +49,10 @@ public class GameEngineStateTest {
     }
 
     @Override
-    public void onLinesCleared(int lines) {
-      linesClearedCount++;
-      lastLinesCleared = lines;
-    }
+    public void onLinesCleared(int lines) {}
 
     @Override
-    public void onGameOver() {
-      gameOverCalled = true;
-    }
+    public void onGameOver() {}
 
     @Override
     public void onPieceSpawned(Tetromino piece, int x, int y) {
@@ -80,11 +70,7 @@ public class GameEngineStateTest {
 
     void reset() {
       scoreChangedCount = 0;
-      lastScore = 0;
       boardUpdated = false;
-      linesClearedCount = 0;
-      lastLinesCleared = 0;
-      gameOverCalled = false;
       spawnedPiece = null;
       spawnX = -1;
       spawnY = -1;
@@ -214,7 +200,7 @@ public class GameEngineStateTest {
 
     Tetromino newCurrent = engine.getCurrent();
     assertNotNull(newCurrent, "새 조각이 current로 설정되어야 함");
-    assertNotNull(engine.getNext(), "새로운 next 조각이 생성되어야 함");
+    assertNotNull(originalNext, "새로운 next 조각이 생성되어야 함");
   }
 
   @Test

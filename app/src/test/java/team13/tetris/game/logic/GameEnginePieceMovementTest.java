@@ -32,8 +32,7 @@ public class GameEnginePieceMovementTest {
     boolean boardUpdated = false;
 
     @Override
-    public void onScoreChanged(int score) {
-    }
+    public void onScoreChanged(int score) {}
 
     @Override
     public void onBoardUpdated(Board board) {
@@ -41,20 +40,16 @@ public class GameEnginePieceMovementTest {
     }
 
     @Override
-    public void onLinesCleared(int lines) {
-    }
+    public void onLinesCleared(int lines) {}
 
     @Override
-    public void onGameOver() {
-    }
+    public void onGameOver() {}
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {
-    }
+    public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
     @Override
-    public void onNextPiece(Tetromino piece) {
-    }
+    public void onNextPiece(Tetromino piece) {}
 
     void reset() {
       boardUpdated = false;

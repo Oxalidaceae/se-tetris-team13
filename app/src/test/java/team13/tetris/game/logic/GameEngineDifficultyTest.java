@@ -16,28 +16,22 @@ public class GameEngineDifficultyTest {
 
     private static class NoOpListener implements GameStateListener {
         @Override
-        public void onScoreChanged(int newScore) {
-        }
+        public void onScoreChanged(int newScore) {}
 
         @Override
-        public void onGameOver() {
-        }
+        public void onGameOver() {}
 
         @Override
-        public void onPieceSpawned(Tetromino piece, int x, int y) {
-        }
+        public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
         @Override
-        public void onBoardUpdated(Board board) {
-        }
+        public void onBoardUpdated(Board board) {}
 
         @Override
-        public void onLinesCleared(int linesCleared) {
-        }
+        public void onLinesCleared(int linesCleared) {}
 
         @Override
-        public void onNextPiece(Tetromino nextPiece) {
-        }
+        public void onNextPiece(Tetromino nextPiece) {}
     }
 
     @Test
@@ -131,6 +125,9 @@ public class GameEngineDifficultyTest {
                         break;
                     case L:
                         counts[6]++;
+                        break;
+                    default:
+                        // 아이템 블록 (COPY, WEIGHT, GRAVITY, SPLIT, LINE_CLEAR)은 카운트하지 않음
                         break;
                 }
             }

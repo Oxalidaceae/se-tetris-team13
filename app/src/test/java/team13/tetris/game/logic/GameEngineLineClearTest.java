@@ -28,45 +28,23 @@ public class GameEngineLineClearTest {
 
   // 테스트용 리스너 클래스
   private static class TestListener implements GameStateListener {
-    boolean scoreChanged = false;
-    boolean linesCleared = false;
-    int lastScore = 0;
-    int lastLinesCleared = 0;
+    @Override
+    public void onScoreChanged(int score) {}
 
     @Override
-    public void onScoreChanged(int score) {
-      scoreChanged = true;
-      lastScore = score;
-    }
+    public void onBoardUpdated(Board board) {}
 
     @Override
-    public void onBoardUpdated(Board board) {
-    }
+    public void onLinesCleared(int lines) {}
 
     @Override
-    public void onLinesCleared(int lines) {
-      linesCleared = true;
-      lastLinesCleared = lines;
-    }
+    public void onGameOver() {}
 
     @Override
-    public void onGameOver() {
-    }
+    public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {
-    }
-
-    @Override
-    public void onNextPiece(Tetromino piece) {
-    }
-
-    void reset() {
-      scoreChanged = false;
-      linesCleared = false;
-      lastScore = 0;
-      lastLinesCleared = 0;
-    }
+    public void onNextPiece(Tetromino piece) {}
   }
 
   @BeforeEach

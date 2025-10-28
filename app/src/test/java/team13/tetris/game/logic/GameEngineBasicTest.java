@@ -21,16 +21,12 @@ public class GameEngineBasicTest {
   // Test listener to track callback invocations
   private static class TestListener implements GameStateListener {
     int scoreChangedCount = 0;
-    int gameOverCount = 0;
     int pieceSpawnedCount = 0;
-    int boardUpdatedCount = 0;
-    int linesClearedCount = 0;
     int nextPieceCount = 0;
 
     int lastScore = -1;
     Tetromino lastSpawnedPiece = null;
     Tetromino lastNextPiece = null;
-    int lastLinesCleared = -1;
 
     @Override
     public void onScoreChanged(int newScore) {
@@ -39,9 +35,7 @@ public class GameEngineBasicTest {
     }
 
     @Override
-    public void onGameOver() {
-      gameOverCount++;
-    }
+    public void onGameOver() {}
 
     @Override
     public void onPieceSpawned(Tetromino piece, int x, int y) {
@@ -50,15 +44,10 @@ public class GameEngineBasicTest {
     }
 
     @Override
-    public void onBoardUpdated(Board board) {
-      boardUpdatedCount++;
-    }
+    public void onBoardUpdated(Board board) {}
 
     @Override
-    public void onLinesCleared(int linesCleared) {
-      linesClearedCount++;
-      lastLinesCleared = linesCleared;
-    }
+    public void onLinesCleared(int linesCleared) {}
 
     @Override
     public void onNextPiece(Tetromino nextPiece) {
@@ -68,15 +57,11 @@ public class GameEngineBasicTest {
 
     void reset() {
       scoreChangedCount = 0;
-      gameOverCount = 0;
       pieceSpawnedCount = 0;
-      boardUpdatedCount = 0;
-      linesClearedCount = 0;
       nextPieceCount = 0;
       lastScore = -1;
       lastSpawnedPiece = null;
       lastNextPiece = null;
-      lastLinesCleared = -1;
     }
   }
 

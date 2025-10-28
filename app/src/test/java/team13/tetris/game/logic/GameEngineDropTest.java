@@ -21,21 +21,17 @@ public class GameEngineDropTest {
   private static class TestListener implements GameStateListener {
     int scoreChangedCount = 0;
     int boardUpdatedCount = 0;
-    int lastScore = -1;
 
     @Override
     public void onScoreChanged(int newScore) {
       scoreChangedCount++;
-      lastScore = newScore;
     }
 
     @Override
-    public void onGameOver() {
-    }
+    public void onGameOver() {}
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {
-    }
+    public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
     @Override
     public void onBoardUpdated(Board board) {
@@ -43,17 +39,14 @@ public class GameEngineDropTest {
     }
 
     @Override
-    public void onLinesCleared(int linesCleared) {
-    }
+    public void onLinesCleared(int linesCleared) {}
 
     @Override
-    public void onNextPiece(Tetromino nextPiece) {
-    }
+    public void onNextPiece(Tetromino nextPiece) {}
 
     void reset() {
       scoreChangedCount = 0;
       boardUpdatedCount = 0;
-      lastScore = -1;
     }
   }
 
