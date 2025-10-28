@@ -4,7 +4,9 @@ import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
@@ -43,14 +45,34 @@ public class ScoreboardScene {
             scoreList.getItems().add(String.format("[%s] %s : %d", 
                 entry.getMode().name(), entry.getName(), entry.getScore()))
         );
-        scoreList.setMaxHeight(250);
+        scoreList.setMaxHeight(300);
 
         // 뒤로가기 버튼
-        Button backBtn = new Button("Back");
+        Button backBtn = new Button("Back to Main Menu");
         backBtn.setOnAction(e -> manager.showMainMenu(settings));
 
         // 레이아웃
-        VBox layout = new VBox(15, title, scoreList, backBtn);
+        VBox layout;
+        
+        // 하이라이트 생성자가 호출된 경우에만 추가 버튼 표시
+        if (highlightName != null && highlightScore != null && highlightMode != null) {
+            Button exitBtn = new Button("Exit");
+            exitBtn.setOnAction(e -> {
+                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Exit Confirmation");
+                confirmAlert.setHeaderText("Are you sure you want to exit?");
+                confirmAlert.setContentText("");
+                confirmAlert.showAndWait().ifPresent(response -> {
+                    if(response == ButtonType.OK)
+                        manager.exitWithSave(settings);
+                });
+            });
+            layout = new VBox(15, title, scoreList, backBtn, exitBtn);
+        } 
+        else {
+            layout = new VBox(15, title, scoreList, backBtn);
+        }
+        
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
