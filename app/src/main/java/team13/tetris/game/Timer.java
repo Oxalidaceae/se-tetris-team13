@@ -40,6 +40,9 @@ public class Timer {
     public void increaseSpeed(double multiplier) {
         if (speedFactor < MAX_SPEED_FACTOR) {
             speedFactor += SPEED_INCREMENT * multiplier;
+            if (speedFactor > MAX_SPEED_FACTOR) {
+                speedFactor = MAX_SPEED_FACTOR;
+            }
         }
     }
     
