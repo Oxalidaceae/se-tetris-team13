@@ -15,8 +15,10 @@ public class AppTest {
   static void initJavaFX() {
     // JavaFX 툴킷 초기화
     try {
-      javafx.application.Platform.startup(() -> {
-      });
+      // headless 모드에서는 초기화하지 않음
+      if (!Boolean.getBoolean("java.awt.headless")) {
+        javafx.application.Platform.startup(() -> {});
+      }
     } catch (IllegalStateException e) {
       // 이미 초기화되었으면 무시
     }
