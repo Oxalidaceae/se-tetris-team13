@@ -43,7 +43,6 @@ public class ScoreboardScene {
             scoreList.getItems().add(String.format("[%s] %s : %d", 
                 entry.getMode().name(), entry.getName(), entry.getScore()))
         );
-        scoreList.setMaxHeight(300);
 
         // 뒤로가기 버튼
         Button backBtn = new Button("Back to Main Menu");
@@ -75,19 +74,32 @@ public class ScoreboardScene {
 
     // 리스트와 버튼 간 키보드 내비게이션 설정
     private void setupListNavigation(ListView<String> scoreList, Button backBtn) {
-        scoreList.setOnKeyPressed(e -> {
+        scoreList.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             int selected = scoreList.getSelectionModel().getSelectedIndex();
             int lastIndex = scoreList.getItems().size() - 1;
 
-            // ↓ 키: 마지막 항목 → Back 버튼 이동
-            if (e.getCode() == javafx.scene.input.KeyCode.DOWN && selected == lastIndex) {
+            // 마지막 항목에서 아래 방향키 → Back 버튼 이동
+            if (e.getCode() == javafx.scene.input.KeyCode.DOWN && selected == lastIndex ) {
+                scoreList.getSelectionModel().clearSelection(); // 선택 해제
+                backBtn.requestFocus();
+                e.consume();
+                
+            }
+
+            // 첫번째 항목에서 위 방향키 → Back 버튼 이동
+            if (e.getCode() == javafx.scene.input.KeyCode.UP && (selected == -1 || selected == 0)) {
+                scoreList.getSelectionModel().clearSelection();
                 backBtn.requestFocus();
                 e.consume();
             }
+        });
 
-            // ↑ 키: 아무 선택 없음 → 마지막 항목 선택
-            if (e.getCode() == javafx.scene.input.KeyCode.UP && selected == -1) {
-                scoreList.getSelectionModel().selectLast();
+        // Back 버튼에서 위 방향키 → 리스트의 마지막 항목으로 이동
+        backBtn.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.UP) {
+                scoreList.requestFocus();
+                scoreList.getSelectionModel().select(scoreList.getItems().size() - 1);
+                scoreList.scrollTo(scoreList.getItems().size() - 1);
                 e.consume();
             }
         });
