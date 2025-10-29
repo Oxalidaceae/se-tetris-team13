@@ -22,6 +22,9 @@ dependencies {
     // implementation libs.guava
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
     implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // JavaFX headless 테스트를 위한 Monocle
+    testImplementation 'org.testfx:openjfx-monocle:jdk-12.0.1+2'
 }
 
 testing {
@@ -51,10 +54,20 @@ tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
     useJUnitPlatform()
     
+    // JavaFX headless 모드 설정
+    systemProperty 'java.awt.headless', 'true'
+    systemProperty 'testfx.robot', 'glass'
+    systemProperty 'testfx.headless', 'true'
+    systemProperty 'prism.order', 'sw'
+    systemProperty 'prism.text', 't2k'
+    systemProperty 'glass.platform', 'Monocle'
+    systemProperty 'monocle.platform', 'Headless'
+    
     // Show standard output and error during test execution
     testLogging {
-        showStandardStreams = true
-        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = false
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
     }
 }
 
