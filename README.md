@@ -1,10 +1,27 @@
 [![Java CI with Gradle - test automation](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml)
+[![Release Windows Executable](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/release-windows.yml/badge.svg)](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/release-windows.yml)
 
 # SEOULTECH SE-13 TETRIS
 
 **서울과학기술대학교 컴퓨터공학과 팀 13 테트리스 프로젝트**
 
 JavaFX를 사용한 클래식 테트리스 게임입니다.
+
+## 📥 다운로드
+
+### Windows 사용자 (권장)
+
+**Java 설치 없이 바로 실행 가능한 Windows 실행 파일을 다운로드하세요!**
+
+👉 [최신 릴리즈 다운로드](https://github.com/Oxalidaceae/se-tetris-team13/releases/latest)
+
+1. `Tetris-Windows-v*.*.*.zip` 파일 다운로드
+2. 압축 해제
+3. `Tetris.exe` 더블클릭으로 실행
+
+> ✅ JRE가 포함되어 있어 별도 설치 불필요  
+> ✅ 아이콘이 적용된 실행 파일  
+> ✅ Windows 10 이상 지원
 
 ## 🎮 게임 소개
 
@@ -45,13 +62,19 @@ JavaFX를 사용한 클래식 테트리스 게임입니다.
 - **Language**: Java 17
 - **UI Framework**: JavaFX 17.0.12
 - **Build Tool**: Gradle 9.0.0
+- **Packaging**: jpackage (Badass Runtime Plugin 1.13.0)
 - **Data Format**: JSON (설정 및 점수 저장)
-- **Testing**: JUnit 5
+- **Testing**: JUnit 5, TestFX (Monocle)
+- **CI/CD**: GitHub Actions
 
 ## 📁 프로젝트 구조
 
 ```
 se-tetris-team13/
+├── .github/
+│   └── workflows/
+│       ├── test.yml                            # CI 테스트 자동화
+│       └── release-windows.yml                 # Windows 배포 자동화
 ├── app/
 │   ├── src/
 │   │   ├── main/
@@ -65,35 +88,67 @@ se-tetris-team13/
 │   │   │   │   │   └── ScoreBoard.java         # 점수 관리
 │   │   │   │   ├── game/
 │   │   │   │   │   ├── GameManager.java        # 게임 로직 관리
-│   │   │   │   │   ├── GameState.java          # 게임 상태 정의
-│   │   │   │   │   └── Timer.java              # 게임 타이머
+│   │   │   │   │   ├── Timer.java              # 게임 타이머
+│   │   │   │   │   ├── logic/
+│   │   │   │   │   │   └── GameEngine.java     # 게임 엔진
+│   │   │   │   │   ├── model/
+│   │   │   │   │   │   ├── Board.java          # 게임 보드
+│   │   │   │   │   │   └── Tetromino.java      # 테트로미노 블록
+│   │   │   │   │   ├── controller/
+│   │   │   │   │   │   ├── GameController.java         # 게임 컨트롤러
+│   │   │   │   │   │   ├── GameSceneController.java    # 게임 씬 컨트롤러
+│   │   │   │   │   │   ├── GameStateListener.java      # 게임 상태 리스너
+│   │   │   │   │   │   └── CompositeGameStateListener.java
+│   │   │   │   │   └── util/
+│   │   │   │   │       └── AsciiBoardRenderer.java     # ASCII 보드 렌더러
 │   │   │   │   ├── input/
 │   │   │   │   │   └── KeyInputHandler.java    # 키 입력 처리
 │   │   │   │   └── scenes/
 │   │   │   │       ├── MainMenuScene.java      # 메인 메뉴
+│   │   │   │       ├── DifficultySelectionScene.java   # 난이도 선택
 │   │   │   │       ├── GameScene.java          # 게임 화면
+│   │   │   │       ├── GameOverScene.java      # 게임 오버
 │   │   │   │       ├── SettingsScene.java      # 설정 화면
-│   │   │   │       ├── ScoreboardScene.java    # 점수판
 │   │   │   │       ├── KeySettingsScene.java   # 키 설정
-│   │   │   │       └── GameOverScene.java      # 게임 오버
+│   │   │   │       ├── ScoreboardScene.java    # 점수판
+│   │   │   │       └── ExitScene.java          # 종료 확인
 │   │   │   └── resources/
 │   │   │       ├── application.css             # 기본 스타일
-│   │   │       └── colorblind.css              # 색맹 모드 스타일
-│   │   └── test/                               # 단위 테스트
-│   ├── build.gradle                            # 빌드 설정
+│   │   │       ├── colorblind.css              # 색맹 모드 스타일
+│   │   │       └── icon.ico                    # Windows 아이콘
+│   │   └── test/
+│   │       └── java/team13/tetris/             # 단위 테스트
+│   │           ├── config/
+│   │           ├── data/
+│   │           ├── game/
+│   │           │   ├── controller/
+│   │           │   └── logic/
+│   │           └── scenes/
+│   ├── build.gradle                            # 빌드 설정 (jpackage 포함)
 │   ├── settings.json                           # 사용자 설정 파일
 │   └── scores.txt                              # 점수 데이터 파일
+├── gradle/
+│   └── wrapper/                                # Gradle wrapper
+├── gradlew                                     # Gradle wrapper 스크립트 (Unix)
+├── gradlew.bat                                 # Gradle wrapper 스크립트 (Windows)
+├── settings.gradle                             # Gradle 설정
 └── README.md
 ```
 
 ## 🚀 실행 방법
 
-### 요구사항
+### Windows 사용자 (권장)
+
+**가장 쉬운 방법!** [릴리즈 페이지](https://github.com/Oxalidaceae/se-tetris-team13/releases/latest)에서 Windows 실행 파일을 다운로드하세요.
+
+### 개발자 또는 다른 OS 사용자
+
+#### 요구사항
 
 - Java 17 이상
 - Gradle (wrapper 포함)
 
-### 실행 단계
+#### 실행 단계
 
 1. **저장소 클론**
 
@@ -122,16 +177,24 @@ se-tetris-team13/
    ./gradlew build
    ```
 
+4. **Windows 실행 파일 생성 (선택사항)**
+
+   ```bash
+   # Windows에서만 가능
+   .\gradlew jpackage
+
+   # 생성 위치: app/build/jpackage/Tetris/Tetris.exe
+   ```
+
 ## 🎯 게임 조작법
 
 ### 기본 키 설정
 
-- **이동**: A (왼쪽), D (오른쪽)
-- **회전**: J
-- **소프트 드롭**: S
+- **이동**: LEFT (왼쪽), RIGHT (오른쪽)
+- **회전**: Z
+- **소프트 드롭**: DOWN (아래)
 - **하드 드롭**: K
 - **일시정지**: P
-- **종료**: ESC
 
 > 💡 모든 키는 설정 메뉴에서 변경 가능합니다.
 
@@ -150,6 +213,46 @@ se-tetris-team13/
 # 테스트 결과 확인
 .\gradlew test --info
 ```
+
+테스트 커버리지:
+
+- 게임 로직 (GameEngine, Board)
+- 설정 관리 (Settings, SettingsRepository)
+- 점수 시스템 (ScoreBoard)
+- UI 컨트롤러 (JavaFX headless 테스트)
+
+## 🚢 배포
+
+### 자동 배포 (GitHub Actions)
+
+`main` 브랜치에 버전 태그를 푸시하면 자동으로 Windows 실행 파일이 빌드되고 GitHub Release에 업로드됩니다.
+
+```bash
+# develop에서 main으로 병합
+git checkout main
+git merge develop
+
+# 버전 태그 생성 및 푸시
+git tag v1.0.0
+git push origin main --tags
+```
+
+워크플로우가 자동으로:
+
+1. 프로젝트 빌드 및 테스트
+2. jpackage로 Windows 실행 파일 생성
+3. 압축 및 GitHub Release 생성
+4. 설치 가이드와 함께 파일 업로드
+
+### 수동 배포
+
+로컬에서 Windows 실행 파일을 직접 생성할 수 있습니다:
+
+```bash
+.\gradlew jpackage
+```
+
+생성된 파일 위치: `app/build/jpackage/Tetris/`
 
 ## 👥 팀 구성
 
