@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write # PR 코멘트 작성 권한 추가
 
     steps:
       - uses: actions/checkout@v5
@@ -37,6 +38,52 @@ jobs:
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build
+
+      - name: Run tests with JaCoCo coverage
+        run: ./gradlew test jacocoTestReport
+
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        if: github.event_name == 'pull_request'
+        with:
+          paths: |
+            ${{ github.workspace }}/app/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 60
+          min-coverage-changed-files: 50
+          title: '📊 JaCoCo Code Coverage Report'
+          update-comment: true
+
+      - name: Generate coverage summary for push events
+        if: github.event_name == 'push'
+        run: |
+          echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # JaCoCo XML에서 커버리지 추출
+          COVERAGE=$(grep -o 'type="INSTRUCTION".*missed="[0-9]*" covered="[0-9]*"' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
+          MISSED=$(echo $COVERAGE | grep -o 'missed="[0-9]*"' | grep -o '[0-9]*')
+          COVERED=$(echo $COVERAGE | grep -o 'covered="[0-9]*"' | grep -o '[0-9]*')
+          TOTAL=$((MISSED + COVERED))
+          PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", ($COVERED / $TOTAL) * 100}")
+
+          echo "### Overall Coverage: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lines Covered**: ${COVERED} / ${TOTAL}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lines Missed**: ${MISSED}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📄 Full report available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+
+          # 콘솔에도 출력
+          echo "📊 Code Coverage: ${PERCENTAGE}%"
+          echo "✅ Lines Covered: ${COVERED} / ${TOTAL}"
+
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: app/build/reports/jacoco/test/html/
 
     # - name: Test with Gradle Wrapper
     #   run: ./gradlew test
