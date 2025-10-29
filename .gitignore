@@ -2,6 +2,13 @@
 .vscode/
 monitoring.json
 
+# Ignore user-generated files (settings, scores, test scripts)
+settings.json
+app/settings.json
+scores.txt
+app/scores.txt
+run-tetris.bat
+
 # Compiled class file
 *.class
 

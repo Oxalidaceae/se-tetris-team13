@@ -64,13 +64,14 @@ public class ScoreboardScene {
 
     // 리스트 키보드 네비게이션 설정
     private void setupListNavigation(ListView<String> scoreList, Button backBtn) {
-        scoreList.setOnKeyPressed(e -> {
+        scoreList.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             int selected = scoreList.getSelectionModel().getSelectedIndex();
             int lastIndex = scoreList.getItems().size() - 1;
 
             if (e.getCode() == javafx.scene.input.KeyCode.DOWN && selected == lastIndex) {
                 backBtn.requestFocus();
                 e.consume();
+                
             }
 
             if (e.getCode() == javafx.scene.input.KeyCode.UP && selected == -1) {

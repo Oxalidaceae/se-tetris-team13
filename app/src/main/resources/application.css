@@ -89,6 +89,15 @@
 .window-small .button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
+}
+
+.window-small .toggle-button {
+    -fx-font-size: 12px;
+    -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
 }
 
 .window-small .pause-option {
@@ -102,6 +111,10 @@
     -fx-min-height: 12px;
     -fx-pref-width: 28px;  
     -fx-pref-height: 24px;  
+}
+
+.window-small .list-view {
+    -fx-pref-height: 300px;
 }
 
 .window-small .score-label {
@@ -129,6 +142,14 @@
 .window-medium .button {
     -fx-font-size: 16px;
     -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+.window-medium .toggle-button{
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
 }
 
 .window-medium .pause-option {
@@ -142,6 +163,10 @@
     -fx-min-height: 16px;
     -fx-pref-width: 40px;
     -fx-pref-height: 32px;
+}
+
+.window-medium .list-view {
+    -fx-pref-height: 390px;
 }
 
 .window-medium .score-label {
@@ -169,6 +194,14 @@
 .window-large .button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
+}
+.window-large .toggle-button {
+    -fx-font-size: 20px;
+    -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
 }
 
 .window-large .pause-option {
@@ -182,6 +215,10 @@
     -fx-min-height: 20px;
     -fx-pref-width: 52px;
     -fx-pref-height: 40px;
+}
+
+.window-large .list-view {
+    -fx-pref-height: 480px;
 }
 
 .window-large .score-label {

@@ -9,7 +9,8 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.1.0' // 추가
+    id 'org.openjfx.javafxplugin' version '0.1.0' // JavaFX 지원
+    id 'jacoco' // 코드 커버리지
 }
 
 repositories {
@@ -22,6 +23,9 @@ dependencies {
     // implementation libs.guava
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
     implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // JavaFX headless 테스트를 위한 Monocle
+    testImplementation 'org.testfx:openjfx-monocle:jdk-12.0.1+2'
 }
 
 testing {
@@ -51,10 +55,20 @@ tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
     useJUnitPlatform()
     
+    // JavaFX headless 모드 설정
+    systemProperty 'java.awt.headless', 'true'
+    systemProperty 'testfx.robot', 'glass'
+    systemProperty 'testfx.headless', 'true'
+    systemProperty 'prism.order', 'sw'
+    systemProperty 'prism.text', 't2k'
+    systemProperty 'glass.platform', 'Monocle'
+    systemProperty 'monocle.platform', 'Headless'
+    
     // Show standard output and error during test execution
     testLogging {
-        showStandardStreams = true
-        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = false
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
     }
 }
 
@@ -69,4 +83,117 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     // 명시적으로 Java 17 호환으로 컴파일하도록 설정합니다.
     options.release = 17
+}
+
+// JaCoCo 코드 커버리지 설정
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+test {
+    finalizedBy jacocoTestReport // 테스트 후 자동으로 리포트 생성
+}
+
+jacocoTestReport {
+    dependsOn test // 리포트 생성 전 테스트 실행
+    
+    reports {
+        xml.required = true  // XML 리포트 (CI/CD용)
+        html.required = true // HTML 리포트 (사람이 보기 좋음)
+        csv.required = false
+    }
+    
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/App.class',           // JavaFX 메인 클래스 제외
+                '**/SceneManager.class',  // JavaFX Scene 관리 클래스 제외
+                '**/scenes/**'            // JavaFX UI 클래스들 제외 (선택사항)
+            ])
+        }))
+    }
+}
+
+// 커버리지 검증 (최소 커버리지 기준 설정)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.60 // 60% 이상
+            }
+        }
+        
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.50 // 각 클래스별 50% 이상
+            }
+            excludes = [
+                'team13.tetris.App',
+                'team13.tetris.SceneManager',
+                'team13.tetris.scenes.*'
+            ]
+        }
+    }
+}
+
+// jpackage 커스텀 태스크
+tasks.register('jpackage', Exec) {
+    dependsOn 'installDist'
+    group = 'distribution'
+    description = 'Creates a native Windows application package using jpackage'
+    
+    doFirst {
+        def appVersion = System.getenv('APP_VERSION') ?: '1.0.0'
+        def iconPath = file('src/main/resources/icon.ico').absolutePath
+        def inputDir = file("${buildDir}/install/app/lib").absolutePath
+        def outputDir = file("${buildDir}/jpackage").absolutePath
+        
+        // 출력 디렉토리 생성
+        file(outputDir).mkdirs()
+        
+        // 메인 JAR 파일 찾기
+        def libDir = file("${buildDir}/install/app/lib")
+        def jarFiles = fileTree(dir: libDir, include: '*.jar')
+        
+        if (jarFiles.isEmpty()) {
+            throw new GradleException("No JAR files found in ${libDir}")
+        }
+        
+        def mainJar = jarFiles.files.find { it.name.startsWith('app') }
+        if (mainJar == null) {
+            mainJar = jarFiles.files.first()
+        }
+        
+        println "📦 Creating Windows package..."
+        println "   Version: ${appVersion}"
+        println "   Icon: ${iconPath}"
+        println "   Input: ${inputDir}"
+        println "   Main JAR: ${mainJar.name}"
+        println "   Total JARs: ${jarFiles.size()}"
+        
+        // commandLine 설정 - 런처 스크립트 사용
+        commandLine = [
+            'jpackage',
+            '--type', 'app-image',
+            '--name', 'Tetris',
+            '--app-version', appVersion,
+            '--input', inputDir,
+            '--main-jar', mainJar.name,
+            '--main-class', 'team13.tetris.App',
+            '--icon', iconPath,
+            '--dest', outputDir,
+            '--java-options', '-Xmx512m',
+            '--java-options', '--module-path',
+            '--java-options', '$APPDIR',
+            '--java-options', '--add-modules=javafx.controls,javafx.fxml'
+        ]
+    }
+    
+    doLast {
+        def outputDir = file("${buildDir}/jpackage").absolutePath
+        println "✅ Package created at: ${outputDir}\\Tetris"
+    }
 }

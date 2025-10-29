@@ -45,7 +45,13 @@ public class ScoreBoard {
     private ScoreEntry lastAddedEntry;
 
     public ScoreBoard() {
+        this(DEFAULT_SCORE_FILE);
+    }
+
+    // Constructor for testing with custom file path
+    public ScoreBoard(String scoreFilePath) {
         this.scores = new ArrayList<>();
+        this.scoreFile = scoreFilePath;
         loadScores();
     }
 
@@ -66,7 +72,7 @@ public class ScoreBoard {
 
     // 파일에 점수 저장
     public void saveScores() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SCORE_FILE))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
             for (ScoreEntry entry : scores) {
                 writer.println(entry.getName() + "," + entry.getScore() + "," + entry.getMode().name());
             }
