@@ -61,14 +61,13 @@ jobs:
           echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # JaCoCo XML에서 커버리지 추출
-          COVERAGE=$(grep -oP 'type="INSTRUCTION"[^>]*missed="\K[0-9]+' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
-          MISSED=$COVERAGE
-          COVERED=$(grep -oP 'type="INSTRUCTION"[^>]*covered="\K[0-9]+' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
+          # JaCoCo XML 파일의 전체 프로젝트 커버리지 추출 (마지막 report 태그의 counter)
+          MISSED=$(grep -oP '</report>' app/build/reports/jacoco/test/jacocoTestReport.xml -B 6 | grep 'type="LINE"' | grep -oP 'missed="\K[0-9]+')
+          COVERED=$(grep -oP '</report>' app/build/reports/jacoco/test/jacocoTestReport.xml -B 6 | grep 'type="LINE"' | grep -oP 'covered="\K[0-9]+')
           TOTAL=$((MISSED + COVERED))
           PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", (${COVERED} / ${TOTAL}) * 100}")
 
-          echo "### Overall Coverage: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
+          echo "### Overall Line Coverage: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Lines Covered**: ${COVERED} / ${TOTAL}" >> $GITHUB_STEP_SUMMARY
           echo "- **Lines Missed**: ${MISSED}" >> $GITHUB_STEP_SUMMARY
