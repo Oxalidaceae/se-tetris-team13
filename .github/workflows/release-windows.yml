@@ -11,6 +11,7 @@ on:
 jobs:
   build-and-release:
     runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout code
@@ -21,6 +22,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -51,30 +55,37 @@ jobs:
       - name: Compress executable directory
         run: |
           $version = "${{ steps.get_version.outputs.VERSION }}"
-          Compress-Archive -Path app\build\jpackage\Tetris\* -DestinationPath "Tetris-Windows-$version.zip"
+          Compress-Archive -Path app\build\jpackage\Tetris\* -DestinationPath "Tetris-Windows-v$version.zip"
         shell: pwsh
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: Tetris-Windows-*.zip
           body: |
-            ## Tetris Windows 실행 파일
+            ## 🎮 Tetris Windows 실행 파일
 
-            ### 설치 방법
-            1. `Tetris-Windows-${{ steps.get_version.outputs.VERSION }}.zip` 파일을 다운로드합니다
+            ### 📦 설치 방법
+            1. `Tetris-Windows-v${{ steps.get_version.outputs.VERSION }}.zip` 파일을 다운로드합니다
             2. 압축을 원하는 위치에 풀어줍니다
             3. `Tetris.exe`를 더블클릭하여 실행합니다
 
-            ### 특징
-            - Java 설치 없이 바로 실행 가능
-            - JRE가 포함되어 있어 별도 설정 불필요
-            - 아이콘이 적용된 실행 파일
+            ### ✨ 특징
+            - ✅ **Java 설치 불필요** - JRE가 포함되어 있습니다
+            - ✅ **즉시 실행 가능** - 추가 설정이 필요 없습니다
+            - ✅ **아이콘 적용** - 테트리스 전용 아이콘이 적용되어 있습니다
 
-            ### 시스템 요구사항
+            ### 💻 시스템 요구사항
             - Windows 10 이상
             - 약 150MB의 디스크 공간
+
+            ### 🎯 게임 조작법
+            - **이동**: 좌/우 방향키
+            - **회전**: Z
+            - **소프트 드롭**: 아래 방향키
+            - **하드 드롭**: K
+            - **일시정지**: P
           generate_release_notes: true
           draft: false
           prerelease: false
