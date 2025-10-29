@@ -62,11 +62,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # JaCoCo XML에서 커버리지 추출
-          COVERAGE=$(grep -o 'type="INSTRUCTION".*missed="[0-9]*" covered="[0-9]*"' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
-          MISSED=$(echo $COVERAGE | grep -o 'missed="[0-9]*"' | grep -o '[0-9]*')
-          COVERED=$(echo $COVERAGE | grep -o 'covered="[0-9]*"' | grep -o '[0-9]*')
+          COVERAGE=$(grep -oP 'type="INSTRUCTION"[^>]*missed="\K[0-9]+' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
+          MISSED=$COVERAGE
+          COVERED=$(grep -oP 'type="INSTRUCTION"[^>]*covered="\K[0-9]+' app/build/reports/jacoco/test/jacocoTestReport.xml | head -1)
           TOTAL=$((MISSED + COVERED))
-          PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", ($COVERED / $TOTAL) * 100}")
+          PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", (${COVERED} / ${TOTAL}) * 100}")
 
           echo "### Overall Coverage: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
