@@ -58,24 +58,36 @@ jobs:
       - name: Generate coverage summary for push events
         if: github.event_name == 'push'
         run: |
-          echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          report_path="app/build/reports/jacoco/test/jacocoTestReport.xml"
 
-          # JaCoCo XML의 마지막 LINE counter 파싱 (전체 프로젝트 커버리지)
-          LINE_COUNTER=$(grep '</report>' app/build/reports/jacoco/test/jacocoTestReport.xml -B 1 | grep 'type="LINE"')
-          MISSED=$(echo "$LINE_COUNTER" | grep -o 'missed="[0-9]*"' | grep -o '[0-9]*')
-          COVERED=$(echo "$LINE_COUNTER" | grep -o 'covered="[0-9]*"' | grep -o '[0-9]*')
+          if [ ! -f "$report_path" ]; then
+            echo "JaCoCo report not found at $report_path" >&2
+            exit 1
+          fi
+
+          read MISSED COVERED < <(awk -F'"' '$2=="LINE" {missed=$4; covered=$6} END {print missed, covered}' "$report_path")
+
+          MISSED=${MISSED:-0}
+          COVERED=${COVERED:-0}
           TOTAL=$((MISSED + COVERED))
-          PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", (${COVERED} / ${TOTAL}) * 100}")
 
-          echo "### Overall Line Coverage: ${PERCENTAGE}%" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Lines Covered**: ${COVERED} / ${TOTAL}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Lines Missed**: ${MISSED}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📄 Full report available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+          if [ "$TOTAL" -eq 0 ]; then
+            PERCENTAGE="0.0"
+          else
+            PERCENTAGE=$(awk -v c="$COVERED" -v t="$TOTAL" 'BEGIN {printf "%.1f", (c/t)*100}')
+          fi
 
-          # 콘솔에도 출력
+          {
+            echo "## 📊 Code Coverage Report"
+            echo
+            echo "### Overall Line Coverage: ${PERCENTAGE}%"
+            echo
+            echo "- **Lines Covered**: ${COVERED} / ${TOTAL}"
+            echo "- **Lines Missed**: ${MISSED}"
+            echo
+            echo "📄 Full report available in workflow artifacts"
+          } >> "$GITHUB_STEP_SUMMARY"
+
           echo "📊 Code Coverage: ${PERCENTAGE}%"
           echo "✅ Lines Covered: ${COVERED} / ${TOTAL}"
 
