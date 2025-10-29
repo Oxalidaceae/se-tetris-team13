@@ -165,21 +165,6 @@ public class SettingsTest {
   }
 
   @Test
-  @DisplayName("종료 키 기본값이 ESCAPE인지 확인")
-  void testExitDefaultValue() {
-    assertEquals("ESCAPE", settings.getExit(),
-        "Exit key should be ESCAPE by default");
-  }
-
-  @Test
-  @DisplayName("종료 키를 설정하고 가져올 수 있는지 확인")
-  void testExitGetterSetter() {
-    settings.setExit("Q");
-    assertEquals("Q", settings.getExit(),
-        "Exit key should be Q after setting");
-  }
-
-  @Test
   @DisplayName("기본 키가 이미 사용 중인지 확인 - LEFT")
   void testIsKeyAlreadyUsedLeft() {
     assertTrue(settings.isKeyAlreadyUsed("LEFT"),
@@ -224,13 +209,6 @@ public class SettingsTest {
   }
 
   @Test
-  @DisplayName("기본 키가 이미 사용 중인지 확인 - ESCAPE")
-  void testIsKeyAlreadyUsedEscape() {
-    assertTrue(settings.isKeyAlreadyUsed("ESCAPE"),
-        "ESCAPE key should be already used");
-  }
-
-  @Test
   @DisplayName("사용되지 않은 키는 false를 반환하는지 확인")
   void testIsKeyAlreadyUsedUnused() {
     assertFalse(settings.isKeyAlreadyUsed("A"),
@@ -270,8 +248,7 @@ public class SettingsTest {
     settings.setKeyDown("S");
     settings.setKeyRotate("W");
     settings.setKeyDrop("SPACE");
-    settings.setPause("ESC");
-    settings.setExit("Q");
+    settings.setPause("P");
 
     // 변경 확인
     assertEquals("A", settings.getKeyLeft());
@@ -293,8 +270,6 @@ public class SettingsTest {
         "Drop key should be restored to X");
     assertEquals("P", settings.getPause(),
         "Pause key should be restored to P");
-    assertEquals("ESCAPE", settings.getExit(),
-        "Exit key should be restored to ESCAPE");
   }
 
   @Test
@@ -336,7 +311,6 @@ public class SettingsTest {
     assertEquals("Z", newSettings.getKeyRotate(), "Rotate key default");
     assertEquals("X", newSettings.getKeyDrop(), "Drop key default");
     assertEquals("P", newSettings.getPause(), "Pause key default");
-    assertEquals("ESCAPE", newSettings.getExit(), "Exit key default");
   }
 
   @Test

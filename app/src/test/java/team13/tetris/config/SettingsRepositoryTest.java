@@ -106,7 +106,6 @@ public class SettingsRepositoryTest {
     assertEquals("Z", settings.getKeyRotate(), "Should return default rotate key");
     assertEquals("X", settings.getKeyDrop(), "Should return default drop key");
     assertEquals("P", settings.getPause(), "Should return default pause key");
-    assertEquals("ESCAPE", settings.getExit(), "Should return default exit key");
     assertEquals("MEDIUM", settings.getWindowSize(), "Should return default window size");
     assertFalse(settings.isColorBlindMode(), "Should return default color blind mode");
   }
@@ -152,7 +151,6 @@ public class SettingsRepositoryTest {
     originalSettings.setKeyRotate("W");
     originalSettings.setKeyDrop("SPACE");
     originalSettings.setPause("P");
-    originalSettings.setExit("ESC");
 
     // when
     SettingsRepository.save(originalSettings);
@@ -175,8 +173,6 @@ public class SettingsRepositoryTest {
         "Drop key should match");
     assertEquals(originalSettings.getPause(), loadedSettings.getPause(),
         "Pause key should match");
-    assertEquals(originalSettings.getExit(), loadedSettings.getExit(),
-        "Exit key should match");
   }
 
   @Test
@@ -215,7 +211,6 @@ public class SettingsRepositoryTest {
     assertEquals("Z", loadedSettings.getKeyRotate());
     assertEquals("X", loadedSettings.getKeyDrop());
     assertEquals("P", loadedSettings.getPause());
-    assertEquals("ESCAPE", loadedSettings.getExit());
     assertEquals("MEDIUM", loadedSettings.getWindowSize());
     assertFalse(loadedSettings.isColorBlindMode());
   }
