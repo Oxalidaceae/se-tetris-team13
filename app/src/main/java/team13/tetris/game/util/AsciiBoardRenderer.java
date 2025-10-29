@@ -3,32 +3,32 @@ package team13.tetris.game.util;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-/**
- * 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 'O'로 표현합니다.
- */
+// ASCII 보드 렌더링 (테두리: X, 블록: O)
 public final class AsciiBoardRenderer {
-    private AsciiBoardRenderer() {}
+    private AsciiBoardRenderer() {
+    }
 
+    // 보드와 현재 미노를 ASCII로 렌더링
     public static String render(Board board, Tetromino current, int px, int py) {
         int rows = board.getHeight();
         int cols = board.getWidth();
         StringBuilder sb = new StringBuilder();
 
-        // top border
-        for (int c = 0; c < cols + 2; c++) sb.append('X');
+        for (int c = 0; c < cols + 2; c++)
+            sb.append('X');
         sb.append('\n');
 
         for (int r = 0; r < rows; r++) {
             sb.append('X');
             for (int c = 0; c < cols; c++) {
                 boolean occupied = board.getCell(c, r) != 0;
-                // check current piece
                 if (!occupied && current != null) {
                     int[][] shape = current.getShape();
                     int sr = r - py;
                     int sc = c - px;
                     if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length) {
-                        if (shape[sr][sc] != 0) occupied = true;
+                        if (shape[sr][sc] != 0)
+                            occupied = true;
                     }
                 }
                 sb.append(occupied ? 'O' : ' ');
@@ -37,23 +37,22 @@ public final class AsciiBoardRenderer {
             sb.append('\n');
         }
 
-        // bottom border
-        for (int c = 0; c < cols + 2; c++) sb.append('X');
+        for (int c = 0; c < cols + 2; c++)
+            sb.append('X');
         sb.append('\n');
 
         return sb.toString();
     }
 
-    /**
-     * 단일 테트로미노의 4x4 미리보기를 렌더링합니다 (테두리 없음).
-     * 모양이 4x4보다 작을 경우 중앙에 배치됩니다.
-     */
+    // 4x4 미노 미리보기 렌더링 (중앙 정렬)
     public static String renderPreview(Tetromino piece) {
         StringBuilder sb = new StringBuilder();
         int size = 4;
-        // default empty 4x4
+        // 4x4 빈 그리드 초기화
         char[][] grid = new char[size][size];
-        for (int r = 0; r < size; r++) for (int c = 0; c < size; c++) grid[r][c] = ' ';
+        for (int r = 0; r < size; r++)
+            for (int c = 0; c < size; c++)
+                grid[r][c] = ' ';
 
         if (piece != null) {
             int[][] shape = piece.getShape();
@@ -66,14 +65,16 @@ public final class AsciiBoardRenderer {
                     if (shape[r][c] != 0) {
                         int rr = offR + r;
                         int cc = offC + c;
-                        if (rr >= 0 && rr < size && cc >= 0 && cc < size) grid[rr][cc] = 'O';
+                        if (rr >= 0 && rr < size && cc >= 0 && cc < size)
+                            grid[rr][cc] = 'O';
                     }
                 }
             }
         }
 
         for (int r = 0; r < size; r++) {
-            for (int c = 0; c < size; c++) sb.append(grid[r][c]);
+            for (int c = 0; c < size; c++)
+                sb.append(grid[r][c]);
             sb.append('\n');
         }
 

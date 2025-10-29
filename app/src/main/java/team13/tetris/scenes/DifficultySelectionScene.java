@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+// 난이도 선택 화면
 public class DifficultySelectionScene {
     private final SceneManager manager;
     private final Settings settings;
@@ -36,8 +37,8 @@ public class DifficultySelectionScene {
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
-
         manager.enableArrowAsTab(scene);
+
         return scene;
     }
 }

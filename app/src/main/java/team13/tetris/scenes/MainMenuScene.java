@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+// 메인 메뉴 화면
 public class MainMenuScene {
     private final SceneManager manager;
     private final Settings settings;
@@ -18,7 +19,6 @@ public class MainMenuScene {
     }
 
     public Scene getScene() {
-
         Label title = new Label("TETRIS");
         title.getStyleClass().add("label-title");
 
@@ -42,5 +42,4 @@ public class MainMenuScene {
         manager.enableArrowAsTab(scene);
         return scene;
     }
-    
 }

@@ -23,91 +23,85 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
+// 화면 전환 및 스타일 관리
 public class SceneManager {
     private final Stage stage;
-    private boolean colorBlindMode = false; // 색맹 모드 상태 변수
-    private String windowSizeClass = "window-medium"; // 현재 창 크기 클래스
-    private Scene previousScene = null; // 이전 씬 저장용
+    private boolean colorBlindMode = false;
+    private String windowSizeClass = "window-medium";
+    private Scene previousScene = null;
 
     public SceneManager(Stage stage) {
         this.stage = stage;
     }
 
-    // 메인 메뉴 씬으로 전환
     public void showMainMenu(Settings settings) {
         changeScene(new MainMenuScene(this, settings).getScene());
     }
 
-    // 옵션(설정) 씬으로 전환
     public void showSettings(Settings settings) {
         changeScene(new SettingsScene(this, settings).getScene());
     }
 
-    // 스코어보드 씬으로 전환
     public void showScoreboard(Settings settings) {
         changeScene(new ScoreboardScene(this, settings).getScene());
     }
 
-    // 하이라이트된 점수와 함께 스코어보드 씬으로 전환
+    // 게임 종료 후 점수 저장과 함께 스코어보드 표시
     public void showScoreboard(Settings settings, String name, int score, ScoreBoard.ScoreEntry.Mode difficulty) {
         ScoreboardScene scene = new ScoreboardScene(this, settings, name, score, difficulty);
         changeScene(scene.getScene());
     }
 
-    // 난이도 선택 씬으로 전환
     public void showDifficultySelection(Settings settings) {
         changeScene(new DifficultySelectionScene(this, settings).getScene());
     }
 
-    // 게임 씬으로 전환
+    // 게임 화면 초기화 및 시작
     public void showGame(Settings settings, ScoreBoard.ScoreEntry.Mode difficulty) {
+        // 게임 엔진 및 컴포넌트 초기화
         Board board = new Board(10, 20);
         CompositeGameStateListener composite = new CompositeGameStateListener();
         GameEngine engine = new GameEngine(board, composite, difficulty);
         KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
-        
-        // Create GameScene (View) and GameSceneController
+
+        // 화면 및 컨트롤러 설정
         GameScene gameScene = new GameScene(this, settings, engine, difficulty);
         GameSceneController gameController = new GameSceneController(gameScene, this, settings, keyInputHandler);
         gameController.setEngine(engine);
-        
-        // Register the controller as game state listener
+
         composite.add(gameController);
 
+        // 씬 생성 및 게임 시작
         Scene scene = gameScene.createScene();
         gameController.attachToScene(scene);
-        changeScene(scene);  // CSS를 적용하기 위해 changeScene() 사용
+        changeScene(scene);
         engine.startNewGame();
 
         gameScene.requestFocus();
     }
 
-    // 게임 오버 씬으로 전환
     public void showGameOver(Settings settings, int finalScore, ScoreBoard.ScoreEntry.Mode difficulty) {
         changeScene(new GameOverScene(this, settings, finalScore, difficulty).getScene());
     }
 
-    // 키 설정 씬으로 전환
     public void showKeySettings(Settings settings) {
         changeScene(new KeySettingsScene(this, settings).getScene());
     }
 
-    // 게임 종료 씬으로 전환
+    // 종료 확인 화면 표시
     public void showExitScene(Settings settings, Runnable onCancel) {
-        // 현재 씬을 저장
         previousScene = stage.getScene();
         changeScene(new ExitScene(this, settings, onCancel).getScene());
     }
-    
-    // 이전 씬으로 복원
+
+    // 이전 화면으로 복귀
     public void restorePreviousScene() {
         if (previousScene != null) {
             stage.setScene(previousScene);
             previousScene = null;
         }
     }
-    
-    // 씬 전환 메서드
+
     public void changeScene(Scene scene) {
         applyStylesheet(scene);
         stage.setScene(scene);
@@ -119,53 +113,39 @@ public class SceneManager {
         stage.close();
     }
 
-    // 색맹 모드 상태 확인 메서드
     public boolean isColorBlindMode() {
         return colorBlindMode;
     }
 
-    // 색맹 모드 설정 메서드
     public void setColorBlindMode(boolean enabled) {
         this.colorBlindMode = enabled;
-        applyStylesheet(stage.getScene()); // 현재 씬에 스타일시트 적용
+        applyStylesheet(stage.getScene());
     }
 
-    // 창 크기 설정 메서드
+    // 창 크기 설정 및 CSS 클래스 업데이트
     public void setWindowSize(int width, int height) {
         stage.setWidth(width);
         stage.setHeight(height);
-        
-        // 창 크기에 따른 CSS 클래스 결정
-        if (width <= 400) {
-            windowSizeClass = "window-small";
-        } else if (width <= 600) {
-            windowSizeClass = "window-medium";
-        } else {
-            windowSizeClass = "window-large";
-        }
-        
-        // 현재 씬에 크기 클래스 적용
-        if (stage.getScene() != null) {
+
+        if (width <= 400) windowSizeClass = "window-small";
+        else if (width <= 600) windowSizeClass = "window-medium";
+        else windowSizeClass = "window-large";
+
+        if (stage.getScene() != null)
             applyWindowSizeClass(stage.getScene());
-        }
     }
 
-    // 씬에 맞는 스타일시트 적용 메서드
+    // 색약 모드에 따른 CSS 적용
     private void applyStylesheet(Scene scene) {
         scene.getStylesheets().clear();
 
-        String cssPath = colorBlindMode
-                ? "/colorblind.css"
-                : "/application.css";
+        String cssPath = colorBlindMode ? "/colorblind.css" : "/application.css";
+        scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
 
-        scene.getStylesheets().add(
-                getClass().getResource(cssPath).toExternalForm());
-        
-        // 창 크기 클래스도 함께 적용
         applyWindowSizeClass(scene);
     }
-    
-    // 씬의 루트 노드에 창 크기 클래스 적용
+
+    // 창 크기 CSS 클래스 적용
     private void applyWindowSizeClass(Scene scene) {
         if (scene != null && scene.getRoot() != null) {
             scene.getRoot().getStyleClass().removeAll("window-small", "window-medium", "window-large");
@@ -173,36 +153,18 @@ public class SceneManager {
         }
     }
 
-    // 키보드로 버튼들 간 이동 및 선택 기능 활성화 메서드
+    // 방향키를 Tab 키로 변환하여 포커스 이동 지원
     public void enableArrowAsTab(Scene scene) {
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, new javafx.event.EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent e) {
-                Node focusedNode = scene.getFocusOwner();
-                if (focusedNode == null)
-                    return;
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            Node focusedNode = scene.getFocusOwner();
+            if (focusedNode == null) return;
 
-                // 아래/오른쪽 방향키 → Tab 이동
-                if (e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.RIGHT) {
-                    e.consume();
-                    focusedNode.fireEvent(new KeyEvent(
-                            KeyEvent.KEY_PRESSED,
-                            "",
-                            "",
-                            KeyCode.TAB,
-                            false, false, false, false));
-                }
-                // 위/왼쪽 방향키 → Shift+Tab 이동
-                else if (e.getCode() == KeyCode.UP || e.getCode() == KeyCode.LEFT) {
-                    e.consume();
-                    focusedNode.fireEvent(new KeyEvent(
-                            KeyEvent.KEY_PRESSED,
-                            "",
-                            "",
-                            KeyCode.TAB,
-                            true, false, false, false // shift=true
-                    ));
-                }
+            if (e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.RIGHT) {
+                e.consume();
+                focusedNode.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB, false, false, false, false));
+            } else if (e.getCode() == KeyCode.UP || e.getCode() == KeyCode.LEFT) {
+                e.consume();
+                focusedNode.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB, true, false, false, false));
             }
         });
     }

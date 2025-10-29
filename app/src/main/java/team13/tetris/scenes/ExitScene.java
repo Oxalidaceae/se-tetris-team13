@@ -8,10 +8,11 @@ import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
+// 종료 확인 화면
 public class ExitScene {
     private final SceneManager manager;
     private final Settings settings;
-    private final Runnable onCancel; // 취소 시 실행할 동작
+    private final Runnable onCancel;
 
     public ExitScene(SceneManager manager, Settings settings, Runnable onCancel) {
         this.manager = manager;
@@ -28,18 +29,16 @@ public class ExitScene {
 
         confirmBtn.setOnAction(e -> manager.exitWithSave(settings));
         cancelBtn.setOnAction(e -> {
-            if (onCancel != null) {
-                onCancel.run();
-            }
+            if (onCancel != null) onCancel.run();
         });
 
         HBox buttonBox = new HBox(20, confirmBtn, cancelBtn);
         buttonBox.setStyle("-fx-alignment: center;");
-        
+
         VBox layout = new VBox(20, title, buttonBox);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
-        return scene; 
+        return scene;
     }
 }

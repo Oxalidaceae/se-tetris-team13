@@ -7,12 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+// 게임 오버 및 점수 저장 화면
 public class GameOverScene {
     private final SceneManager manager;
     private final Settings settings;
     private final int finalScore;
     private final ScoreBoard.ScoreEntry.Mode difficulty;
-
     private final ScoreBoard scoreBoard;
 
     public GameOverScene(SceneManager manager, Settings settings, int finalScore, ScoreBoard.ScoreEntry.Mode difficulty) {
@@ -33,6 +33,7 @@ public class GameOverScene {
 
         Label statusLabel = new Label();
 
+        // 점수 저장 버튼
         Button saveBtn = new Button("Save Score");
         saveBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
@@ -41,12 +42,9 @@ public class GameOverScene {
                 return;
             }
 
-            // 점수 저장
             scoreBoard.addScore(name, finalScore, difficulty);
             statusLabel.setText("✅ Score saved successfully!");
-
-            // 저장 후 scoreboard로 이동
-             manager.showScoreboard(settings, name, finalScore, difficulty);
+            manager.showScoreboard(settings, name, finalScore, difficulty);
         });
 
         Button backToMenuBtn = new Button("Back to Menu");
@@ -55,7 +53,6 @@ public class GameOverScene {
         VBox layout = new VBox(15, title, scoreLabel, difficultyLabel, nameField, statusLabel, saveBtn, backToMenuBtn);
         layout.setStyle("-fx-alignment: center;");
         Scene scene = new Scene(layout, 600, 700);
-
         manager.enableArrowAsTab(scene);
 
         return scene;
