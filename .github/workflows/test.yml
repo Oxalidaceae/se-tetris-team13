@@ -61,9 +61,10 @@ jobs:
           echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # JaCoCo XML 파일의 마지막 LINE counter에서 전체 프로젝트 커버리지 추출
-          MISSED=$(tail -20 app/build/reports/jacoco/test/jacocoTestReport.xml | grep 'type="LINE"' | tail -1 | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')
-          COVERED=$(tail -20 app/build/reports/jacoco/test/jacocoTestReport.xml | grep 'type="LINE"' | tail -1 | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')
+          # JaCoCo XML의 마지막 LINE counter 파싱 (전체 프로젝트 커버리지)
+          LINE_COUNTER=$(grep '</report>' app/build/reports/jacoco/test/jacocoTestReport.xml -B 1 | grep 'type="LINE"')
+          MISSED=$(echo "$LINE_COUNTER" | grep -o 'missed="[0-9]*"' | grep -o '[0-9]*')
+          COVERED=$(echo "$LINE_COUNTER" | grep -o 'covered="[0-9]*"' | grep -o '[0-9]*')
           TOTAL=$((MISSED + COVERED))
           PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", (${COVERED} / ${TOTAL}) * 100}")
 
