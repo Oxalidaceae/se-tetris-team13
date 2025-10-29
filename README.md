@@ -1,3 +1,5 @@
+[![Java CI with Gradle - test automation](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml/badge.svg)](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml)
+
 # SEOULTECH SE-13 TETRIS
 
 **서울과학기술대학교 컴퓨터공학과 팀 13 테트리스 프로젝트**
