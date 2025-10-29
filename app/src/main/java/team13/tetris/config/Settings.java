@@ -77,14 +77,14 @@ public class Settings {
 
     public boolean isKeyAlreadyUsed(String key) {
         if (key == null || key.trim().isEmpty()) return false;
-        
+
         key = key.toUpperCase();
         return key.equals(keyLeft.toUpperCase()) ||
-            key.equals(keyRight.toUpperCase()) ||
-            key.equals(keyDown.toUpperCase()) ||
-            key.equals(keyRotate.toUpperCase()) ||
-            key.equals(keyDrop.toUpperCase()) ||
-            key.equals(pause.toUpperCase());
+                key.equals(keyRight.toUpperCase()) ||
+                key.equals(keyDown.toUpperCase()) ||
+                key.equals(keyRotate.toUpperCase()) ||
+                key.equals(keyDrop.toUpperCase()) ||
+                key.equals(pause.toUpperCase());
     }
 
     public void restoreDefaultKeys() {
