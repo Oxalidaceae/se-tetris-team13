@@ -1,4 +1,4 @@
-[![Java CI with Gradle - test automation](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml/badge.svg)](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml)
+[![Java CI with Gradle - test automation](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/Oxalidaceae/se-tetris-team13/actions/workflows/test.yml)
 
 # SEOULTECH SE-13 TETRIS
 
