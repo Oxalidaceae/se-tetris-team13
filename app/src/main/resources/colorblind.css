@@ -118,6 +118,10 @@
     -fx-pref-height: 24px;
 }
 
+.window-small .list-view {
+    -fx-pref-height: 300px;
+}
+
 .window-small .score-label {
     -fx-font-size: 11px;
 }
@@ -167,6 +171,10 @@
     -fx-pref-height: 32px;
 }
 
+.window-medium .list-view {
+    -fx-pref-height: 390px;
+}
+
 .window-medium .score-label {
     -fx-font-size: 14px;
 }
@@ -214,6 +222,10 @@
     -fx-min-height: 20px;
     -fx-pref-width: 52px;
     -fx-pref-height: 40px;
+}
+
+.window-large .list-view {
+    -fx-pref-height: 480px;
 }
 
 .window-large .score-label {

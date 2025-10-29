@@ -10,6 +10,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0' // JavaFX 지원
+    id 'jacoco' // 코드 커버리지
 }
 
 repositories {
@@ -82,6 +83,60 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     // 명시적으로 Java 17 호환으로 컴파일하도록 설정합니다.
     options.release = 17
+}
+
+// JaCoCo 코드 커버리지 설정
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+test {
+    finalizedBy jacocoTestReport // 테스트 후 자동으로 리포트 생성
+}
+
+jacocoTestReport {
+    dependsOn test // 리포트 생성 전 테스트 실행
+    
+    reports {
+        xml.required = true  // XML 리포트 (CI/CD용)
+        html.required = true // HTML 리포트 (사람이 보기 좋음)
+        csv.required = false
+    }
+    
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/App.class',           // JavaFX 메인 클래스 제외
+                '**/SceneManager.class',  // JavaFX Scene 관리 클래스 제외
+                '**/scenes/**'            // JavaFX UI 클래스들 제외 (선택사항)
+            ])
+        }))
+    }
+}
+
+// 커버리지 검증 (최소 커버리지 기준 설정)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.60 // 60% 이상
+            }
+        }
+        
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.50 // 각 클래스별 50% 이상
+            }
+            excludes = [
+                'team13.tetris.App',
+                'team13.tetris.SceneManager',
+                'team13.tetris.scenes.*'
+            ]
+        }
+    }
 }
 
 // jpackage 커스텀 태스크
