@@ -189,8 +189,9 @@ public class GameEnginePieceGenerationTest {
     }
 
     // EASY: I블록 가중치 12, 전체 72 → 약 16.7%
-    // 1000개 중 140~200개 정도 나와야 함 (14%~20% 허용)
-    assertTrue(iCount >= 140 && iCount <= 200,
+    // 기대값: 167, 표준편차: 11.8
+    // 99% 신뢰구간: 167 ± 3*11.8 ≈ 131~203
+    assertTrue(iCount >= 130 && iCount <= 205,
         "EASY 모드에서 I 블록이 약 16.7% 출현해야 함 (실제: " + iCount + "/1000)");
 
     easyEngine.shutdown();
@@ -223,7 +224,8 @@ public class GameEnginePieceGenerationTest {
     }
 
     // NORMAL: 모두 가중치 10, 전체 70 → 각 14.3%
-    // 700개 중 각 70~130개 정도 나와야 함 (10%~18.5% 허용)
+    // 기대값: 100, 표준편차: 9.3
+    // 99% 신뢰구간: 100 ± 3*9.3 ≈ 72~128
     for (int i = 0; i < 7; i++) {
       assertTrue(counts[i] >= 70 && counts[i] <= 130,
           "NORMAL 모드에서 모든 블록이 비슷한 빈도로 출현해야 함 (블록 " + i + ": " + counts[i] + "/700)");
@@ -248,8 +250,9 @@ public class GameEnginePieceGenerationTest {
     }
 
     // HARD: I블록 가중치 8, 전체 68 → 약 11.8%
-    // 1000개 중 90~140개 정도 나와야 함 (9%~14% 허용)
-    assertTrue(iCount >= 90 && iCount <= 140,
+    // 기대값: 118, 표준편차: 10.2
+    // 99% 신뢰구간: 118 ± 3*10.2 ≈ 87~149
+    assertTrue(iCount >= 85 && iCount <= 150,
         "HARD 모드에서 I 블록이 약 11.8% 출현해야 함 (실제: " + iCount + "/1000)");
 
     hardEngine.shutdown();

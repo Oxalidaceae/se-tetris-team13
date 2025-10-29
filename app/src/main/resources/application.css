@@ -89,6 +89,15 @@
 .window-small .button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
+}
+
+.window-small .toggle-button {
+    -fx-font-size: 12px;
+    -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
 }
 
 .window-small .pause-option {
@@ -129,6 +138,14 @@
 .window-medium .button {
     -fx-font-size: 16px;
     -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+.window-medium .toggle-button{
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
 }
 
 .window-medium .pause-option {
@@ -169,6 +186,14 @@
 .window-large .button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
+}
+.window-large .toggle-button{
+    -fx-font-size: 20px;
+    -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
 }
 
 .window-large .pause-option {
