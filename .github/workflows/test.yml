@@ -65,7 +65,9 @@ jobs:
             exit 1
           fi
 
-          read MISSED COVERED < <(awk -F'"' '$2=="LINE" {missed=$4; covered=$6} END {print missed, covered}' "$report_path")
+          # XML에서 마지막 LINE counter 찾기 (더 간단한 방법)
+          MISSED=$(grep 'type="LINE"' "$report_path" | tail -1 | sed 's/.*missed="\([0-9]*\)".*/\1/')
+          COVERED=$(grep 'type="LINE"' "$report_path" | tail -1 | sed 's/.*covered="\([0-9]*\)".*/\1/')
 
           MISSED=${MISSED:-0}
           COVERED=${COVERED:-0}
