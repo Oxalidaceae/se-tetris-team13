@@ -32,7 +32,8 @@ public class GameEnginePieceMovementTest {
     boolean boardUpdated = false;
 
     @Override
-    public void onScoreChanged(int score) {}
+    public void onScoreChanged(int score) {
+    }
 
     @Override
     public void onBoardUpdated(Board board) {
@@ -40,16 +41,20 @@ public class GameEnginePieceMovementTest {
     }
 
     @Override
-    public void onLinesCleared(int lines) {}
+    public void onLinesCleared(int lines) {
+    }
 
     @Override
-    public void onGameOver() {}
+    public void onGameOver() {
+    }
 
     @Override
-    public void onPieceSpawned(Tetromino piece, int x, int y) {}
+    public void onPieceSpawned(Tetromino piece, int x, int y) {
+    }
 
     @Override
-    public void onNextPiece(Tetromino piece) {}
+    public void onNextPiece(Tetromino piece) {
+    }
 
     void reset() {
       boardUpdated = false;
@@ -86,10 +91,12 @@ public class GameEnginePieceMovementTest {
   @Test
   @DisplayName("moveLeft: 왼쪽 벽에서 이동 불가")
   void testMoveLeftAtWall() {
-    // 조각을 왼쪽 벽까지 이동
-    while (engine.getPieceX() > 0) {
+    // 조각을 왼쪽 벽까지 이동 (더 이상 이동 불가할 때까지)
+    int previousX;
+    do {
+      previousX = engine.getPieceX();
       engine.moveLeft();
-    }
+    } while (engine.getPieceX() != previousX);
 
     int wallX = engine.getPieceX();
     engine.moveLeft(); // 벽에서 더 이동 시도
