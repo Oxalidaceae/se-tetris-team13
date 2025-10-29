@@ -1,0 +1,300 @@
+/* ================================
+   테트리스 일반 모드 CSS (클래식 모드)
+   - 선명하고 대비가 강한 클래식 색상
+   ================================ */
+
+.root {
+    -fx-background-color: #000000;
+    -fx-font-family: "Roboto", "Noto Sans", sans-serif;
+    -fx-text-fill: white;
+}
+
+.label {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.label-title {
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-padding: 20 0 20 0;
+}
+
+.button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-background-radius: 0;
+}
+
+.button:hover {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.button:focused {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+}
+
+.button:pressed {
+    -fx-background-color: #1E90FF;
+    -fx-text-fill: white;
+}
+
+/* ================================
+   ListView 스타일
+   ================================ */
+.list-view {
+    -fx-background-color: #000000;
+    -fx-border-color: white;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.list-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.list-cell:focused {
+    -fx-background-color: #3498db;
+}
+
+/* ================================
+   화면 크기별 스타일
+   ================================ */
+
+/* Small 크기 (400x500) */
+.window-small .label {
+    -fx-font-size: 12px;
+}
+
+.window-small .label-title {
+    -fx-font-size: 20px;
+    -fx-padding: 12 0 12 0;
+}
+
+.window-small .button {
+    -fx-font-size: 12px;
+    -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
+}
+
+.window-small .toggle-button {
+    -fx-font-size: 12px;
+    -fx-padding: 6 12;
+    -fx-pref-width: 150px;
+    -fx-pref-height: 30px;
+}
+
+.window-small .pause-option {
+    -fx-font-size: 12px;
+    -fx-padding: 4 8;
+}
+
+.window-small .cell {
+    -fx-font-size: 24px;
+    -fx-min-width: 14px;
+    -fx-min-height: 12px;
+    -fx-pref-width: 28px;  
+    -fx-pref-height: 24px;  
+}
+
+.window-small .score-label {
+    -fx-font-size: 11px;
+}
+
+.window-small .item-mode-label {
+    -fx-font-size: 10px;
+}
+
+.window-small .list-cell {
+    -fx-font-size: 12px;
+}
+
+/* Medium 크기 (600x700) - 기본값 유지 */
+.window-medium .label {
+    -fx-font-size: 16px;
+}
+
+.window-medium .label-title {
+    -fx-font-size: 28px;
+    -fx-padding: 20 0 20 0;
+}
+
+.window-medium .button {
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+.window-medium .toggle-button{
+    -fx-font-size: 16px;
+    -fx-padding: 8 16;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+
+.window-medium .pause-option {
+    -fx-font-size: 16px;
+    -fx-padding: 6 10;
+}
+
+.window-medium .cell {
+    -fx-font-size: 34px;
+    -fx-min-width: 20px;
+    -fx-min-height: 16px;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 32px;
+}
+
+.window-medium .score-label {
+    -fx-font-size: 14px;
+}
+
+.window-medium .item-mode-label {
+    -fx-font-size: 12px;
+}
+
+.window-medium .list-cell {
+    -fx-font-size: 16px;
+}
+
+/* Large 크기 (800x900) */
+.window-large .label {
+    -fx-font-size: 20px;
+}
+
+.window-large .label-title {
+    -fx-font-size: 36px;
+    -fx-padding: 28 0 28 0;
+}
+
+.window-large .button {
+    -fx-font-size: 20px;
+    -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
+}
+.window-large .toggle-button{
+    -fx-font-size: 20px;
+    -fx-padding: 10 20;
+    -fx-pref-width: 250px;
+    -fx-pref-height: 50px;
+}
+
+.window-large .pause-option {
+    -fx-font-size: 20px;
+    -fx-padding: 8 12;
+}
+
+.window-large .cell {
+    -fx-font-size: 44px;
+    -fx-min-width: 26px;
+    -fx-min-height: 20px;
+    -fx-pref-width: 52px;
+    -fx-pref-height: 40px;
+}
+
+.window-large .score-label {
+    -fx-font-size: 18px;
+}
+
+.window-large .item-mode-label {
+    -fx-font-size: 16px;
+}
+
+.window-large .list-cell {
+    -fx-font-size: 20px;
+}
+
+/* ================================
+   일시정지 다이얼로그
+   ================================ */
+.pause-box {
+    -fx-background-color: rgba(0,0,0,0.85);
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255,255,255,0.18);
+    -fx-border-radius: 6;
+}
+
+.pause-option {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 6 10;
+}
+
+.pause-option.selected {
+    -fx-text-fill: #FFD966;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 4, 0.5, 0, 1);
+}
+
+.pause-option.disabled {
+    -fx-text-fill: #8C8C8C;
+}
+
+/* ================================
+   게임 보드 셀 스타일
+   ================================ */
+.cell {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-min-width: 20px;
+    -fx-min-height: 16px;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 16px;
+}
+
+.cell-empty {
+    -fx-text-fill: rgba(255,255,255,0.15);
+}
+
+.cell-border {
+    -fx-text-fill: rgba(255,255,255,0.75);
+}
+
+.score-label {
+    -fx-text-fill: white;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 14px;
+}
+
+.item-mode-label {
+    -fx-text-fill: white;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
+}
+
+
+
+/* ================================
+   블록 색상 (선명한 클래식 팔레트)
+   - 어두운 배경에 최적화
+   - 고채도 원색 계열로 강렬한 대비 제공
+   ================================ */
+.tetris-i-text { -fx-text-fill: #80FF00 !important; } /* I - 네온 그린 */
+.tetris-o-text { -fx-text-fill: #FFFF00 !important; } /* O - 선명한 옐로우 */
+.tetris-t-text { -fx-text-fill: #FF00FF !important; } /* T - 마젠타 */
+.tetris-s-text { -fx-text-fill: #00FFFF !important; } /* S - 시안 */
+.tetris-z-text { -fx-text-fill: #FF0000 !important; } /* Z - 레드 (S와 보색) */
+.tetris-j-text { -fx-text-fill: #005AFF !important; } /* J - 블루 */
+.tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
+.tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
