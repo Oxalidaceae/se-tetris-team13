@@ -55,44 +55,6 @@ jobs:
           title: '📊 JaCoCo Code Coverage Report'
           update-comment: true
 
-      - name: Generate coverage summary for push events
-        if: github.event_name == 'push'
-        run: |
-          report_path="app/build/reports/jacoco/test/jacocoTestReport.xml"
-
-          if [ ! -f "$report_path" ]; then
-            echo "JaCoCo report not found at $report_path" >&2
-            exit 1
-          fi
-
-          # XML에서 마지막 LINE counter 찾기 (더 간단한 방법)
-          MISSED=$(grep 'type="LINE"' "$report_path" | tail -1 | sed 's/.*missed="\([0-9]*\)".*/\1/')
-          COVERED=$(grep 'type="LINE"' "$report_path" | tail -1 | sed 's/.*covered="\([0-9]*\)".*/\1/')
-
-          MISSED=${MISSED:-0}
-          COVERED=${COVERED:-0}
-          TOTAL=$((MISSED + COVERED))
-
-          if [ "$TOTAL" -eq 0 ]; then
-            PERCENTAGE="0.0"
-          else
-            PERCENTAGE=$(awk -v c="$COVERED" -v t="$TOTAL" 'BEGIN {printf "%.1f", (c/t)*100}')
-          fi
-
-          {
-            echo "## 📊 Code Coverage Report"
-            echo
-            echo "### Overall Line Coverage: ${PERCENTAGE}%"
-            echo
-            echo "- **Lines Covered**: ${COVERED} / ${TOTAL}"
-            echo "- **Lines Missed**: ${MISSED}"
-            echo
-            echo "📄 Full report available in workflow artifacts"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "📊 Code Coverage: ${PERCENTAGE}%"
-          echo "✅ Lines Covered: ${COVERED} / ${TOTAL}"
-
       - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v4
         with:
