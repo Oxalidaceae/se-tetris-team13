@@ -9,7 +9,7 @@ name: Java CI with Gradle - test automation
 
 on:
   push:
-    branches: [ "develop", "main", "test/ci" ]
+    branches: [ "develop", "main" ]
   pull_request:
     branches: [ "develop", "main" ]
 
