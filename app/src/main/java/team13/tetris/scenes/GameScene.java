@@ -27,10 +27,14 @@ public class GameScene {
     private final GridPane boardGrid;
     private final GridPane previewGrid;
     private final Label scoreLabel;
-    private final Label itemModeLabel; // 아이템 모드 정보 표시용
+    private final Label itemModeLabel;
 
-    public GameScene(SceneManager manager, Settings settings, GameEngine engine,
-            ScoreBoard.ScoreEntry.Mode difficulty) {
+    public GameScene(
+        SceneManager manager,
+        Settings settings,
+        GameEngine engine,
+        ScoreBoard.ScoreEntry.Mode difficulty
+    ) {
         this.manager = manager;
         this.settings = settings;
         this.engine = engine;
@@ -43,61 +47,50 @@ public class GameScene {
         int w = board.getWidth();
         int h = board.getHeight();
 
-        // 메인보드 생성
         boardGrid = new GridPane();
         boardGrid.getStyleClass().add("board-grid");
 
-        // 테두리 포함 (w+2)x(h+2) 그리드
         for (int gy = 0; gy < h + 2; gy++) {
             for (int gx = 0; gx < w + 2; gx++) {
                 Label cell = makeCellLabel();
-                // border cells
                 if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
                     cell.setText("X");
-                    applyCellBorder(cell); // CSS 클래스 적용
+                    applyCellBorder(cell);
                 }
                 boardGrid.add(cell, gx, gy);
             }
         }
 
-        // 미리보기 영역
         previewGrid = new GridPane();
         previewGrid.getStyleClass().add("preview-grid");
-        for (int r = 0; r < 4; r++)
-            for (int c = 0; c < 4; c++)
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
                 previewGrid.add(makeCellLabel(), c, r);
+            }
+        }
 
-        // 점수 레이블
         scoreLabel = new Label("Score:\n0");
-        // CSS에서 폰트 크기를 조절하도록 하드코딩 제거
         scoreLabel.getStyleClass().add("score-label");
 
-        // 아이템 모드 정보 레이블
         itemModeLabel = new Label("");
-        // CSS에서 폰트 크기를 조절하도록 하드코딩 제거
         itemModeLabel.getStyleClass().add("item-mode-label");
         
-        // 아이템 모드와 일반 모드 모두 동일하게 표시 (줄 수 정보 제거)
         VBox right = new VBox(8, previewGrid, scoreLabel);
         right.getStyleClass().add("right-panel");
 
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
         root.getChildren().addAll(boardGrid, right);
 
-        // 초기 렌더링
         updateGrid();
     }
 
-    // 셀 레이블 생성 헬퍼
     private Label makeCellLabel() {
         Label lbl = new Label(" ");
-        // CSS에서 크기를 조절하도록 하드코딩 제거
         lbl.setAlignment(Pos.CENTER);
         lbl.getStyleClass().add("cell");
         return lbl;
     }
 
-    // Scene 생성
     public Scene createScene() {
         this.scene = new Scene(root);
         return scene;
@@ -111,29 +104,24 @@ public class GameScene {
         this.engine = engine;
     }
 
-    // 포커스 요청 (게임 시작시 호출)
     public void requestFocus() {
         Platform.runLater(() -> {
-            if (scene != null)
-                scene.getRoot().requestFocus();
+            if (scene != null) scene.getRoot().requestFocus();
         });
     }
 
-    // 아이템 모드 정보 업데이트 (비활성화됨)
-    public void updateItemModeInfo(int totalLinesCleared) {
-        // 줄 수 표시 제거로 인해 아무것도 하지 않음
-    }
+    public void updateItemModeInfo(int totalLinesCleared) {}
+
+
 
     public void updateGrid() {
-        if (engine == null)
-            return;
+        if (engine == null) return;
 
         Board b = engine.getBoard();
         int w = b.getWidth();
         int h = b.getHeight();
 
         Platform.runLater(() -> {
-            // 1) 고정된 보드 타일
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     int val = b.getCell(x, y);
