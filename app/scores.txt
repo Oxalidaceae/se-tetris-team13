@@ -8,6 +8,7 @@ aaa,1310,HARD
 hhh,1080,EASY
 iii,1080,EASY
 ggg,1030,EASY
+xxxxxxxxx,1010,EASY
 bbb,970,EASY
 jjj,960,HARD
 ddd,950,NORMAL
