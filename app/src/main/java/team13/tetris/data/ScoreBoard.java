@@ -107,7 +107,11 @@ public class ScoreBoard {
     public List<ScoreEntry> getScoresByMode(ScoreEntry.Mode mode) {
         List<ScoreEntry> filteredScores = new ArrayList<>();
 
-        for (ScoreEntry entry : scores) if (entry.getMode() == mode) filteredScores.add(entry);
+        for (ScoreEntry entry : scores) {
+            if (entry.getMode() == mode) {
+                filteredScores.add(entry);
+            }
+        }
 
         filteredScores.sort(Comparator.comparingInt(ScoreEntry::getScore).reversed());
 

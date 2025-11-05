@@ -64,7 +64,11 @@ public class GameScene {
         previewGrid = new GridPane();
         previewGrid.getStyleClass().add("preview-grid");
 
-        for (int r = 0; r < 4; r++) for (int c = 0; c < 4; c++) previewGrid.add(makeCellLabel(), c, r);
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                previewGrid.add(makeCellLabel(), c, r);
+            }
+        }
 
         scoreLabel = new Label("Score:\n0");
         scoreLabel.getStyleClass().add("score-label");
@@ -106,8 +110,6 @@ public class GameScene {
             if (scene != null) scene.getRoot().requestFocus();
         });
     }
-
-    public void updateItemModeInfo(int totalLinesCleared) {}
 
     public void updateGrid() {
         if (engine == null) return;
