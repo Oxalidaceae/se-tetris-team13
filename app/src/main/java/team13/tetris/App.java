@@ -6,7 +6,6 @@ import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
 
 public class App extends Application {
-
     private SceneManager manager;
     private Settings settings;
 
@@ -15,7 +14,6 @@ public class App extends Application {
         settings = SettingsRepository.load();
         manager = new SceneManager(primaryStage);
         manager.showMainMenu(settings);
-
         manager.setColorBlindMode(settings.isColorBlindMode());
 
         switch (settings.getWindowSize()) {
@@ -26,7 +24,6 @@ public class App extends Application {
 
         primaryStage.setTitle("Tetris");
         primaryStage.show();
-
         primaryStage.setOnCloseRequest(event -> {
             settings.setColorBlindMode(manager.isColorBlindMode());
             settings.setWindowSize(getCurrentWindowSize(primaryStage));
@@ -37,6 +34,7 @@ public class App extends Application {
     // OS별로 약간의 픽셀 차이가 존재하므로 범위로 판단
     private String getCurrentWindowSize(Stage stage) {
         double width = stage.getWidth();
+        
         if (width <= 450) {
             return "SMALL";
         } else if (width >= 750) {
