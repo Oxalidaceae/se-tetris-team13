@@ -30,22 +30,18 @@ public class ConnectionMessage extends NetworkMessage {
             case PAUSE:
             case RESUME:
             case GAME_OVER:
-                break; // 유효한 타입
+                break;
             default:
                 throw new IllegalArgumentException("Invalid connection message type: " + type);
         }
     }
     
-    // ===== 정적 팩토리 메서드들 =====
-    
     public static ConnectionMessage createConnectionRequest(String playerId, String playerName) {
-        return new ConnectionMessage(MessageType.CONNECTION_REQUEST, playerId, 
-                                   "Player '" + playerName + "' requests to connect");
+        return new ConnectionMessage(MessageType.CONNECTION_REQUEST, playerId, "Player '" + playerName + "' requests to connect");
     }
     
     public static ConnectionMessage createConnectionAccepted(String serverId, String acceptedPlayerId) {
-        return new ConnectionMessage(MessageType.CONNECTION_ACCEPTED, serverId, 
-                                   "Connection accepted", acceptedPlayerId);
+        return new ConnectionMessage(MessageType.CONNECTION_ACCEPTED, serverId, "Connection accepted", acceptedPlayerId);
     }
     
     public static ConnectionMessage createConnectionRejected(String serverId, String reason) {
@@ -57,8 +53,7 @@ public class ConnectionMessage extends NetworkMessage {
     }
     
     public static ConnectionMessage createGamePause(String senderId, String reason) {
-        return new ConnectionMessage(MessageType.PAUSE, senderId, 
-                                   reason != null ? reason : "Game paused");
+        return new ConnectionMessage(MessageType.PAUSE, senderId, reason != null ? reason : "Game paused");
     }
     
     public static ConnectionMessage createGameResume(String senderId) {
@@ -66,8 +61,7 @@ public class ConnectionMessage extends NetworkMessage {
     }
     
     public static ConnectionMessage createGameOver(String senderId, String reason) {
-        return new ConnectionMessage(MessageType.GAME_OVER, senderId, 
-                                   reason != null ? reason : "Game ended");
+        return new ConnectionMessage(MessageType.GAME_OVER, senderId, reason != null ? reason : "Game ended");
     }
     
     public String getMessage() {
