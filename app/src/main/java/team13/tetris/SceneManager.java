@@ -16,7 +16,6 @@ import team13.tetris.scenes.KeySettingsScene;
 import team13.tetris.scenes.MainMenuScene;
 import team13.tetris.scenes.ScoreboardScene;
 import team13.tetris.scenes.SettingsScene;
-
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -64,7 +63,6 @@ public class SceneManager {
         CompositeGameStateListener composite = new CompositeGameStateListener();
         GameEngine engine = new GameEngine(board, composite, difficulty);
         KeyInputHandler keyInputHandler = new KeyInputHandler(settings);
-        
         GameScene gameScene = new GameScene(this, settings, engine, difficulty);
         GameSceneController gameController = new GameSceneController(
             gameScene,
@@ -72,15 +70,15 @@ public class SceneManager {
             settings,
             keyInputHandler
         );
+
         gameController.setEngine(engine);
-        
         composite.add(gameController);
 
         Scene scene = gameScene.createScene();
+
         gameController.attachToScene(scene);
         changeScene(scene);
         engine.startNewGame();
-
         gameScene.requestFocus();
     }
 
@@ -140,9 +138,7 @@ public class SceneManager {
             windowSizeClass = "window-large";
         }
         
-        if (stage.getScene() != null) {
-            applyWindowSizeClass(stage.getScene());
-        }
+        if (stage.getScene() != null) applyWindowSizeClass(stage.getScene());
     }
 
     private void applyStylesheet(Scene scene) {
@@ -153,7 +149,6 @@ public class SceneManager {
         scene
             .getStylesheets()
             .add(getClass().getResource(cssPath).toExternalForm());
-        
         applyWindowSizeClass(scene);
     }
     
@@ -163,7 +158,10 @@ public class SceneManager {
                 .getRoot()
                 .getStyleClass()
                 .removeAll("window-small", "window-medium", "window-large");
-            scene.getRoot().getStyleClass().add(windowSizeClass);
+            scene
+                .getRoot()
+                .getStyleClass()
+                .add(windowSizeClass);
         }
     }
 
@@ -172,6 +170,7 @@ public class SceneManager {
             @Override
             public void handle(KeyEvent e) {
                 Node focusedNode = scene.getFocusOwner();
+                
                 if (focusedNode == null) return;
 
                 if (e.getCode() == KeyCode.DOWN || e.getCode() == KeyCode.RIGHT) {
