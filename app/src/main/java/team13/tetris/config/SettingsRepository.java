@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-// 설정 파일 입출력 담당 클래스
 public class SettingsRepository {
     private static final String FILE_PATH = "settings.json";
 
