@@ -5,16 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
-// Comprehensive test suite for Timer class
+// Timer 클래스 테스트: Tests time tracking, speed adjustments, formatted time output
 @DisplayName("Timer 테스트")
 public class TimerTest {
 
     private Timer timer;
 
     @BeforeEach
-    void setUp() {
-        timer = new Timer();
-    }
+    void setUp() { timer = new Timer(); }
 
     @Test
     @DisplayName("초기값이 올바르게 설정되는지 확인")

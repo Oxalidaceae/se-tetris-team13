@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-// Test class for ScoreBoard functionality
+// ScoreBoard 테스트 클래스: Tests score addition, sorting, persistence, and edge cases
 @DisplayName("ScoreBoard 테스트")
 public class ScoreBoardTest {
 
@@ -46,16 +46,12 @@ public class ScoreBoardTest {
 
         // Clean up test-specific score files only
         File tempScoreFile = tempDir.resolve("test_scores.txt").toFile();
-        if (tempScoreFile.exists()) {
-            tempScoreFile.delete();
-        }
+        if (tempScoreFile.exists()) tempScoreFile.delete();
 
         // Clean up test_scores.txt in current directory if it exists
         // (DO NOT delete scores.txt - that's the actual game data!)
         File currentTestScoreFile = new File("test_scores.txt");
-        if (currentTestScoreFile.exists()) {
-            currentTestScoreFile.delete();
-        }
+        if (currentTestScoreFile.exists()) currentTestScoreFile.delete();
     }
 
     @Test
@@ -165,9 +161,7 @@ public class ScoreBoardTest {
     void testLoadNonExistentFile() {
         // Ensure no test_scores.txt file exists
         File scoreFile = new File("test_scores.txt");
-        if (scoreFile.exists()) {
-            scoreFile.delete();
-        }
+        if (scoreFile.exists()) scoreFile.delete();
 
         // Create new ScoreBoard - should handle missing file gracefully
         ScoreBoard newScoreBoard = new ScoreBoard("test_scores.txt");
@@ -215,9 +209,7 @@ public class ScoreBoardTest {
         assertEquals(3, scores.size());
 
         // All should have the same score
-        for (ScoreBoard.ScoreEntry entry : scores) {
-            assertEquals(1000, entry.getScore());
-        }
+        for (ScoreBoard.ScoreEntry entry : scores) assertEquals(1000, entry.getScore());
     }
 
     @Test

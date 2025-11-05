@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayName;
 
-// Tests for difficulty-based piece spawning with Roulette Wheel Selection
+// GameEngine 난이도별 조각 생성 테스트: Tests piece spawning distribution and speed increase by difficulty
 @DisplayName("GameEngine Difficulty-Based Piece Spawning Tests")
 public class GameEngineDifficultyTest {
 
@@ -136,8 +136,7 @@ public class GameEngineDifficultyTest {
         // Calculate expected weights
         int[] weights = getExpectedWeights(difficulty);
         int totalWeight = 0;
-        for (int w : weights)
-            totalWeight += w;
+        for (int w : weights) totalWeight += w;
 
         // Print results
         String[] pieceNames = { "I", "O", "T", "S", "Z", "J", "L" };

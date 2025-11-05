@@ -14,7 +14,7 @@ import java.nio.file.StandardCopyOption;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Test suite for GameManager - pure game logic without UI dependencies
+// GameManager 테스트: Tests game state transitions, scoring, difficulty progression, timer and scoreboard integration
 @DisplayName("GameManager 테스트")
 public class GameManagerTest {
 
@@ -32,8 +32,7 @@ public class GameManagerTest {
         originalScoresFile = new File("scores.txt");
         if (originalScoresFile.exists()) {
             backupScoresFile = new File(tempDir.toFile(), "scores_backup.txt");
-            Files.copy(originalScoresFile.toPath(), backupScoresFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(originalScoresFile.toPath(), backupScoresFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
         gameManager = new GameManager();
@@ -41,14 +40,11 @@ public class GameManagerTest {
 
     @AfterEach
     void tearDown() throws IOException {
-        if (gameManager != null && gameManager.isGameRunning()) {
-            gameManager.endGame(false);
-        }
+        if (gameManager != null && gameManager.isGameRunning()) gameManager.endGame(false);
 
         // scores.txt 복원
         if (backupScoresFile != null && backupScoresFile.exists()) {
-            Files.copy(backupScoresFile.toPath(), originalScoresFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(backupScoresFile.toPath(), originalScoresFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } else if (originalScoresFile != null && originalScoresFile.exists()) {
             // 백업이 없었다면 테스트로 생성된 파일 삭제
             originalScoresFile.delete();
@@ -153,25 +149,20 @@ public class GameManagerTest {
         // Test speed factor increases progressively
         gameManager.linesCleared(10); // First difficulty increase
         assertTrue(timer.getSpeedFactor() > initialSpeed,
-                "Speed factor should increase after 10 lines. Initial: " + initialSpeed + ", Current: "
-                        + timer.getSpeedFactor());
+                "Speed factor should increase after 10 lines. Initial: " + initialSpeed + ", Current: " + timer.getSpeedFactor());
 
         double speedAfter10 = timer.getSpeedFactor();
         gameManager.linesCleared(10); // Second difficulty increase (total 20 lines)
         assertTrue(timer.getSpeedFactor() > speedAfter10,
-                "Speed factor should increase after 20 lines. After 10: " + speedAfter10 + ", Current: "
-                        + timer.getSpeedFactor());
+                "Speed factor should increase after 20 lines. After 10: " + speedAfter10 + ", Current: " + timer.getSpeedFactor());
 
         // Test that speed level eventually increases (need speedFactor >= 2.0)
         // Clear lines until speed level increases
-        for (int i = 0; i < 8; i++) { // Clear 8 more sets of 10 (total 100 lines)
-            gameManager.linesCleared(10);
-        }
+        // Clear 8 more sets of 10 (total 100 lines)
+        for (int i = 0; i < 8; i++) gameManager.linesCleared(10);
 
-        assertTrue(timer.getSpeedFactor() >= 2.0,
-                "Speed factor should be >= 2.0 after 100 lines. Current: " + timer.getSpeedFactor());
-        assertTrue(timer.getSpeedLevel() >= 2,
-                "Speed level should be >= 2 after 100 lines. Current: " + timer.getSpeedLevel());
+        assertTrue(timer.getSpeedFactor() >= 2.0, "Speed factor should be >= 2.0 after 100 lines. Current: " + timer.getSpeedFactor());
+        assertTrue(timer.getSpeedLevel() >= 2, "Speed level should be >= 2 after 100 lines. Current: " + timer.getSpeedLevel());
     }
 
     @Test
@@ -298,12 +289,10 @@ public class GameManagerTest {
         gameManager.addSoftDropScore();
 
         // then
-        assertTrue(gameManager.getCurrentScore() > initialScore,
-                "소프트 드롭 후 점수가 증가해야 함");
+        assertTrue(gameManager.getCurrentScore() > initialScore, "소프트 드롭 후 점수가 증가해야 함");
 
         // 기본 속도(1x)에서 소프트 드롭은 10점
-        assertEquals(initialScore + 10, gameManager.getCurrentScore(),
-                "기본 속도에서 소프트 드롭은 10점");
+        assertEquals(initialScore + 10, gameManager.getCurrentScore(), "기본 속도에서 소프트 드롭은 10점");
     }
 
     @Test
@@ -318,16 +307,14 @@ public class GameManagerTest {
 
         // then
         // 기본 속도(1x)에서 하드 드롭: 10 * 거리 * speedFactor = 10 * 5 * 1 = 50점
-        assertEquals(initialScore + 50, gameManager.getCurrentScore(),
-                "5칸 하드 드롭은 50점");
+        assertEquals(initialScore + 50, gameManager.getCurrentScore(), "5칸 하드 드롭은 50점");
 
         // when - 10칸 하드 드롭
         initialScore = gameManager.getCurrentScore();
         gameManager.addHardDropScore(10);
 
         // then
-        assertEquals(initialScore + 100, gameManager.getCurrentScore(),
-                "10칸 하드 드롭은 100점");
+        assertEquals(initialScore + 100, gameManager.getCurrentScore(), "10칸 하드 드롭은 100점");
     }
 
     @Test
@@ -341,8 +328,7 @@ public class GameManagerTest {
         gameManager.addAutoDropScore(1);
 
         // then
-        assertEquals(initialScore + 10, gameManager.getCurrentScore(),
-                "1칸 자동 드롭은 10점");
+        assertEquals(initialScore + 10, gameManager.getCurrentScore(), "1칸 자동 드롭은 10점");
     }
 
     @Test
@@ -378,13 +364,11 @@ public class GameManagerTest {
 
         // then
         int finalScoreCount = gameManager.getScoreBoard().getScores().size();
-        assertEquals(initialScoreCount + 1, finalScoreCount,
-                "스코어보드에 점수가 추가되어야 함");
+        assertEquals(initialScoreCount + 1, finalScoreCount, "스코어보드에 점수가 추가되어야 함");
 
         // 마지막 추가된 점수가 1000인지 확인
         var scores = gameManager.getScoreBoard().getScores();
-        assertTrue(scores.stream().anyMatch(entry -> entry.getScore() == 1000),
-                "1000점이 스코어보드에 기록되어야 함");
+        assertTrue(scores.stream().anyMatch(entry -> entry.getScore() == 1000), "1000점이 스코어보드에 기록되어야 함");
     }
 
     @Test
@@ -401,8 +385,7 @@ public class GameManagerTest {
 
         // then
         int finalScoreCount = gameManager.getScoreBoard().getScores().size();
-        assertEquals(initialScoreCount, finalScoreCount,
-                "showUI=false일 때는 스코어보드에 추가하지 않아야 함");
+        assertEquals(initialScoreCount, finalScoreCount, "showUI=false일 때는 스코어보드에 추가하지 않아야 함");
     }
 
     @Test
@@ -415,8 +398,7 @@ public class GameManagerTest {
         int speedLevel = gameManager.getSpeedLevel();
 
         // then
-        assertEquals(gameManager.getGameTimer().getSpeedLevel(), speedLevel,
-                "getSpeedLevel은 타이머의 속도 레벨을 반환해야 함");
+        assertEquals(gameManager.getGameTimer().getSpeedLevel(), speedLevel, "getSpeedLevel은 타이머의 속도 레벨을 반환해야 함");
         assertEquals(1, speedLevel, "초기 속도 레벨은 1");
 
         // 속도 증가 후
@@ -445,8 +427,7 @@ public class GameManagerTest {
 
         // 속도 레벨에 따라 점수가 배율 적용되어야 함
         int currentSpeedLevel = gameManager.getSpeedLevel();
-        assertEquals(100 * currentSpeedLevel, addedScore,
-                "속도 레벨 " + currentSpeedLevel + "에서 1라인 점수");
+        assertEquals(100 * currentSpeedLevel, addedScore, "속도 레벨 " + currentSpeedLevel + "에서 1라인 점수");
     }
 
     @Test
@@ -459,8 +440,7 @@ public class GameManagerTest {
         gameManager.togglePause();
 
         // then - 상태 변화 없음
-        assertEquals(GameState.READY, gameManager.getState(),
-                "READY 상태에서는 togglePause가 동작하지 않아야 함");
+        assertEquals(GameState.READY, gameManager.getState(), "READY 상태에서는 togglePause가 동작하지 않아야 함");
     }
 
     @Test
@@ -475,8 +455,7 @@ public class GameManagerTest {
         gameManager.togglePause();
 
         // then - 상태 변화 없음
-        assertEquals(GameState.GAME_OVER, gameManager.getState(),
-                "GAME_OVER 상태에서는 togglePause가 동작하지 않아야 함");
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "GAME_OVER 상태에서는 togglePause가 동작하지 않아야 함");
     }
 
     @Test
@@ -490,10 +469,8 @@ public class GameManagerTest {
         gameManager.linesCleared(0);
 
         // then
-        assertEquals(initialScore, gameManager.getCurrentScore(),
-                "0라인 클리어 시 점수 변화 없음");
-        assertEquals(0, gameManager.getLinesCleared(),
-                "라인 수도 변화 없음");
+        assertEquals(initialScore, gameManager.getCurrentScore(), "0라인 클리어 시 점수 변화 없음");
+        assertEquals(0, gameManager.getLinesCleared(), "라인 수도 변화 없음");
     }
 
     @Test
@@ -507,7 +484,6 @@ public class GameManagerTest {
         gameManager.linesCleared(5); // 테트리스는 최대 4라인
 
         // then
-        assertEquals(initialScore, gameManager.getCurrentScore(),
-                "5라인 이상은 유효하지 않으므로 점수 변화 없음");
+        assertEquals(initialScore, gameManager.getCurrentScore(), "5라인 이상은 유효하지 않으므로 점수 변화 없음");
     }
 }
