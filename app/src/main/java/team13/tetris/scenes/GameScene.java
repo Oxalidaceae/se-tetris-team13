@@ -21,7 +21,6 @@ public class GameScene {
     private final Settings settings;
     private GameEngine engine;
     private final ScoreBoard.ScoreEntry.Mode difficulty;
-
     private final HBox root;
     private Scene scene;
     private final GridPane boardGrid;
@@ -52,16 +51,19 @@ public class GameScene {
         for (int gy = 0; gy < h + 2; gy++) {
             for (int gx = 0; gx < w + 2; gx++) {
                 Label cell = makeCellLabel();
+
                 if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
                     cell.setText("X");
                     applyCellBorder(cell);
                 }
+
                 boardGrid.add(cell, gx, gy);
             }
         }
 
         previewGrid = new GridPane();
         previewGrid.getStyleClass().add("preview-grid");
+
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
                 previewGrid.add(makeCellLabel(), c, r);
@@ -70,7 +72,6 @@ public class GameScene {
 
         scoreLabel = new Label("Score:\n0");
         scoreLabel.getStyleClass().add("score-label");
-
         itemModeLabel = new Label("");
         itemModeLabel.getStyleClass().add("item-mode-label");
 
@@ -79,7 +80,6 @@ public class GameScene {
 
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
         root.getChildren().addAll(boardGrid, right);
-
         updateGrid();
     }
 
@@ -87,11 +87,13 @@ public class GameScene {
         Label lbl = new Label(" ");
         lbl.setAlignment(Pos.CENTER);
         lbl.getStyleClass().add("cell");
+
         return lbl;
     }
 
     public Scene createScene() {
         this.scene = new Scene(root);
+
         return scene;
     }
 
@@ -105,27 +107,22 @@ public class GameScene {
 
     public void requestFocus() {
         Platform.runLater(() -> {
-            if (scene != null)
-                scene.getRoot().requestFocus();
+            if (scene != null) scene.getRoot().requestFocus();
         });
     }
 
-    public void updateItemModeInfo(int totalLinesCleared) {
-    }
-
     public void updateGrid() {
-        if (engine == null)
-            return;
+        if (engine == null) return;
 
         Board b = engine.getBoard();
         int w = b.getWidth();
         int h = b.getHeight();
-
         Platform.runLater(() -> {
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     int val = b.getCell(x, y);
                     Label cell = (Label) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
+
                     if (val == 0) {
                         cell.setText(" ");
                         applyCellEmpty(cell);
@@ -168,20 +165,20 @@ public class GameScene {
                 }
             }
 
-            // 2) 현재 조각 오버레이
             Tetromino cur = engine.getCurrent();
             if (cur != null) {
                 int[][] shape = cur.getShape();
                 int px = engine.getPieceX();
                 int py = engine.getPieceY();
                 String textClass = cur.getTextStyleClass();
-                int blockIndex = 0; // 블록 인덱스 카운터
+                int blockIndex = 0;
 
                 for (int r = 0; r < shape.length; r++) {
                     for (int c = 0; c < shape[r].length; c++) {
                         if (shape[r][c] != 0) {
                             int x = px + c;
                             int y = py + r;
+                            
                             if (x >= 0 && x < w && y >= 0 && y < h) {
                                 Label cell = (Label) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
 
@@ -229,7 +226,7 @@ public class GameScene {
                 }
             }
 
-            // 3) 다음 블록 미리보기
+            // 다음 블록 미리보기
             for (int r = 0; r < 4; r++) {
                 for (int c = 0; c < 4; c++) {
                     Label cell = (Label) getNodeByRowColumnIndex(r, c, previewGrid);
@@ -242,7 +239,7 @@ public class GameScene {
             if (next != null) {
                 int[][] s = next.getShape();
                 String textClass = next.getTextStyleClass();
-                int blockIndex = 0; // 블록 인덱스 카운터
+                int blockIndex = 0;
 
                 for (int r = 0; r < s.length && r < 4; r++) {
                     for (int c = 0; c < s[r].length && c < 4; c++) {
@@ -293,47 +290,42 @@ public class GameScene {
         });
     }
 
-    // 그리드에서 특정 행,열의 노드를 가져오는 헬퍼
     private Node getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
         for (Node node : gridPane.getChildren()) {
             Integer rowIndex = GridPane.getRowIndex(node);
             Integer colIndex = GridPane.getColumnIndex(node);
             int r = rowIndex == null ? 0 : rowIndex;
             int c = colIndex == null ? 0 : colIndex;
-            if (r == row && c == column)
-                return node;
+
+            if (r == row && c == column) return node;
         }
+
         return null;
     }
 
-    // 게임 오버 표시 (Controller에서 호출)
     public void showGameOver() {
-        // UI 스레드에서 안전하게 처리
-        if (manager != null) {
-            manager.showGameOver(settings, engine.getScore(), difficulty);
-        }
+        if (manager != null) manager.showGameOver(settings, engine.getScore(), difficulty);
     }
 
     // 스타일 헬퍼
     private void applyCellEmpty(Label cell) {
         var sc = cell.getStyleClass();
-        // 기존 블록/테두리 텍스트 클래스 제거
         sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-border"));
-        if (!sc.contains("cell-empty"))
-            sc.add("cell-empty");
+
+        if (!sc.contains("cell-empty")) sc.add("cell-empty");
     }
 
     private void applyCellBorder(Label cell) {
         var sc = cell.getStyleClass();
         sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-empty"));
-        if (!sc.contains("cell-border"))
-            sc.add("cell-border");
+
+        if (!sc.contains("cell-border")) sc.add("cell-border");
     }
 
     private void applyCellBlockText(Label cell, String textClass) {
         var sc = cell.getStyleClass();
         sc.removeIf(s -> s.startsWith("tetris-") || s.equals("cell-empty"));
-        if (!sc.contains(textClass))
-            sc.add(textClass);
+
+        if (!sc.contains(textClass)) sc.add(textClass);
     }
 }

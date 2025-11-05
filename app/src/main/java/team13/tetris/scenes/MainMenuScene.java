@@ -40,8 +40,8 @@ public class MainMenuScene {
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
-
         manager.enableArrowAsTab(scene);
+
         return scene;
     }
 }

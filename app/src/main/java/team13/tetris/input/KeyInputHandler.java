@@ -6,7 +6,6 @@ import javafx.scene.input.KeyEvent;
 import team13.tetris.config.Settings;
 
 public class KeyInputHandler {
-
     private final Settings settings;
     private KeyInputCallback callback;
 
