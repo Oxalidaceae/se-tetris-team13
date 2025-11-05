@@ -3,7 +3,6 @@ package team13.tetris.config;
 public class Settings {
     private boolean colorBlindMode = false;
     private String windowSize = "MEDIUM";
-
     private String keyLeft = "LEFT";
     private String keyRight = "RIGHT";
     private String keyDown = "DOWN";
@@ -79,12 +78,13 @@ public class Settings {
         if (key == null || key.trim().isEmpty()) return false;
 
         key = key.toUpperCase();
-        return key.equals(keyLeft.toUpperCase()) ||
-                key.equals(keyRight.toUpperCase()) ||
-                key.equals(keyDown.toUpperCase()) ||
-                key.equals(keyRotate.toUpperCase()) ||
-                key.equals(keyDrop.toUpperCase()) ||
-                key.equals(pause.toUpperCase());
+        
+        return key.equals(keyLeft.toUpperCase())
+                || key.equals(keyRight.toUpperCase())
+                || key.equals(keyDown.toUpperCase())
+                || key.equals(keyRotate.toUpperCase())
+                || key.equals(keyDrop.toUpperCase())
+                || key.equals(pause.toUpperCase());
     }
 
     public void restoreDefaultKeys() {
