@@ -40,6 +40,7 @@ public class ExitScene {
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
-        return scene; 
+
+        return scene;
     }
 }
