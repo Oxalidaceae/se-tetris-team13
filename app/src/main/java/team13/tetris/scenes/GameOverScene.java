@@ -42,6 +42,7 @@ public class GameOverScene {
         Button saveBtn = new Button("Save Score");
         saveBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
+
             if (name.isEmpty()) {
                 statusLabel.setText("Please enter your name before saving!");
                 return;
@@ -49,7 +50,6 @@ public class GameOverScene {
 
             scoreBoard.addScore(name, finalScore, difficulty);
             statusLabel.setText("✅ Score saved successfully!");
-
             manager.showScoreboard(settings, name, finalScore, difficulty);
         });
 
@@ -67,8 +67,8 @@ public class GameOverScene {
             backToMenuBtn
         );
         layout.setStyle("-fx-alignment: center;");
-        Scene scene = new Scene(layout, 600, 700);
 
+        Scene scene = new Scene(layout, 600, 700);
         manager.enableArrowAsTab(scene);
 
         return scene;

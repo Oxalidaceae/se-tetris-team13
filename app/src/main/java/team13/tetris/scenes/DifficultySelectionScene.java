@@ -3,7 +3,6 @@ package team13.tetris.scenes;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
-
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -36,7 +35,6 @@ public class DifficultySelectionScene {
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
-
         manager.enableArrowAsTab(scene);
 
         return scene;
