@@ -50,6 +50,28 @@ application {
     mainClass = 'team13.tetris.App'
 }
 
+// 네트워크 테스트용 Task들
+task runServer(type: JavaExec) {
+    group = 'network'
+    description = 'Run Tetris Server'
+    mainClass = 'team13.tetris.network.server.TetrisServer'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+}
+
+task runClient(type: JavaExec) {
+    group = 'network'
+    description = 'Run Tetris Client'
+    mainClass = 'team13.tetris.network.client.TetrisClient'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    if (project.hasProperty('player')) {
+        args = [project.property('player')]
+    } else {
+        args = ['TestPlayer']
+    }
+}
+
 // 추가
 tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
