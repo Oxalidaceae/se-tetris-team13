@@ -57,9 +57,9 @@ public class AsciiBoardRendererTest {
         String bottomLine = lines[20]; // 하단에서 두 번째 줄 (인덱스 20)
 
         assertEquals('X', bottomLine.charAt(0), "좌측 테두리");
-        assertEquals('O', bottomLine.charAt(1), "블록은 O로 표시");
-        assertEquals('O', bottomLine.charAt(6), "블록은 O로 표시");
-        assertEquals('O', bottomLine.charAt(10), "블록은 O로 표시");
+        assertEquals('■', bottomLine.charAt(1), "블록은 ■로 표시");
+        assertEquals('■', bottomLine.charAt(6), "블록은 ■로 표시");
+        assertEquals('■', bottomLine.charAt(10), "블록은 ■로 표시");
         assertEquals('X', bottomLine.charAt(11), "우측 테두리");
     }
 
@@ -81,7 +81,7 @@ public class AsciiBoardRendererTest {
         // {{0,0,0,0},{1,1,1,1},{0,0,0,0},{0,0,0,0}}
         String secondRow = lines[2]; // py=0이면 shape[1]이 lines[2]에 해당
 
-        assertTrue(secondRow.contains("O"), "현재 테트로미노가 O로 렌더링되어야 함");
+        assertTrue(secondRow.contains("■"), "현재 테트로미노가 ■로 렌더링되어야 함");
     }
 
     @Test
@@ -143,7 +143,7 @@ public class AsciiBoardRendererTest {
 
         for (String line : lines) assertEquals(4, line.length(), "각 줄은 4문자여야 함");
 
-        assertTrue(preview.contains("O"), "테트로미노 블록이 O로 표시되어야 함");
+        assertTrue(preview.contains("■"), "테트로미노 블록이 ■로 표시되어야 함");
     }
 
     @Test
@@ -176,7 +176,7 @@ public class AsciiBoardRendererTest {
         // I 블록의 기본 형태: 두 번째 줄에 가로로 4개
         // {{0,0,0,0},{1,1,1,1},{0,0,0,0},{0,0,0,0}}
         assertEquals("    ", lines[0], "첫 줄은 비어있어야 함");
-        assertEquals("OOOO", lines[1], "두 번째 줄에 4개 블록");
+        assertEquals("■■■■", lines[1], "두 번째 줄에 4개 블록");
         assertEquals("    ", lines[2], "세 번째 줄은 비어있어야 함");
         assertEquals("    ", lines[3], "네 번째 줄은 비어있어야 함");
     }
@@ -195,8 +195,8 @@ public class AsciiBoardRendererTest {
 
         // O 블록: 2x2 크기, 중앙에 배치
         // {{0,1,1,0},{0,1,1,0},{0,0,0,0},{0,0,0,0}}
-        assertEquals(" OO ", lines[0], "첫 줄에 중앙 배치된 2개 블록");
-        assertEquals(" OO ", lines[1], "두 번째 줄에 중앙 배치된 2개 블록");
+        assertEquals(" ■■ ", lines[0], "첫 줄에 중앙 배치된 2개 블록");
+        assertEquals(" ■■ ", lines[1], "두 번째 줄에 중앙 배치된 2개 블록");
         assertEquals("    ", lines[2], "세 번째 줄은 비어있어야 함");
         assertEquals("    ", lines[3], "네 번째 줄은 비어있어야 함");
     }
@@ -214,8 +214,8 @@ public class AsciiBoardRendererTest {
         String[] lines = preview.split("\n");
 
         // T 블록: {{0,1,0,0},{1,1,1,0},{0,0,0,0},{0,0,0,0}}
-        assertEquals(" O  ", lines[0], "첫 줄에 T자 상단");
-        assertEquals("OOO ", lines[1], "두 번째 줄에 T자 하단");
+        assertEquals(" ■  ", lines[0], "첫 줄에 T자 상단");
+        assertEquals("■■■ ", lines[1], "두 번째 줄에 T자 하단");
         assertEquals("    ", lines[2], "세 번째 줄은 비어있어야 함");
         assertEquals("    ", lines[3], "네 번째 줄은 비어있어야 함");
     }
@@ -235,8 +235,8 @@ public class AsciiBoardRendererTest {
         // I 블록 회전 1: 세로로 긴 형태
         // {{0,0,1,0},{0,0,1,0},{0,0,1,0},{0,0,1,0}}
         for (int i = 0; i < 4; i++) {
-            assertTrue(lines[i].contains("O"), "각 줄에 블록이 있어야 함");
-            assertEquals(1, countOccurrences(lines[i], 'O'), "각 줄에 정확히 1개의 블록");
+            assertTrue(lines[i].contains("■"), "각 줄에 블록이 있어야 함");
+            assertEquals(1, countOccurrences(lines[i], '■'), "각 줄에 정확히 1개의 블록");
         }
     }
 
@@ -261,7 +261,7 @@ public class AsciiBoardRendererTest {
 
             assertEquals(4, lines.length, piece.getKind() + " 미리보기는 4줄이어야 함");
             for (String line : lines) assertEquals(4, line.length(), piece.getKind() + " 각 줄은 4문자여야 함");
-            assertTrue(preview.contains("O"), piece.getKind() + " 블록이 포함되어야 함");
+            assertTrue(preview.contains("■"), piece.getKind() + " 블록이 포함되어야 함");
         }
     }
 
@@ -303,9 +303,9 @@ public class AsciiBoardRendererTest {
         String row18 = lines[19]; // 18번째 행
 
         // 패턴 확인
-        assertEquals('O', row19.charAt(1), "짝수 인덱스에 블록");
+        assertEquals('■', row19.charAt(1), "짝수 인덱스에 블록");
         assertEquals(' ', row19.charAt(2), "홀수 인덱스는 빈 공간");
-        assertEquals('O', row18.charAt(1), "3의 배수 인덱스에 블록");
+        assertEquals('■', row18.charAt(1), "3의 배수 인덱스에 블록");
     }
 
     // Helper method

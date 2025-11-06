@@ -1053,8 +1053,8 @@ public class GameEngine {
 
             // 10줄마다 아이템 미노 생성 (10, 20, 30, ... 의 배수마다)
             int beforeClear = totalLinesCleared - cleared;
-            int currentGroup = totalLinesCleared / 10;
-            int previousGroup = beforeClear / 10;
+            int currentGroup = totalLinesCleared / 1;
+            int previousGroup = beforeClear / 1;
 
             if (currentGroup > previousGroup) {
                 generateItemPiece();

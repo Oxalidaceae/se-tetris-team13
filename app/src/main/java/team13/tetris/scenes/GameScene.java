@@ -127,7 +127,7 @@ public class GameScene {
                         cell.setText(" ");
                         applyCellEmpty(cell);
                     } else if (val < 0) {
-                        cell.setText("O");
+                        cell.setText("■");
                         applyCellBlockText(cell, "tetris-flash-text");
                     } else if (val >= 100 && val < 200) {
                         // COPY 아이템 블록 (100번대 값)
@@ -159,7 +159,7 @@ public class GameScene {
                         // 일반 블록
                         Tetromino.Kind kind = Tetromino.kindForId(val);
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
-                        cell.setText("O");
+                        cell.setText("■");
                         applyCellBlockText(cell, textClass);
                     }
                 }
@@ -210,13 +210,13 @@ public class GameScene {
                                         cell.setText("S");
                                         applyCellBlockText(cell, textClass);
                                     } else {
-                                        // 기타 아이템 블록은 O 표시
-                                        cell.setText("O");
+                                        // 기타 아이템 블록은 ■ 표시
+                                        cell.setText("■");
                                         applyCellBlockText(cell, textClass);
                                     }
                                 } else {
-                                    // 일반 미노는 O 표시
-                                    cell.setText("O");
+                                    // 일반 미노는 ■ 표시
+                                    cell.setText("■");
                                     applyCellBlockText(cell, textClass);
                                 }
                             }
@@ -271,13 +271,13 @@ public class GameScene {
                                     cell.setText("S");
                                     applyCellBlockText(cell, textClass);
                                 } else {
-                                    // 기타 아이템 블록은 O 표시
-                                    cell.setText("O");
+                                    // 기타 아이템 블록은 ■ 표시
+                                    cell.setText("■");
                                     applyCellBlockText(cell, textClass);
                                 }
                             } else {
-                                // 일반 미노는 O 표시
-                                cell.setText("O");
+                                // 일반 미노는 ■ 표시
+                                cell.setText("■");
                                 applyCellBlockText(cell, textClass);
                             }
                             blockIndex++;
