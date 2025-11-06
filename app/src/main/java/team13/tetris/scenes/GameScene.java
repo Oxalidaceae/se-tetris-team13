@@ -5,12 +5,15 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -95,7 +98,7 @@ public class GameScene {
     }
 
     private CellView makeCellView(double size, boolean preview) {
-        CellView cell = new CellView(size);
+        CellView cell = new CellView(size, settings);
         if (preview) cell.getStyleClass().add("preview-cell");
         return cell;
     }
@@ -316,9 +319,12 @@ public class GameScene {
 
     private static final class CellView extends StackPane {
         private final Rectangle rect;
+        private final Canvas patternCanvas;
         private final Label label;
+        private final Settings settings;
 
-        private CellView(double size) {
+        private CellView(double size, Settings settings) {
+            this.settings = settings;
             setMinSize(size, size);
             setPrefSize(size, size);
             setMaxSize(size, size);
@@ -331,14 +337,74 @@ public class GameScene {
             rect.widthProperty().bind(widthProperty());
             rect.heightProperty().bind(heightProperty());
 
+            patternCanvas = new Canvas(size, size);
+            patternCanvas.widthProperty().bind(widthProperty());
+            patternCanvas.heightProperty().bind(heightProperty());
+            patternCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
+            patternCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
+
             label = new Label(" ");
             label.setAlignment(Pos.CENTER);
             label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             label.getStyleClass().add("cell-text");
 
-            getChildren().addAll(rect, label);
+            getChildren().addAll(rect, patternCanvas, label);
 
             setEmpty();
+        }
+
+        private String currentPattern = null;
+
+        private void redrawPattern() {
+            if (currentPattern == null || currentPattern.equals("none")) {
+                clearCanvas();
+                return;
+            }
+
+            double w = patternCanvas.getWidth();
+            double h = patternCanvas.getHeight();
+            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, w, h);
+            gc.setStroke(Color.rgb(0, 0, 0, 0.7));
+            gc.setLineWidth(1);
+
+            switch (currentPattern) {
+                case "horizontal": // S - 수평 줄무늬
+                    for (double y = 0; y < h; y += 5) {
+                        gc.strokeLine(0, y, w, y);
+                    }
+                    break;
+                case "vertical": // J - 수직 줄무늬
+                    for (double x = 0; x < w; x += 5) {
+                        gc.strokeLine(x, 0, x, h);
+                    }
+                    break;
+                case "diagonal-right": // I - 빗살무늬 ↗
+                    for (double offset = -h; offset < w + h; offset += 5) {
+                        gc.strokeLine(offset, h, offset + h, 0);
+                    }
+                    break;
+                case "diagonal-left": // T - 빗살무늬 ↖
+                    for (double offset = -h; offset < w + h; offset += 5) {
+                        gc.strokeLine(offset, 0, offset + h, h);
+                    }
+                    break;
+                case "diagonal-right-wide": // Z - 빗살무늬 ↗ (넓은 간격)
+                    for (double offset = -h; offset < w + h; offset += 7) {
+                        gc.strokeLine(offset, h, offset + h, 0);
+                    }
+                    break;
+                case "diagonal-left-wide": // L - 빗살무늬 ↖ (넓은 간격)
+                    for (double offset = -h; offset < w + h; offset += 7) {
+                        gc.strokeLine(offset, 0, offset + h, h);
+                    }
+                    break;
+            }
+        }
+
+        private void clearCanvas() {
+            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, patternCanvas.getWidth(), patternCanvas.getHeight());
         }
 
         private void clearDynamicStyles() {
@@ -351,6 +417,8 @@ public class GameScene {
 
         private void setEmpty() {
             clearDynamicStyles();
+            currentPattern = null;
+            clearCanvas();
             if (!rect.getStyleClass().contains("cell-empty")) rect.getStyleClass().add("cell-empty");
             if (!label.getStyleClass().contains("cell-empty")) label.getStyleClass().add("cell-empty");
             label.setText(" ");
@@ -365,10 +433,49 @@ public class GameScene {
                 label.getStyleClass().add(textClass);
             }
             label.setText(symbol == null ? "" : symbol);
+            
+            // 색맹 모드에서 패턴 적용
+            if (blockClass != null && settings.isColorBlindMode()) {
+                applyPattern(blockClass);
+            } else {
+                currentPattern = null;
+                clearCanvas();
+            }
+        }
+
+        private void applyPattern(String blockClass) {
+            switch (blockClass) {
+                case "block-I":
+                    currentPattern = "diagonal-right";
+                    break;
+                case "block-O":
+                    currentPattern = "none";
+                    break;
+                case "block-T":
+                    currentPattern = "diagonal-left";
+                    break;
+                case "block-S":
+                    currentPattern = "horizontal";
+                    break;
+                case "block-Z":
+                    currentPattern = "diagonal-right-wide";
+                    break;
+                case "block-J":
+                    currentPattern = "vertical";
+                    break;
+                case "block-L":
+                    currentPattern = "diagonal-left-wide";
+                    break;
+                default:
+                    currentPattern = null;
+            }
+            redrawPattern();
         }
 
         private void setBorder() {
             clearDynamicStyles();
+            currentPattern = null;
+            clearCanvas();
             if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
             if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
             label.setText("X");

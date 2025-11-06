@@ -106,10 +106,6 @@
 }
 
 .window-small .cell {
-    min-width: 21px;
-    min-height: 21px;
-    max-width: 21px;
-    max-height: 21px;
     -fx-min-width: 21px;
     -fx-min-height: 21px;
     -fx-max-width: 21px;
@@ -117,10 +113,6 @@
 }
 
 .window-small .preview-cell {
-    min-width: 21px;
-    min-height: 21px;
-    max-width: 21px;
-    max-height: 21px;
     -fx-min-width: 21px;
     -fx-min-height: 21px;
     -fx-max-width: 21px;
@@ -128,7 +120,6 @@
 }
 
 .window-small .cell-text {
-    font-size: 20px;
     -fx-font-size: 20px;
 }
 
@@ -177,10 +168,6 @@
 }
 
 .window-medium .cell {
-    min-width: 30px;
-    min-height: 30px;
-    max-width: 30px;
-    max-height: 30px;
     -fx-min-width: 30px;
     -fx-min-height: 30px;
     -fx-max-width: 30px;
@@ -188,10 +175,6 @@
 }
 
 .window-medium .preview-cell {
-    min-width: 30px;
-    min-height: 30px;
-    max-width: 30px;
-    max-height: 30px;
     -fx-min-width: 30px;
     -fx-min-height: 30px;
     -fx-max-width: 30px;
@@ -199,7 +182,6 @@
 }
 
 .window-medium .cell-text {
-    font-size: 32px;
     -fx-font-size: 32px;
 }
 
@@ -248,10 +230,6 @@
 }
 
 .window-large .cell {
-    min-width: 39px;
-    min-height: 39px;
-    max-width: 39px;
-    max-height: 39px;
     -fx-min-width: 39px;
     -fx-min-height: 39px;
     -fx-max-width: 39px;
@@ -259,10 +237,6 @@
 }
 
 .window-large .preview-cell {
-    min-width: 39px;
-    min-height: 39px;
-    max-width: 39px;
-    max-height: 39px;
     -fx-min-width: 39px;
     -fx-min-height: 39px;
     -fx-max-width: 39px;
@@ -270,7 +244,6 @@
 }
 
 .window-large .cell-text {
-    font-size: 42px;
     -fx-font-size: 42px;
 }
 
@@ -322,23 +295,14 @@
    게임 보드 셀 스타일
    ================================ */
 .cell {
-    min-width: 28px;
-    min-height: 28px;
-    max-width: 28px;
-    max-height: 28px;
     -fx-min-width: 28px;
     -fx-min-height: 28px;
     -fx-max-width: 28px;
     -fx-max-height: 28px;
-    padding: 0;
     -fx-padding: 0;
 }
 
 .preview-cell {
-    min-width: 22px;
-    min-height: 22px;
-    max-width: 22px;
-    max-height: 22px;
     -fx-min-width: 22px;
     -fx-min-height: 22px;
     -fx-max-width: 22px;
@@ -346,52 +310,38 @@
 }
 
 .cell-rect {
-    fill: transparent;
     -fx-fill: transparent;
-    stroke: transparent;
-    -fx-stroke: transparent;
+    -fx-stroke: rgba(255, 255, 255, 0.3);
+    -fx-stroke-width: 1;
 }
 
 .cell-text {
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 20px;
     -fx-font-size: 20px;
-    font-weight: bold;
     -fx-font-weight: bold;
     -fx-text-fill: rgba(255,255,255,0.9);
     -fx-alignment: center;
 }
 
 .cell-empty {
-    color: rgba(255,255,255,0.18);
     -fx-text-fill: rgba(255,255,255,0.18);
-    fill: rgba(255,255,255,0.10);
     -fx-fill: rgba(255,255,255,0.10);
 }
 
 .cell-border {
-    color: rgba(255,255,255,0.75);
     -fx-text-fill: rgba(255,255,255,0.75);
-    fill: rgba(255,255,255,0.45);
     -fx-fill: rgba(255,255,255,0.45);
 }
 
 .score-label {
-    color: white;
     -fx-text-fill: white;
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 14px;
     -fx-font-size: 14px;
 }
 
 .item-mode-label {
-    color: white;
     -fx-text-fill: white;
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 12px;
     -fx-font-size: 12px;
 }
 
@@ -411,19 +361,53 @@
 .tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
 
-.block { fill: #b0b0b0; -fx-fill: #b0b0b0; }
-.block-I { fill: #80FF00 !important; -fx-fill: #80FF00 !important; } /* I - 선명한 그린 */
-.block-O { fill: #FFFF00 !important; -fx-fill: #FFFF00 !important; } /* O - 선명한 옐로우 */
-.block-T { fill: #FF00FF !important; -fx-fill: #FF00FF !important; } /* T - 마젠타 */
-.block-S { fill: #00FFFF !important; -fx-fill: #00FFFF !important; } /* S - 시안 */
-.block-Z { fill: #FF0000 !important; -fx-fill: #FF0000 !important; } /* Z - 레드 (S와 보색) */
-.block-J { fill: #005AFF !important; -fx-fill: #005AFF !important; } /* J - 블루 */
-.block-L { fill: #FFA500 !important; -fx-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
-.block-flash { fill: #FFFFFF !important; -fx-fill: #FFFFFF !important; }
+.block { 
+    -fx-fill: #b0b0b0; 
+    -fx-stroke: rgba(0, 0, 0, 0.5); 
+    -fx-stroke-width: 1.5; 
+}
+.block-I { 
+    -fx-fill: #80FF00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-O { 
+    -fx-fill: #FFFF00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-T { 
+    -fx-fill: #FF00FF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-S { 
+    -fx-fill: #00FFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-Z { 
+    -fx-fill: #FF0000 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-J { 
+    -fx-fill: #005AFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-L { 
+    -fx-fill: #FFA500 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-flash { 
+    -fx-fill: #FFFFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
 
 .item-copy-block {
-    color: #FFD966;
     -fx-text-fill: #FFD966;
-    fill: #FFD966;
     -fx-fill: #FFD966;
 }

@@ -111,10 +111,6 @@
 }
 
 .window-small .cell {
-    min-width: 21px;
-    min-height: 21px;
-    max-width: 21px;
-    max-height: 21px;
     -fx-min-width: 21px;
     -fx-min-height: 21px;
     -fx-max-width: 21px;
@@ -122,10 +118,6 @@
 }
 
 .window-small .preview-cell {
-    min-width: 21px;
-    min-height: 21px;
-    max-width: 21px;
-    max-height: 21px;
     -fx-min-width: 21px;
     -fx-min-height: 21px;
     -fx-max-width: 21px;
@@ -133,7 +125,6 @@
 }
 
 .window-small .cell-text {
-    font-size: 20px;
     -fx-font-size: 20px;
 }
 
@@ -183,10 +174,6 @@
 }
 
 .window-medium .cell {
-    min-width: 30px;
-    min-height: 30px;
-    max-width: 30px;
-    max-height: 30px;
     -fx-min-width: 30px;
     -fx-min-height: 30px;
     -fx-max-width: 30px;
@@ -194,10 +181,6 @@
 }
 
 .window-medium .preview-cell {
-    min-width: 30px;
-    min-height: 30px;
-    max-width: 30px;
-    max-height: 30px;
     -fx-min-width: 30px;
     -fx-min-height: 30px;
     -fx-max-width: 30px;
@@ -205,7 +188,6 @@
 }
 
 .window-medium .cell-text {
-    font-size: 32px;
     -fx-font-size: 32px;
 }
 
@@ -255,10 +237,6 @@
 }
 
 .window-large .cell {
-    min-width: 39px;
-    min-height: 39px;
-    max-width: 39px;
-    max-height: 39px;
     -fx-min-width: 39px;
     -fx-min-height: 39px;
     -fx-max-width: 39px;
@@ -266,10 +244,6 @@
 }
 
 .window-large .preview-cell {
-    min-width: 39px;
-    min-height: 39px;
-    max-width: 39px;
-    max-height: 39px;
     -fx-min-width: 39px;
     -fx-min-height: 39px;
     -fx-max-width: 39px;
@@ -277,7 +251,6 @@
 }
 
 .window-large .cell-text {
-    font-size: 42px;
     -fx-font-size: 42px;
 }
 
@@ -329,23 +302,14 @@
    게임 보드 셀 스타일
    ================================ */
 .cell {
-    min-width: 28px;
-    min-height: 28px;
-    max-width: 28px;
-    max-height: 28px;
     -fx-min-width: 28px;
     -fx-min-height: 28px;
     -fx-max-width: 28px;
     -fx-max-height: 28px;
-    padding: 0;
     -fx-padding: 0;
 }
 
 .preview-cell {
-    min-width: 22px;
-    min-height: 22px;
-    max-width: 22px;
-    max-height: 22px;
     -fx-min-width: 22px;
     -fx-min-height: 22px;
     -fx-max-width: 22px;
@@ -353,52 +317,38 @@
 }
 
 .cell-rect {
-    fill: transparent;
     -fx-fill: transparent;
-    stroke: transparent;
-    -fx-stroke: transparent;
+    -fx-stroke: rgba(255, 255, 255, 0.3);
+    -fx-stroke-width: 1;
 }
 
 .cell-text {
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 20px;
     -fx-font-size: 20px;
-    font-weight: bold;
     -fx-font-weight: bold;
     -fx-text-fill: rgba(245,245,245,0.92);
     -fx-alignment: center;
 }
 
 .cell-empty {
-    color: rgba(245,245,245,0.25);
     -fx-text-fill: rgba(245,245,245,0.25);
-    fill: rgba(245,245,245,0.12);
     -fx-fill: rgba(245,245,245,0.12);
 }
 
 .cell-border {
-    color: rgba(245,245,245,0.75);
     -fx-text-fill: rgba(245,245,245,0.75);
-    fill: rgba(245,245,245,0.45);
     -fx-fill: rgba(245,245,245,0.45);
 }
 
 .score-label {
-    color: white;
     -fx-text-fill: white;
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 14px;
     -fx-font-size: 14px;
 }
 
 .item-mode-label {
-    color: white;
     -fx-text-fill: white;
-    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    font-size: 12px;
     -fx-font-size: 12px;
 }
 
@@ -417,19 +367,108 @@
 .tetris-l-text { -fx-text-fill: #FF7F0E !important; } /* L - 밝은 오렌지 (J와 색/명도 모두 차이, 어두운 배경에서 선명) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; } /* 라인 클리어 플래시/하이라이트: 순백(최대 대비) */
 
-.block { fill: #c4c4c4; -fx-fill: #c4c4c4; }
-.block-I { fill: #56B4E9 !important; -fx-fill: #56B4E9 !important; }
-.block-O { fill: #F0E442 !important; -fx-fill: #F0E442 !important; }
-.block-T { fill: #E377C2 !important; -fx-fill: #E377C2 !important; }
-.block-S { fill: #009E73 !important; -fx-fill: #009E73 !important; }
-.block-Z { fill: #E69F00 !important; -fx-fill: #E69F00 !important; }
-.block-J { fill: #7B68EE !important; -fx-fill: #7B68EE !important; }
-.block-L { fill: #FF7F0E !important; -fx-fill: #FF7F0E !important; }
-.block-flash { fill: #FFFFFF !important; -fx-fill: #FFFFFF !important; }
+.block { 
+    -fx-fill: #c4c4c4; 
+    -fx-stroke: rgba(0, 0, 0, 0.6); 
+    -fx-stroke-width: 1.5; 
+}
+
+/* I - 빗살무늬 ↗ (Canvas로 그림) */
+.block-I { 
+    -fx-fill: #56B4E9 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* O - 패턴 없음 */
+.block-O { 
+    -fx-fill: #F0E442 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* T - 빗살무늬 ↖ (Canvas로 그림) */
+.block-T { 
+    -fx-fill: #E377C2 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* S - 수평 줄무늬 (Canvas로 그림) */
+.block-S { 
+    -fx-fill: #009E73 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* Z - 빗살무늬 ↗ 넓은 간격 (Canvas로 그림) */
+.block-Z { 
+    -fx-fill: #E69F00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* J - 수직 줄무늬 (Canvas로 그림) */
+.block-J { 
+    -fx-fill: #7B68EE !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+/* L - 빗살무늬 ↖ 넓은 간격 (Canvas로 그림) */
+.block-L { 
+    -fx-fill: #FF7F0E !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+
+.block-flash { 
+    -fx-fill: #FFFFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-I { 
+    -fx-fill: #56B4E9 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-O { 
+    -fx-fill: #F0E442 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-T { 
+    -fx-fill: #E377C2 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-S { 
+    -fx-fill: #009E73 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-Z { 
+    -fx-fill: #E69F00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-J { 
+    -fx-fill: #7B68EE !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-L { 
+    -fx-fill: #FF7F0E !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
+.block-flash { 
+    -fx-fill: #FFFFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 1.5 !important; 
+}
 
 .item-copy-block {
-    color: #FFD966;
     -fx-text-fill: #FFD966;
-    fill: #FFD966;
     -fx-fill: #FFD966;
 }
