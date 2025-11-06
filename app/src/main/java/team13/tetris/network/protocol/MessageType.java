@@ -11,6 +11,8 @@ public enum MessageType {
     
     // 게임 준비 및 시작
     PLAYER_READY,          // 플레이어 준비 완료
+    GAME_MODE_SELECTED,    // 서버가 게임모드 선택 (일반/아이템)
+    GAME_START_REQUEST,    // 게임 시작 요청
     GAME_START,           // 게임 시작 신호
     
     // 플레이어 입력 이벤트

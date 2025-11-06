@@ -14,32 +14,33 @@ public class BoardUpdateMessage extends NetworkMessage {
     private final int linesCleared;             // 삭제한 줄 수
     private final int level;                    // 현재 레벨
     
-    /**
-     * 보드 상태 업데이트 메시지를 생성합니다.
-     * 
-     * @param playerId 보드 상태를 보내는 플레이어 ID
-     * @param boardState 게임 보드 상태 (10x20 배열)
-     * @param currentPieceX 현재 블록 X 좌표
-     * @param currentPieceY 현재 블록 Y 좌표
-     * @param currentPieceType 현재 블록 타입
-     * @param currentPieceRotation 현재 블록 회전 상태
-     * @param score 현재 점수
-     * @param linesCleared 삭제한 줄 수
-     * @param level 현재 레벨
-     */
-    public BoardUpdateMessage(String playerId, int[][] boardState, 
-                            int currentPieceX, int currentPieceY, 
-                            int currentPieceType, int currentPieceRotation,
-                            int score, int linesCleared, int level) {
+    // 간단한 게임 상태만 포함하는 생성자 (게임 상태 동기화용)
+    public BoardUpdateMessage(String playerId, int[][] board, int score, int lines, int level) {
         super(MessageType.BOARD_UPDATE, playerId);
         
-        this.boardState = deepCopyBoard(boardState);
-        this.currentPieceX = currentPieceX;
-        this.currentPieceY = currentPieceY;
-        this.currentPieceType = currentPieceType;
-        this.currentPieceRotation = currentPieceRotation;
+        this.boardState = deepCopyBoard(board);
+        // 블록 정보는 기본값으로 설정 (상태 동기화에서는 필요 없음)
+        this.currentPieceX = -1;
+        this.currentPieceY = -1;
+        this.currentPieceType = -1;
+        this.currentPieceRotation = 0;
         this.score = score;
-        this.linesCleared = linesCleared;
+        this.linesCleared = lines;
+        this.level = level;
+    }
+
+    // 상세한 블록 정보를 포함하는 생성자 (실시간 블록 움직임용)
+    public BoardUpdateMessage(String playerId, int[][] board, int pieceX, int pieceY, 
+                            int pieceType, int pieceRotation, int score, int lines, int level) {
+        super(MessageType.BOARD_UPDATE, playerId);
+        
+        this.boardState = deepCopyBoard(board);
+        this.currentPieceX = pieceX;
+        this.currentPieceY = pieceY;
+        this.currentPieceType = pieceType;
+        this.currentPieceRotation = pieceRotation;
+        this.score = score;
+        this.linesCleared = lines;
         this.level = level;
     }
     
