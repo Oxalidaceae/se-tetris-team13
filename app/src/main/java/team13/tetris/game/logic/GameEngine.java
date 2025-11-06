@@ -1150,6 +1150,25 @@ public class GameEngine {
         return board;
     }
 
+    /**
+     * 현재 블록이 하드 드롭했을 때 도달하게 될 Y 위치를 계산합니다.
+     * 고스트 블록 표시를 위해 사용됩니다.
+     * 
+     * @return 고스트 블록의 Y 위치, 현재 블록이 없으면 -1
+     */
+    public int getGhostY() {
+        if (current == null) {
+            return -1;
+        }
+        
+        int ghostY = py;
+        while (board.fits(current.getShape(), px, ghostY + 1)) {
+            ghostY++;
+        }
+        
+        return ghostY;
+    }
+
     public Tetromino getCurrent() {
         return current;
     }

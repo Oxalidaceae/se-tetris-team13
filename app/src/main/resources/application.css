@@ -411,3 +411,14 @@
     -fx-text-fill: #FFD966;
     -fx-fill: #FFD966;
 }
+
+/* 고스트 블록 (블록이 떨어질 위치 표시) */
+.block-ghost {
+    -fx-fill: rgba(200, 200, 200, 0.25) !important;
+    /* -fx-stroke: rgba(200, 200, 200, 0.4) !important;
+    -fx-stroke-width: 1.5 !important; */
+}
+
+.tetris-ghost-text {
+    -fx-text-fill: rgba(200, 200, 200, 0.3) !important;
+}
