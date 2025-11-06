@@ -106,11 +106,30 @@
 }
 
 .window-small .cell {
-    -fx-font-size: 24px;
-    -fx-min-width: 14px;
-    -fx-min-height: 12px;
-    -fx-pref-width: 28px;  
-    -fx-pref-height: 24px;  
+    min-width: 21px;
+    min-height: 21px;
+    max-width: 21px;
+    max-height: 21px;
+    -fx-min-width: 21px;
+    -fx-min-height: 21px;
+    -fx-max-width: 21px;
+    -fx-max-height: 21px;
+}
+
+.window-small .preview-cell {
+    min-width: 21px;
+    min-height: 21px;
+    max-width: 21px;
+    max-height: 21px;
+    -fx-min-width: 21px;
+    -fx-min-height: 21px;
+    -fx-max-width: 21px;
+    -fx-max-height: 21px;
+}
+
+.window-small .cell-text {
+    font-size: 20px;
+    -fx-font-size: 20px;
 }
 
 .window-small .list-view {
@@ -158,11 +177,30 @@
 }
 
 .window-medium .cell {
-    -fx-font-size: 34px;
-    -fx-min-width: 20px;
-    -fx-min-height: 16px;
-    -fx-pref-width: 40px;
-    -fx-pref-height: 32px;
+    min-width: 30px;
+    min-height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+
+.window-medium .preview-cell {
+    min-width: 30px;
+    min-height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+
+.window-medium .cell-text {
+    font-size: 32px;
+    -fx-font-size: 32px;
 }
 
 .window-medium .list-view {
@@ -210,11 +248,30 @@
 }
 
 .window-large .cell {
-    -fx-font-size: 44px;
-    -fx-min-width: 26px;
-    -fx-min-height: 20px;
-    -fx-pref-width: 52px;
-    -fx-pref-height: 40px;
+    min-width: 39px;
+    min-height: 39px;
+    max-width: 39px;
+    max-height: 39px;
+    -fx-min-width: 39px;
+    -fx-min-height: 39px;
+    -fx-max-width: 39px;
+    -fx-max-height: 39px;
+}
+
+.window-large .preview-cell {
+    min-width: 39px;
+    min-height: 39px;
+    max-width: 39px;
+    max-height: 39px;
+    -fx-min-width: 39px;
+    -fx-min-height: 39px;
+    -fx-max-width: 39px;
+    -fx-max-height: 39px;
+}
+
+.window-large .cell-text {
+    font-size: 42px;
+    -fx-font-size: 42px;
 }
 
 .window-large .list-view {
@@ -265,33 +322,76 @@
    게임 보드 셀 스타일
    ================================ */
 .cell {
+    min-width: 28px;
+    min-height: 28px;
+    max-width: 28px;
+    max-height: 28px;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.preview-cell {
+    min-width: 22px;
+    min-height: 22px;
+    max-width: 22px;
+    max-height: 22px;
+    -fx-min-width: 22px;
+    -fx-min-height: 22px;
+    -fx-max-width: 22px;
+    -fx-max-height: 22px;
+}
+
+.cell-rect {
+    fill: transparent;
+    -fx-fill: transparent;
+    stroke: transparent;
+    -fx-stroke: transparent;
+}
+
+.cell-text {
+    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
-    -fx-font-size: 14px;
+    font-size: 20px;
+    -fx-font-size: 20px;
+    font-weight: bold;
     -fx-font-weight: bold;
+    -fx-text-fill: rgba(255,255,255,0.9);
     -fx-alignment: center;
-    -fx-min-width: 20px;
-    -fx-min-height: 16px;
-    -fx-pref-width: 20px;
-    -fx-pref-height: 16px;
 }
 
 .cell-empty {
-    -fx-text-fill: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.18);
+    -fx-text-fill: rgba(255,255,255,0.18);
+    fill: rgba(255,255,255,0.10);
+    -fx-fill: rgba(255,255,255,0.10);
 }
 
 .cell-border {
+    color: rgba(255,255,255,0.75);
     -fx-text-fill: rgba(255,255,255,0.75);
+    fill: rgba(255,255,255,0.45);
+    -fx-fill: rgba(255,255,255,0.45);
 }
 
 .score-label {
+    color: white;
     -fx-text-fill: white;
+    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
+    font-size: 14px;
     -fx-font-size: 14px;
 }
 
 .item-mode-label {
+    color: white;
     -fx-text-fill: white;
+    font-family: "Monospaced";
     -fx-font-family: "Monospaced";
+    font-size: 12px;
     -fx-font-size: 12px;
 }
 
@@ -310,3 +410,20 @@
 .tetris-j-text { -fx-text-fill: #005AFF !important; } /* J - 블루 */
 .tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
+
+.block { fill: #b0b0b0; -fx-fill: #b0b0b0; }
+.block-I { fill: #80FF00 !important; -fx-fill: #80FF00 !important; } /* I - 선명한 그린 */
+.block-O { fill: #FFFF00 !important; -fx-fill: #FFFF00 !important; } /* O - 선명한 옐로우 */
+.block-T { fill: #FF00FF !important; -fx-fill: #FF00FF !important; } /* T - 마젠타 */
+.block-S { fill: #00FFFF !important; -fx-fill: #00FFFF !important; } /* S - 시안 */
+.block-Z { fill: #FF0000 !important; -fx-fill: #FF0000 !important; } /* Z - 레드 (S와 보색) */
+.block-J { fill: #005AFF !important; -fx-fill: #005AFF !important; } /* J - 블루 */
+.block-L { fill: #FFA500 !important; -fx-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
+.block-flash { fill: #FFFFFF !important; -fx-fill: #FFFFFF !important; }
+
+.item-copy-block {
+    color: #FFD966;
+    -fx-text-fill: #FFD966;
+    fill: #FFD966;
+    -fx-fill: #FFD966;
+}
