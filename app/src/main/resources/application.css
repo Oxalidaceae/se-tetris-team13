@@ -127,6 +127,13 @@
     -fx-font-size: 12px;
 }
 
+.window-small .right-panel {
+    -fx-padding: 30 40 10 15;
+    -fx-spacing: 8;
+    -fx-min-width: 100;
+    -fx-max-width: 100;
+}
+
 .window-medium .label {
     -fx-font-size: 16px;
 }
@@ -188,6 +195,13 @@
     -fx-font-size: 16px;
 }
 
+.window-medium .right-panel {
+    -fx-padding: 40 60 20 20;
+    -fx-spacing: 15;
+    -fx-min-width: 150;
+    -fx-max-width: 150;
+}
+
 .window-large .label {
     -fx-font-size: 20px;
 }
@@ -247,6 +261,13 @@
 
 .window-large .list-cell {
     -fx-font-size: 20px;
+}
+
+.window-large .right-panel {
+    -fx-padding: 60 100 30 30;
+    -fx-spacing: 20;
+    -fx-min-width: 200;
+    -fx-max-width: 200;
 }
 
 .pause-box {
@@ -325,7 +346,16 @@
     -fx-font-size: 12px;
 }
 
-
+/* ================================
+   오른쪽 패널 (다음 블록 미리보기 + 점수)
+   ================================ */
+.right-panel {
+    -fx-padding: 40 60 20 20;
+    -fx-alignment: top-center;
+    -fx-spacing: 15;
+    -fx-min-width: 150;
+    -fx-max-width: 150;
+}
 
 /* ================================
    블록 영상 (화면명: 컬러 블록)

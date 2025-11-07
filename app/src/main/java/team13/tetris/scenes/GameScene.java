@@ -91,6 +91,7 @@ public class GameScene {
 
         VBox right = new VBox(8, previewGrid, scoreLabel);
         right.getStyleClass().add("right-panel");
+        right.setAlignment(Pos.TOP_CENTER);
 
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
         root.getChildren().addAll(boardGrid, right);
@@ -271,6 +272,26 @@ public class GameScene {
                 if (baseTextClass == null || baseTextClass.isBlank()) {
                     baseTextClass = textClassForKind(next.getKind());
                 }
+                
+                // 블록의 실제 크기 계산
+                int minRow = 4, maxRow = -1, minCol = 4, maxCol = -1;
+                for (int r = 0; r < s.length; r++) {
+                    for (int c = 0; c < s[r].length; c++) {
+                        if (s[r][c] != 0) {
+                            if (r < minRow) minRow = r;
+                            if (r > maxRow) maxRow = r;
+                            if (c < minCol) minCol = c;
+                            if (c > maxCol) maxCol = c;
+                        }
+                    }
+                }
+                
+                // 블록을 4x4 그리드 중앙에 배치하기 위한 오프셋 계산
+                int blockHeight = maxRow - minRow + 1;
+                int blockWidth = maxCol - minCol + 1;
+                int offsetRow = (4 - blockHeight) / 2;
+                int offsetCol = (4 - blockWidth) / 2;
+                
                 int blockIndex = 0;
 
                 for (int r = 0; r < s.length && r < 4; r++) {
@@ -279,7 +300,11 @@ public class GameScene {
                             continue;
                         }
 
-                        CellView cell = (CellView) getNodeByRowColumnIndex(r, c, previewGrid);
+                        // 중앙 정렬을 위해 오프셋 적용
+                        int displayRow = r - minRow + offsetRow;
+                        int displayCol = c - minCol + offsetCol;
+                        
+                        CellView cell = (CellView) getNodeByRowColumnIndex(displayRow, displayCol, previewGrid);
                         if (cell == null) {
                             blockIndex++;
                             continue;
