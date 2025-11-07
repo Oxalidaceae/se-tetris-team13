@@ -57,6 +57,8 @@
     -fx-background-color: transparent;
     -fx-text-fill: #F5F5F5;
     -fx-font-size: 16px;
+    -fx-alignment: center;
+    -fx-font-family: "Monospaced";
 }
 
 .list-cell:selected {
@@ -115,7 +117,7 @@
 }
 
 .window-small .list-view {
-    -fx-pref-height: 300px;
+    -fx-pref-height: 260px;
 }
 
 .window-small .score-label {
@@ -192,7 +194,7 @@
 }
 
 .window-medium .list-view {
-    -fx-pref-height: 390px;
+    -fx-pref-height: 370px;
 }
 
 .window-medium .score-label {

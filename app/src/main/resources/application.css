@@ -53,6 +53,8 @@
     -fx-background-color: transparent;
     -fx-text-fill: white;
     -fx-font-size: 16px;
+    -fx-alignment: center;
+    -fx-font-family: "Monospaced";
 }
 
 .list-cell:selected {
@@ -108,7 +110,7 @@
 }
 
 .window-small .cell-text {
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
 }
 
 .window-small .list-view {
@@ -176,7 +178,7 @@
 }
 
 .window-medium .cell-text {
-    -fx-font-size: 32px;
+    -fx-font-size: 34px;
 }
 
 .window-medium .list-view {
