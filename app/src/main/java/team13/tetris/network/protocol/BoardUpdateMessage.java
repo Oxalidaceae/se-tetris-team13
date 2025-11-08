@@ -19,6 +19,7 @@ public class BoardUpdateMessage extends NetworkMessage {
         super(MessageType.BOARD_UPDATE, playerId);
         
         this.boardState = deepCopyBoard(board);
+        
         // 블록 정보는 기본값으로 설정 (상태 동기화에서는 필요 없음)
         this.currentPieceX = -1;
         this.currentPieceY = -1;

@@ -22,12 +22,12 @@ public class GameModeMessage extends NetworkMessage {
         return gameMode;
     }
     
-    public boolean isItemMode() {
-        return gameMode == GameMode.ITEM;
-    }
-    
     public boolean isNormalMode() {
         return gameMode == GameMode.NORMAL;
+    }
+
+    public boolean isItemMode() {
+        return gameMode == GameMode.ITEM;
     }
     
     @Override

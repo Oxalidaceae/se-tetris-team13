@@ -10,27 +10,22 @@ public enum MessageType {
     DISCONNECT,            // 연결 해제
     
     // 게임 준비 및 시작
-    PLAYER_READY,          // 플레이어 준비 완료
     GAME_MODE_SELECTED,    // 서버가 게임모드 선택 (일반/아이템)
-    GAME_START_REQUEST,    // 게임 시작 요청
     GAME_START,           // 게임 시작 신호
     
     // 플레이어 입력 이벤트
     MOVE_LEFT,            // 왼쪽 이동
     MOVE_RIGHT,           // 오른쪽 이동
     ROTATE,               // 회전
-    SOFT_DROP,            // 소프트 드롭 (아래 키)
-    HARD_DROP,            // 하드 드롭 (스페이스바)
+    SOFT_DROP,            // 소프트 드롭 
+    HARD_DROP,            // 하드 드롭 
     
     // 게임 상태 동기화
     BOARD_UPDATE,         // 보드 상태 업데이트
-    SCORE_UPDATE,         // 점수 업데이트
     LINES_CLEARED,        // 줄 삭제 정보
-    SPEED_LEVEL_UPDATE,   // 속도 레벨 업데이트
     
     // 공격/방어 시스템
     ATTACK_SENT,          // 공격 라인 전송
-    ATTACK_RECEIVED,      // 공격 라인 수신 확인
     
     // 게임 제어
     PAUSE,                // 게임 일시정지

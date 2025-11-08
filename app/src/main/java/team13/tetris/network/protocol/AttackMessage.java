@@ -8,8 +8,7 @@ public class AttackMessage extends NetworkMessage {
     private final int sourceLines;              // 원인이 된 삭제 줄 수 
     private final String targetPlayerId;        // 공격 대상 플레이어 ID
     
-    public AttackMessage(String attackerPlayerId, String targetPlayerId, 
-                        int sourceLines, int attackLines) {
+    public AttackMessage(String attackerPlayerId, String targetPlayerId, int sourceLines, int attackLines) {
         super(MessageType.ATTACK_SENT, attackerPlayerId);
         
         if (targetPlayerId == null || targetPlayerId.trim().isEmpty()) {

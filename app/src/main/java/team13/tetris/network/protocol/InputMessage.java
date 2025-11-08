@@ -7,17 +7,21 @@ public class InputMessage extends NetworkMessage {
     public InputMessage(MessageType inputType, String playerId) {
         super(inputType, playerId);
         
-        if (!isInputType(inputType)) {
-            throw new IllegalArgumentException("Invalid input type: " + inputType);
-        }
+        // 입력 관련 타입만 허용
+        validateInputType(inputType);
     }
     
-    private boolean isInputType(MessageType type) {
-        return type == MessageType.MOVE_LEFT || 
-               type == MessageType.MOVE_RIGHT || 
-               type == MessageType.ROTATE || 
-               type == MessageType.SOFT_DROP || 
-               type == MessageType.HARD_DROP;
+    private void validateInputType(MessageType type) {
+        switch (type) {
+            case MOVE_LEFT:
+            case MOVE_RIGHT:
+            case ROTATE:
+            case SOFT_DROP:
+            case HARD_DROP:
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid input message type: " + type);
+        }
     }
     
     public MessageType getInputType() {

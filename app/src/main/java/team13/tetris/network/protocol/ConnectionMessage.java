@@ -4,7 +4,7 @@ package team13.tetris.network.protocol;
 public class ConnectionMessage extends NetworkMessage {
     private static final long serialVersionUID = 1L;
     
-    private final String message;           // 메시지 내용 (이유, 플레이어명 등)
+    private final String message;           // 메시지 내용
     private final String targetPlayerId;    // 대상 플레이어 ID (필요한 경우)
     
     public ConnectionMessage(MessageType type, String senderId, String message) {
@@ -26,6 +26,7 @@ public class ConnectionMessage extends NetworkMessage {
             case CONNECTION_REQUEST:
             case CONNECTION_ACCEPTED:
             case CONNECTION_REJECTED:
+            case DISCONNECT:
             case GAME_START:
             case PAUSE:
             case RESUME:
@@ -81,8 +82,10 @@ public class ConnectionMessage extends NetworkMessage {
     }
     
     public boolean isConnectionResponse() {
-        return getType() == MessageType.CONNECTION_ACCEPTED || 
-               getType() == MessageType.CONNECTION_REJECTED;
+        MessageType type = getType();
+        return type == MessageType.CONNECTION_ACCEPTED || 
+               type == MessageType.CONNECTION_REJECTED ||
+               type == MessageType.DISCONNECT;
     }
 
     public boolean isGameControl() {
