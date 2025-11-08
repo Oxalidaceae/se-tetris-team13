@@ -27,6 +27,7 @@ public class ConnectionMessage extends NetworkMessage {
             case CONNECTION_ACCEPTED:
             case CONNECTION_REJECTED:
             case DISCONNECT:
+            case PLAYER_READY:
             case GAME_START:
             case PAUSE:
             case RESUME:
@@ -47,6 +48,10 @@ public class ConnectionMessage extends NetworkMessage {
     
     public static ConnectionMessage createConnectionRejected(String serverId, String reason) {
         return new ConnectionMessage(MessageType.CONNECTION_REJECTED, serverId, reason);
+    }
+    
+    public static ConnectionMessage createPlayerReady(String playerId) {
+        return new ConnectionMessage(MessageType.PLAYER_READY, playerId, playerId + " is ready!");
     }
     
     public static ConnectionMessage createGameStart(String senderId) {
