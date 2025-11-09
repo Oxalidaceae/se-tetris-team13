@@ -53,16 +53,16 @@ application {
 // 네트워크 테스트용 Task들
 task runServer(type: JavaExec) {
     group = 'network'
-    description = 'Run Tetris Server'
-    mainClass = 'team13.tetris.network.server.TetrisServer'
+    description = 'Run Tetris Server (Test CLI)'
+    mainClass = 'team13.tetris.network.test.TestTetrisServer'
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 }
 
 task runClient(type: JavaExec) {
     group = 'network'
-    description = 'Run Tetris Client'
-    mainClass = 'team13.tetris.network.client.TetrisClient'
+    description = 'Run Tetris Client (Test CLI)'
+    mainClass = 'team13.tetris.network.test.TestTetrisClient'
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     if (project.hasProperty('player')) {
