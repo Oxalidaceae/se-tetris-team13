@@ -26,16 +26,16 @@ public class TetrisClient {
     public interface MessageListener {
         void onConnectionAccepted();
         void onConnectionRejected(String reason);
+        void onPlayerReady(String playerId);
         void onGameStart();
         void onGameOver(String reason);
         void onInputReceived(InputMessage inputMessage);
         void onBoardUpdate(BoardUpdateMessage boardUpdate);
         void onAttackReceived(AttackMessage attackMessage);
+        void onLinesClearedReceived(LinesClearedMessage linesClearedMessage);
         void onGamePaused();
         void onGameResumed();
         void onError(String error);
-        
-        // P2P 관련 메서드들
         void onGameModeSelected(GameModeMessage.GameMode gameMode);
     }
     
@@ -65,22 +65,22 @@ public class TetrisClient {
     // 서버에 접속
     public boolean connect() {
         try {
-            System.out.println("🔗 Connecting to server " + serverHost + ":" + serverPort + "...");
+            System.out.println("Connecting to server " + serverHost + ":" + serverPort + "...");
             
             // 서버에 소켓 연결
             socket = new Socket(serverHost, serverPort);
             
-            // 입출력 스트림 설정 (서버와 반대 순서로 데드락 방지)
+            // 입출력 스트림 설정
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
             
             // 연결 요청 메시지 전송
             ConnectionMessage connectionRequest = ConnectionMessage.createConnectionRequest(playerId, playerId);
-            System.out.println("📤 Sending connection request...");
+            System.out.println("Sending connection request...");
             output.writeObject(connectionRequest);
             output.flush();
-            System.out.println("✅ Connection request sent!");
+            System.out.println("Connection request sent!");
             
             // 연결 응답 대기
             Object response = input.readObject();
@@ -88,7 +88,7 @@ public class TetrisClient {
             if (response instanceof ConnectionMessage connMsg) {
                 if (connMsg.getType() == MessageType.CONNECTION_ACCEPTED) {
                     isConnected = true;
-                    System.out.println("✅ Connected to server successfully!");
+                    System.out.println("Connected to server successfully!");
                     
                     // 메시지 수신 스레드 시작
                     messageHandler.submit(this::messageLoop);
@@ -100,7 +100,7 @@ public class TetrisClient {
                     return true;
                     
                 } else if (connMsg.getType() == MessageType.CONNECTION_REJECTED) {
-                    System.err.println("❌ Connection rejected: " + connMsg.getMessage());
+                    System.err.println("Connection rejected: " + connMsg.getMessage());
                     
                     if (messageListener != null) {
                         messageListener.onConnectionRejected(connMsg.getMessage());
@@ -110,11 +110,11 @@ public class TetrisClient {
                 }
             }
             
-            System.err.println("❌ Invalid connection response from server");
+            System.err.println("Invalid connection response from server");
             return false;
             
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("❌ Failed to connect to server: " + e.getMessage());
+            System.err.println("Failed to connect to server: " + e.getMessage());
             
             if (messageListener != null) {
                 messageListener.onError("Connection failed: " + e.getMessage());
@@ -162,16 +162,24 @@ public class TetrisClient {
     
     // 수신한 메시지 처리
     private void handleReceivedMessage(NetworkMessage message) {
-        System.out.println("📨 Received from server: " + message.getType());
+        System.out.println("Received from server: " + message.getType());
         
         if (messageListener == null) {
             return;
         }
         
         switch (message.getType()) {
+            case PLAYER_READY -> {
+                // 누군가 준비 완료
+                if (message instanceof ConnectionMessage connMsg) {
+                    System.out.println(connMsg.getSenderId() + " is ready!");
+                    messageListener.onPlayerReady(connMsg.getSenderId());
+                }
+            }
+            
             case GAME_START -> {
                 gameStarted = true;
-                System.out.println("🎮 Game started!");
+                System.out.println("All players ready! Game is starting...");
                 messageListener.onGameStart();
             }
             
@@ -181,7 +189,7 @@ public class TetrisClient {
                 if (message instanceof ConnectionMessage connMsg) {
                     reason = connMsg.getMessage();
                 }
-                System.out.println("🏁 Game over: " + reason);
+                System.out.println("Game over: " + reason);
                 messageListener.onGameOver(reason);
             }
             
@@ -202,26 +210,49 @@ public class TetrisClient {
             case ATTACK_SENT -> {
                 // 공격 메시지 수신
                 if (message instanceof AttackMessage attackMsg) {
-                    System.out.println("💥 Attack received: " + attackMsg.getAttackLines() + " lines from " + attackMsg.getAttackerPlayerId());
+                    System.out.println("Attack received: " + attackMsg.getAttackLines() + " lines from " + attackMsg.getAttackerPlayerId());
                     messageListener.onAttackReceived(attackMsg);
                 }
             }
             
             case PAUSE -> {
-                System.out.println("⏸️ Game paused");
+                System.out.println("⏸Game paused");
                 messageListener.onGamePaused();
             }
             
             case RESUME -> {
-                System.out.println("▶️ Game resumed");
+                System.out.println("▶Game resumed");
                 messageListener.onGameResumed();
             }
             
             case GAME_MODE_SELECTED -> {
                 // 서버가 게임모드를 선택함
                 if (message instanceof GameModeMessage gameModeMsg) {
-                    System.out.println("🎮 Game mode selected by server: " + gameModeMsg.getGameMode());
+                    System.out.println("Game mode selected by server: " + gameModeMsg.getGameMode());
                     messageListener.onGameModeSelected(gameModeMsg.getGameMode());
+                }
+            }
+            
+            case LINES_CLEARED -> {
+                // 상대방이 줄을 삭제함
+                if (message instanceof LinesClearedMessage linesClearedMsg) {
+                    System.out.println("Opponent cleared " + linesClearedMsg.getLinesCleared() + " lines");
+                    messageListener.onLinesClearedReceived(linesClearedMsg);
+                }
+            }
+            
+            case HEARTBEAT -> {
+                // 하트비트 수신 - 연결 유지 확인
+                // 하트비트 응답 (echo back)
+                SystemMessage heartbeat = SystemMessage.createHeartbeat(playerId);
+                sendMessage(heartbeat);
+            }
+            
+            case ERROR -> {
+                // 에러 메시지 수신
+                if (message instanceof SystemMessage sysMsg) {
+                    System.err.println("Error from server: " + sysMsg.getMessage());
+                    messageListener.onError("Server error: " + sysMsg.getMessage());
                 }
             }
             
@@ -256,8 +287,6 @@ public class TetrisClient {
         }
     }
     
-    // ===== 게임 액션 메서드들 =====
-    
     // 입력 전송
     public boolean sendInput(MessageType inputType) {
         if (!gameStarted) {
@@ -280,7 +309,9 @@ public class TetrisClient {
     public boolean sendBoardUpdateWithPiece(int[][] board, int pieceX, int pieceY, 
                                           int pieceType, int pieceRotation,
                                           int score, int lines, int level) {
-        if (!gameStarted) return false;
+        if (!gameStarted) {
+            return false;
+        }
 
         BoardUpdateMessage boardMsg = new BoardUpdateMessage(playerId, board, pieceX, pieceY, 
                                                             pieceType, pieceRotation, score, lines, level);
@@ -310,53 +341,43 @@ public class TetrisClient {
         return sendMessage(resumeMsg);
     }
     
-    // ===== P2P 관련 메서드들 =====
-    
-    /**
-     * 클라이언트가 게임 시작 준비가 되었음을 서버에 알립니다.
-     */
+    // 게임 시작 요청
     public boolean requestGameStart() {
-        ConnectionMessage gameStartMsg = new ConnectionMessage(MessageType.GAME_START_REQUEST, playerId, "Client ready to start");
-        return sendMessage(gameStartMsg);
+        ConnectionMessage playerReadyMsg = ConnectionMessage.createPlayerReady(playerId);
+        return sendMessage(playerReadyMsg);
     }
     
-    // ===== 게임 입력 메서드들 =====
+    // 줄 삭제 정보 전송
+    public boolean sendLinesCleared(int linesCleared) {
+        LinesClearedMessage linesClearedMsg = new LinesClearedMessage(playerId, linesCleared);
+        return sendMessage(linesClearedMsg);
+    }
     
-    /**
-     * 왼쪽으로 이동 입력을 서버에 전송합니다.
-     */
+    // 왼쪽으로 이동 입력 서버에 전송
     public boolean sendMoveLeft() {
         InputMessage moveMsg = new InputMessage(MessageType.MOVE_LEFT, playerId);
         return sendMessage(moveMsg);
     }
     
-    /**
-     * 오른쪽으로 이동 입력을 서버에 전송합니다.
-     */
+    // 오른쪽으로 이동 입력 서버에 전송
     public boolean sendMoveRight() {
         InputMessage moveMsg = new InputMessage(MessageType.MOVE_RIGHT, playerId);
         return sendMessage(moveMsg);
     }
     
-    /**
-     * 회전 입력을 서버에 전송합니다.
-     */
+    // 회전 입력 서버에 전송
     public boolean sendRotate() {
         InputMessage rotateMsg = new InputMessage(MessageType.ROTATE, playerId);
         return sendMessage(rotateMsg);
     }
     
-    /**
-     * 하드 드롭 입력을 서버에 전송합니다.
-     */
+    // 하드 드롭 입력 서버에 전송
     public boolean sendHardDrop() {
         InputMessage dropMsg = new InputMessage(MessageType.HARD_DROP, playerId);
         return sendMessage(dropMsg);
     }
     
-    /**
-     * 소프트 드롭 입력을 서버에 전송합니다.
-     */
+    // 소프트 드롭 입력 서버에 전송
     public boolean sendSoftDrop() {
         InputMessage dropMsg = new InputMessage(MessageType.SOFT_DROP, playerId);
         return sendMessage(dropMsg);
@@ -417,10 +438,8 @@ public class TetrisClient {
             // 무시
         }
         
-        System.out.println("🧹 Client cleanup completed");
+        System.out.println("Client cleanup completed");
     }
-    
-    // ===== Getter 메서드들 =====
     
     public boolean isConnected() {
         return isConnected;
@@ -438,9 +457,8 @@ public class TetrisClient {
         return serverHost + ":" + serverPort;
     }
     
-    /**
-     * 클라이언트 메인 메서드 - 테스트용
-     */
+    
+    //클라이언트 메인 메서드 - 테스트용
     public static void main(String[] args) {
         String playerId = "TestPlayer";
         String serverHost = DEFAULT_HOST;
@@ -468,57 +486,67 @@ public class TetrisClient {
         client.setMessageListener(new MessageListener() {
             @Override
             public void onConnectionAccepted() {
-                System.out.println("🎉 Successfully connected to server!");
+                System.out.println("Successfully connected to server!");
             }
             
             @Override
             public void onConnectionRejected(String reason) {
-                System.out.println("❌ Connection rejected: " + reason);
+                System.out.println("Connection rejected: " + reason);
+            }
+            
+            @Override
+            public void onPlayerReady(String playerId) {
+                System.out.println(playerId + " is ready!");
             }
             
             @Override
             public void onGameStart() {
-                System.out.println("🎮 Game started! You can now play.");
+                System.out.println("Game started! You can now play.");
             }
             
             @Override
             public void onGameOver(String reason) {
-                System.out.println("🏁 Game over: " + reason);
+                System.out.println("Game over: " + reason);
             }
             
             @Override
             public void onInputReceived(InputMessage inputMessage) {
-                System.out.println("🎮 Opponent input: " + inputMessage.getInputType());
+                System.out.println("Opponent input: " + inputMessage.getInputType());
             }
             
             @Override
             public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
-                System.out.println("📊 Opponent board updated - Score: " + boardUpdate.getScore());
+                System.out.println("Opponent board updated - Score: " + boardUpdate.getScore());
             }
             
             @Override
             public void onAttackReceived(AttackMessage attackMessage) {
-                System.out.println("💥 Attack received: " + attackMessage.getAttackLines() + " lines!");
+                System.out.println("Attack received: " + attackMessage.getAttackLines() + " lines!");
+            }
+            
+            @Override
+            public void onLinesClearedReceived(LinesClearedMessage linesClearedMessage) {
+                System.out.println("Opponent cleared " + linesClearedMessage.getLinesCleared() + " lines!");
             }
             
             @Override
             public void onGamePaused() {
-                System.out.println("⏸️ Game paused");
+                System.out.println("⏸Game paused");
             }
             
             @Override
             public void onGameResumed() {
-                System.out.println("▶️ Game resumed");
+                System.out.println("▶Game resumed");
             }
             
             @Override
             public void onError(String error) {
-                System.err.println("❌ Error: " + error);
+                System.err.println("Error: " + error);
             }
             
             @Override
             public void onGameModeSelected(GameModeMessage.GameMode gameMode) {
-                System.out.println("🎮 Server selected game mode: " + gameMode);
+                System.out.println("Server selected game mode: " + gameMode);
             }
         });
         
@@ -528,7 +556,7 @@ public class TetrisClient {
             System.out.println("📍 Connected to: " + serverHost + ":" + serverPort);
             System.out.println("👤 Player ID: " + playerId);
             System.out.println("\n📋 Available Commands:");
-            System.out.println("  'ready'     - Request game start (client ready)");
+            System.out.println("  'ready'     - Mark yourself as ready to start");
             System.out.println("  'move L'    - Send move left");
             System.out.println("  'move R'    - Send move right");
             System.out.println("  'rotate'    - Send rotate");
@@ -550,42 +578,42 @@ public class TetrisClient {
                     String input = scanner.nextLine().trim();
                     
                     if (input.equalsIgnoreCase("quit")) {
-                        System.out.println("🛑 Disconnecting from server...");
+                        System.out.println("Disconnecting from server...");
                         client.disconnect();
                         break;
                     } else if (input.equalsIgnoreCase("ready")) {
                         if (client.requestGameStart()) {
-                            System.out.println("✅ Game start request sent!");
+                            System.out.println("Ready signal sent! Waiting for other players...");
                         } else {
-                            System.out.println("❌ Failed to send game start request");
+                            System.out.println("Failed to send ready signal");
                         }
                     } else if (input.equalsIgnoreCase("pause")) {
                         if (client.pauseGame()) {
-                            System.out.println("⏸️ Pause request sent");
+                            System.out.println("⏸Pause request sent");
                         }
                     } else if (input.equalsIgnoreCase("resume")) {
                         if (client.resumeGame()) {
-                            System.out.println("▶️ Resume request sent");
+                            System.out.println("▶Resume request sent");
                         }
                     } else if (input.startsWith("move ")) {
                         String direction = input.substring(5).trim().toUpperCase();
                         if (direction.equals("L") || direction.equals("LEFT")) {
                             client.sendMoveLeft();
-                            System.out.println("⬅️ Move left sent");
+                            System.out.println("Move left sent");
                         } else if (direction.equals("R") || direction.equals("RIGHT")) {
                             client.sendMoveRight();
-                            System.out.println("➡️ Move right sent");
+                            System.out.println("Move right sent");
                         } else {
-                            System.out.println("❌ Invalid direction. Use 'L' or 'R'");
+                            System.out.println("Invalid direction. Use 'L' or 'R'");
                         }
                     } else if (input.equalsIgnoreCase("rotate")) {
                         client.sendRotate();
-                        System.out.println("🔄 Rotate sent");
+                        System.out.println("Rotate sent");
                     } else if (input.equalsIgnoreCase("drop")) {
                         client.sendHardDrop();
-                        System.out.println("⬇️ Hard drop sent");
+                        System.out.println("Hard drop sent");
                     } else if (!input.isEmpty()) {
-                        System.out.println("❓ Unknown command: " + input);
+                        System.out.println("Unknown command: " + input);
                     }
                 } else {
                     try {
@@ -599,7 +627,7 @@ public class TetrisClient {
             
             scanner.close();
         } else {
-            System.err.println("❌ Failed to connect to server");
+            System.err.println("Failed to connect to server");
         }
     }
 }

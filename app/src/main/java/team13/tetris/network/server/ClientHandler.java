@@ -34,7 +34,6 @@ public class ClientHandler implements Runnable {
     
     // 입출력 스트림 설정     
     private void setupStreams() throws IOException {
-        // 출력 스트림을 먼저 생성 (데드락 방지)
         output = new ObjectOutputStream(clientSocket.getOutputStream());
         output.flush();
         input = new ObjectInputStream(clientSocket.getInputStream());
@@ -72,7 +71,7 @@ public class ClientHandler implements Runnable {
     
     // 연결 요청 메시지 대기
     private ConnectionMessage waitForConnectionRequest() {
-        System.out.println("📥 Waiting for connection request...");
+        System.out.println("Waiting for connection request...");
 
         try {
             Object obj = input.readObject();
@@ -118,56 +117,87 @@ public class ClientHandler implements Runnable {
     
     // 수신한 메시지 처리
     private void handleMessage(NetworkMessage message) {
-        System.out.println("📨 Received from " + playerId + ": " + message.getType());
+        System.out.println("Received from " + playerId + ": " + message.getType());
         
         switch (message.getType()) {
             case MOVE_LEFT, MOVE_RIGHT, ROTATE, SOFT_DROP, HARD_DROP -> {
-                // 입력 메시지는 호스트(서버)에게 전달
                 if (message instanceof InputMessage inputMsg) {
                     server.notifyHostInput(inputMsg);
+                    server.broadcastToOthers(playerId, inputMsg);
                 }
             }
             
             case BOARD_UPDATE -> {
-                // 보드 업데이트는 호스트(서버)에게 전달
                 if (message instanceof BoardUpdateMessage boardMsg) {
                     server.notifyHostBoardUpdate(boardMsg);
+                    server.broadcastToOthers(playerId, boardMsg);
                 }
             }
             
             case ATTACK_SENT -> {
-                // 공격 메시지는 호스트(서버)에게 전달
                 if (message instanceof AttackMessage attackMsg) {
                     server.notifyHostAttack(attackMsg);
+                    server.broadcastToOthers(playerId, attackMsg);
                 }
             }
             
             case PAUSE -> {
-                // 일시정지는 호스트(서버)에게 전달
                 server.notifyHostPause();
+                server.broadcastToOthers(playerId, new ConnectionMessage(MessageType.PAUSE, playerId, "Game paused by " + playerId));
             }
             
             case RESUME -> {
-                // 재개는 호스트(서버)에게 전달
                 server.notifyHostResume();
+                server.broadcastToOthers(playerId, new ConnectionMessage(MessageType.RESUME, playerId, "Game resumed by " + playerId));
             }
             
             case GAME_OVER -> {
-                // 게임 오버는 호스트(서버)에게 전달
                 if (message instanceof ConnectionMessage connMsg) {
                     server.notifyHostGameOver(connMsg.getMessage());
+                    server.broadcastToOthers(playerId, connMsg);
                 }
             }
             
-            case GAME_START_REQUEST -> {
-                // 클라이언트가 게임 시작을 요청
-                System.out.println("🎮 " + playerId + " is ready to start game");
-                server.setClientReady(true);
+            case PLAYER_READY -> {
+                System.out.println(playerId + " is ready to start game");
+                server.setPlayerReady(playerId, true);
+                
+                ConnectionMessage readyNotification = ConnectionMessage.createPlayerReady(playerId);
+                server.broadcastToAll(readyNotification);
+            }
+            
+            case GAME_START -> {
+                // 더 이상 사용하지 않음 (PLAYER_READY로 대체)
+                // 하지만 하위 호환성을 위해 남겨둠
+                System.out.println("🎮 " + playerId + " is ready to start game (legacy)");
+                server.setPlayerReady(playerId, true);
+            }
+            
+            case LINES_CLEARED -> {
+                if (message instanceof LinesClearedMessage linesClearedMsg) {
+                    server.notifyHostLinesCleared(linesClearedMsg);
+                    server.broadcastToOthers(playerId, linesClearedMsg);
+                }
+            }
+            
+            case HEARTBEAT -> {
+                if (message instanceof SystemMessage) {
+                    try {
+                        sendMessage(SystemMessage.createHeartbeat("server"));
+                    } catch (IOException e) {
+                        System.err.println("Failed to send heartbeat response: " + e.getMessage());
+                    }
+                }
+            }
+            
+            case ERROR -> {
+                if (message instanceof SystemMessage sysMsg) {
+                    System.err.println("Error from " + playerId + ": " + sysMsg.getMessage());
+                }
             }
             
             case DISCONNECT -> {
-                // 연결 해제 요청
-                System.out.println("👋 " + playerId + " requested disconnect");
+                System.out.println(playerId + " requested disconnect");
                 close();
             }
             
@@ -228,10 +258,9 @@ public class ClientHandler implements Runnable {
         // 소켓 정리
         close();
         
-        System.out.println("🧹 Cleaned up client handler for " + playerId);
+        System.out.println("Cleaned up client handler for " + playerId);
     }
     
-    // Getter 메서드들
     public String getPlayerId() {
         return playerId;
     }

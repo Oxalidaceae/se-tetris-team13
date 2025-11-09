@@ -6,14 +6,12 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-// ServerSocket을 열어 클라이언트 접속을 대기하고 P2P 호스트로 게임을 플레이합니다.
-// 서버 실행자는 Player 1 (호스트), 접속한 클라이언트는 Player 2 (게스트)
 public class TetrisServer {
     private static final int DEFAULT_PORT = 12345;
     private static final int MAX_PLAYERS = 1;  // 서버 자신(호스트) + 클라이언트 1명
     
     private final int port;
-    private final String hostPlayerId;  // 서버 호스트 플레이어 ID
+    private final String hostPlayerId;  
     private ServerSocket serverSocket;
     private final Map<String, ClientHandler> connectedClients;
     private final ExecutorService threadPool;
@@ -25,18 +23,19 @@ public class TetrisServer {
     
     // P2P 상태 관리
     private GameModeMessage.GameMode selectedGameMode = null;
-    private volatile boolean serverReady = false;
-    private volatile boolean clientReady = false;
+    private final Map<String, Boolean> playerReadyStates = new ConcurrentHashMap<>();
     
     // 호스트 플레이어 메시지 리스너
     public interface HostMessageListener {
         void onClientConnected(String clientId);
         void onClientDisconnected(String clientId);
+        void onPlayerReady(String playerId);
         void onGameStart();
         void onGameOver(String reason);
         void onInputReceived(InputMessage inputMessage);
         void onBoardUpdate(BoardUpdateMessage boardUpdate);
         void onAttackReceived(AttackMessage attackMessage);
+        void onLinesClearedReceived(LinesClearedMessage linesClearedMessage);
         void onGamePaused();
         void onGameResumed();
     }
@@ -69,8 +68,8 @@ public class TetrisServer {
         serverSocket = new ServerSocket(port);
         isRunning = true;
         
-        System.out.println("🚀 Tetris Server started on port " + port);
-        System.out.println("⏳ Waiting for players to connect...");
+        System.out.println("Tetris Server started on port " + port);
+        System.out.println("aiting for players to connect...");
         
         // 클라이언트 접속 대기 스레드
         threadPool.submit(this::acceptClients);
@@ -85,13 +84,12 @@ public class TetrisServer {
                 
                 synchronized (connectedClients) {
                     if (connectedClients.size() >= MAX_PLAYERS) {
-                        // 서버 가득참 - 연결 거절
                         rejectConnection(clientSocket, "Server is full");
                         continue;
                     }
                 }
                 
-                System.out.println("📱 New client connected: " + clientSocket.getInetAddress());
+                System.out.println("New client connected: " + clientSocket.getInetAddress());
                 
                 // 클라이언트 핸들러 생성 및 시작
                 ClientHandler handler = new ClientHandler(clientSocket, this);
@@ -99,7 +97,7 @@ public class TetrisServer {
                 
             } catch (IOException e) {
                 if (isRunning) {
-                    System.err.println("❌ Error accepting client: " + e.getMessage());
+                    System.err.println("Error accepting client: " + e.getMessage());
                 }
             }
         }
@@ -131,7 +129,7 @@ public class TetrisServer {
         }
         
         connectedClients.put(playerId, handler);
-        System.out.println("✅ Player registered: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
+        System.out.println("Player registered: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
         
         // 호스트에게 클라이언트 연결 알림
         if (hostMessageListener != null) {
@@ -140,7 +138,7 @@ public class TetrisServer {
         
         // 클라이언트가 접속하면 대기 상태 (양쪽이 ready해야 게임 시작)
         if (connectedClients.size() == MAX_PLAYERS) {
-            System.out.println("🎮 Client connected! Waiting for both players to be ready...");
+            System.out.println("Client connected! Waiting for both players to be ready...");
         }
         
         return true;
@@ -151,7 +149,7 @@ public class TetrisServer {
     public synchronized void unregisterClient(String playerId) {
         ClientHandler removed = connectedClients.remove(playerId);
         if (removed != null) {
-            System.out.println("❌ Player disconnected: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
+            System.out.println("Player disconnected: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
             
             // 호스트에게 클라이언트 연결 해제 알림
             if (hostMessageListener != null) {
@@ -169,47 +167,62 @@ public class TetrisServer {
     public void selectGameMode(GameModeMessage.GameMode gameMode) {
         this.selectedGameMode = gameMode;
         
-        // 클라이언트에게 게임모드 알림
         GameModeMessage gameModeMsg = new GameModeMessage("server", gameMode);
         broadcastMessage(gameModeMsg);
         
-        System.out.println("🎮 Game mode selected: " + gameMode);
+        System.out.println("Game mode selected: " + gameMode);
     }
     
-    // 서버 준비 상태를 설정
+    // 플레이어 준비 상태를 설정 (확장 가능)
+    public void setPlayerReady(String playerId, boolean ready) {
+        if (ready) {
+            playerReadyStates.put(playerId, true);
+            System.out.println("Player " + playerId + " is ready!");
+        } else {
+            playerReadyStates.put(playerId, false);
+            System.out.println("Player " + playerId + " is not ready!");
+        }
+        
+        // 모든 플레이어가 준비되면 게임 시작
+        checkAllReady();
+    }
+    
+    // 서버(호스트) 준비 상태를 설정
     public void setServerReady(boolean ready) {
-        this.serverReady = ready;
-        
-        if (ready) {
-            System.out.println("✅ Server is ready!");
-        } else {
-            System.out.println("❌ Server is not ready!");
-        }
-        
-        // 양쪽 모두 준비되면 게임 시작
-        checkBothReady();
+        setPlayerReady(hostPlayerId, ready);
     }
     
-    // 클라이언트 준비 상태를 설정
+    // 클라이언트 준비 상태를 설정 (하위 호환성)
     public void setClientReady(boolean ready) {
-        this.clientReady = ready;
-        
-        if (ready) {
-            System.out.println("✅ Client is ready!");
-        } else {
-            System.out.println("❌ Client is not ready!");
+        // 첫 번째 클라이언트의 준비 상태 설정
+        if (!connectedClients.isEmpty()) {
+            String firstClientId = connectedClients.keySet().iterator().next();
+            setPlayerReady(firstClientId, ready);
         }
-        
-        // 양쪽 모두 준비되면 게임 시작
-        checkBothReady();
     }
     
-    // 양쪽 모두 준비되었는지 확인
-    private void checkBothReady() {
-        if (serverReady && clientReady && selectedGameMode != null) {
-            System.out.println("🚀 Both players ready! Starting game...");
-            startGame();
+    // 모든 플레이어가 준비되었는지 확인
+    private void checkAllReady() {
+        // 게임모드가 선택되지 않았으면 시작 불가
+        if (selectedGameMode == null) {
+            return;
         }
+        
+        // 호스트가 준비되지 않았으면 시작 불가
+        if (!playerReadyStates.getOrDefault(hostPlayerId, false)) {
+            return;
+        }
+        
+        // 모든 접속한 클라이언트가 준비되었는지 확인
+        for (String clientId : connectedClients.keySet()) {
+            if (!playerReadyStates.getOrDefault(clientId, false)) {
+                return;
+            }
+        }
+        
+        // 모든 조건 만족 시 게임 시작
+        System.out.println("All players ready! Starting game...");
+        startGame();
     }
     
     // 현재 서버의 IP 주소 반환
@@ -226,33 +239,38 @@ public class TetrisServer {
         return selectedGameMode;
     }
     
-    /**
-     * 연결된 클라이언트 수를 반환합니다.
-     */
+    
+    // 연결된 클라이언트 수 반환
     public int getClientCount() {
         return connectedClients.size();
     }
     
-    /**
-     * 서버 준비 상태를 반환합니다.
-     */
+    
+    // 서버(호스트) 준비 상태 반환
     public boolean isServerReady() {
-        return serverReady;
+        return playerReadyStates.getOrDefault(hostPlayerId, false);
     }
     
-    /**
-     * 클라이언트 준비 상태를 반환합니다.
-     */
+    
+    // 클라이언트 준비 상태 반환 (첫 번째 클라이언트).
     public boolean isClientReady() {
-        return clientReady;
+        if (connectedClients.isEmpty()) {
+            return false;
+        }
+        String firstClientId = connectedClients.keySet().iterator().next();
+        return playerReadyStates.getOrDefault(firstClientId, false);
     }
     
-    /**
-     * P2P 준비 상태를 초기화합니다.
-     */
+    
+    // 특정 플레이어의 준비 상태 반환
+    public boolean isPlayerReady(String playerId) {
+        return playerReadyStates.getOrDefault(playerId, false);
+    }
+    
+    
+    // P2P 준비 상태 초기화
     public void resetReadyStates() {
-        serverReady = false;
-        clientReady = false;
+        playerReadyStates.clear();
         selectedGameMode = null;
     }
     
@@ -265,7 +283,7 @@ public class TetrisServer {
             gameInProgress = true;
         }
         
-        System.out.println("🎮 Game starting!");
+        System.out.println("Game starting!");
         
         // 클라이언트에게 게임 시작 메시지 전송
         ConnectionMessage gameStart = ConnectionMessage.createGameStart(hostPlayerId);
@@ -286,7 +304,7 @@ public class TetrisServer {
             gameInProgress = false;
         }
         
-        System.out.println("🏁 Game ended: " + reason);
+        System.out.println("Game ended: " + reason);
         
         // 클라이언트에게 게임 종료 메시지 전송
         ConnectionMessage gameOver = ConnectionMessage.createGameOver(hostPlayerId, reason);
@@ -343,7 +361,26 @@ public class TetrisServer {
         }
     }
     
-    // ===== 호스트 알림 메서드들 (클라이언트 -> 호스트) =====
+    // 모든 클라이언트와 호스트에게 메시지 전송
+    public void broadcastToAll(NetworkMessage message) {
+        // 호스트에게 전송 (호스트가 TetrisClient를 사용하는 경우)
+        if (hostMessageListener != null && message instanceof ConnectionMessage connMsg) {
+            if (connMsg.getType() == MessageType.PLAYER_READY) {
+                // 호스트에게 플레이어 준비 알림
+                hostMessageListener.onPlayerReady(connMsg.getSenderId());
+            }
+        }
+        
+        // 모든 클라이언트에게 전송
+        for (Map.Entry<String, ClientHandler> entry : connectedClients.entrySet()) {
+            try {
+                entry.getValue().sendMessage(message);
+            } catch (IOException e) {
+                System.err.println("Failed to broadcast to player " + entry.getKey() + ": " + e.getMessage());
+                unregisterClient(entry.getKey());
+            }
+        }
+    }
     
     // 클라이언트 입력을 호스트에게 알림
     public void notifyHostInput(InputMessage inputMessage) {
@@ -363,6 +400,13 @@ public class TetrisServer {
     public void notifyHostAttack(AttackMessage attackMessage) {
         if (hostMessageListener != null) {
             hostMessageListener.onAttackReceived(attackMessage);
+        }
+    }
+    
+    // 클라이언트 줄 삭제를 호스트에게 알림
+    public void notifyHostLinesCleared(LinesClearedMessage linesClearedMessage) {
+        if (hostMessageListener != null) {
+            hostMessageListener.onLinesClearedReceived(linesClearedMessage);
         }
     }
     
@@ -386,8 +430,6 @@ public class TetrisServer {
             hostMessageListener.onGameOver(reason);
         }
     }
-    
-    // ===== 호스트 액션 메서드들 (호스트 -> 클라이언트) =====
     
     // 호스트의 입력을 클라이언트에게 전송
     public boolean sendHostInput(MessageType inputType) {
@@ -436,6 +478,17 @@ public class TetrisServer {
         return true;
     }
     
+    // 호스트의 줄 삭제 정보를 클라이언트에게 전송
+    public boolean sendHostLinesCleared(int linesCleared) {
+        if (!gameInProgress) {
+            return false;
+        }
+        
+        LinesClearedMessage linesClearedMsg = new LinesClearedMessage(hostPlayerId, linesCleared);
+        broadcastMessage(linesClearedMsg);
+        return true;
+    }
+    
     // 호스트가 게임 일시정지
     public boolean pauseGameAsHost() {
         ConnectionMessage pauseMsg = new ConnectionMessage(MessageType.PAUSE, hostPlayerId, "Game paused by host");
@@ -450,7 +503,15 @@ public class TetrisServer {
         return true;
     }
     
-    // 호스트 게임 입력 메서드들
+    // 호스트가 준비 완료
+    public void setHostReady() {
+        System.out.println("Host " + hostPlayerId + " is ready!");
+        setPlayerReady(hostPlayerId, true);
+        
+        // 모든 클라이언트에게 호스트 준비 알림
+        ConnectionMessage readyNotification = ConnectionMessage.createPlayerReady(hostPlayerId);
+        broadcastToAll(readyNotification);
+    }
     
     public boolean sendHostMoveLeft() {
         return sendHostInput(MessageType.MOVE_LEFT);
@@ -508,10 +569,9 @@ public class TetrisServer {
             Thread.currentThread().interrupt();
         }
         
-        System.out.println("🛑 Tetris Server stopped");
+        System.out.println("Tetris Server stopped");
     }
     
-    // Getter 메서드들
     public boolean isRunning() {
         return isRunning;
     }
@@ -553,47 +613,57 @@ public class TetrisServer {
         server.setHostMessageListener(new HostMessageListener() {
             @Override
             public void onClientConnected(String clientId) {
-                System.out.println("🎉 Client connected: " + clientId);
+                System.out.println("Client connected: " + clientId);
             }
             
             @Override
             public void onClientDisconnected(String clientId) {
-                System.out.println("👋 Client disconnected: " + clientId);
+                System.out.println("Client disconnected: " + clientId);
+            }
+            
+            @Override
+            public void onPlayerReady(String playerId) {
+                System.out.println(playerId + " is ready!");
             }
             
             @Override
             public void onGameStart() {
-                System.out.println("🎮 Game started! You can now play as host.");
+                System.out.println("Game started! You can now play as host.");
             }
             
             @Override
             public void onGameOver(String reason) {
-                System.out.println("🏁 Game over: " + reason);
+                System.out.println("Game over: " + reason);
             }
             
             @Override
             public void onInputReceived(InputMessage inputMessage) {
-                System.out.println("🎮 Client input: " + inputMessage.getInputType());
+                System.out.println("Client input: " + inputMessage.getInputType());
             }
             
             @Override
             public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
-                System.out.println("📊 Client board updated - Score: " + boardUpdate.getScore());
+                System.out.println("Client board updated - Score: " + boardUpdate.getScore());
             }
             
             @Override
             public void onAttackReceived(AttackMessage attackMessage) {
-                System.out.println("💥 Attack received from client: " + attackMessage.getAttackLines() + " lines!");
+                System.out.println("Attack received from client: " + attackMessage.getAttackLines() + " lines!");
+            }
+            
+            @Override
+            public void onLinesClearedReceived(LinesClearedMessage linesClearedMessage) {
+                System.out.println("Client cleared " + linesClearedMessage.getLinesCleared() + " lines!");
             }
             
             @Override
             public void onGamePaused() {
-                System.out.println("⏸️ Client paused the game");
+                System.out.println("⏸Client paused the game");
             }
             
             @Override
             public void onGameResumed() {
-                System.out.println("▶️ Client resumed the game");
+                System.out.println("▶Client resumed the game");
             }
         });
         
@@ -601,11 +671,11 @@ public class TetrisServer {
         try {
             server.start();
             
-            System.out.println("🎮 P2P Tetris Server Started (Host Mode)!");
-            System.out.println("👤 Host Player: " + hostPlayerId);
-            System.out.println("📍 Server IP: " + server.getServerIP());
-            System.out.println("🚪 Port: " + port);
-            System.out.println("\n📋 Available Commands:");
+            System.out.println("P2P Tetris Server Started (Host Mode)!");
+            System.out.println("Host Player: " + hostPlayerId);
+            System.out.println("Server IP: " + server.getServerIP());
+            System.out.println("Port: " + port);
+            System.out.println("\n Available Commands:");
             System.out.println("  'mode normal' - Select normal game mode");
             System.out.println("  'mode item'   - Select item game mode");
             System.out.println("  'ready'       - Set host ready");
@@ -631,16 +701,17 @@ public class TetrisServer {
                     String input = scanner.nextLine().trim();
                     
                     if (input.equalsIgnoreCase("quit")) {
-                        System.out.println("🛑 Shutting down server...");
+                        System.out.println("Shutting down server...");
                         server.stop();
                         break;
                     } else if (input.equalsIgnoreCase("ready")) {
-                        server.setServerReady(true);
+                        server.setHostReady();
+                        System.out.println("Host ready signal sent!");
                     } else if (input.equalsIgnoreCase("reset")) {
                         server.resetReadyStates();
-                        System.out.println("🔄 Ready states reset");
+                        System.out.println("Ready states reset");
                     } else if (input.equalsIgnoreCase("status")) {
-                        System.out.println("📊 Server Status:");
+                        System.out.println("Server Status:");
                         System.out.println("  - IP: " + server.getServerIP());
                         System.out.println("  - Connected clients: " + server.getClientCount());
                         System.out.println("  - Game mode: " + (server.getSelectedGameMode() != null ? server.getSelectedGameMode() : "Not selected"));
@@ -652,51 +723,51 @@ public class TetrisServer {
                             GameModeMessage.GameMode gameMode = GameModeMessage.GameMode.valueOf(mode);
                             server.selectGameMode(gameMode);
                         } catch (IllegalArgumentException e) {
-                            System.out.println("❌ Invalid game mode. Use 'normal' or 'item'");
+                            System.out.println("Invalid game mode. Use 'normal' or 'item'");
                         }
                     } else if (input.startsWith("move ")) {
                         String direction = input.substring(5).trim().toUpperCase();
                         if (direction.equals("L") || direction.equals("LEFT")) {
                             if (server.sendHostMoveLeft()) {
-                                System.out.println("⬅️ Host move left sent");
+                                System.out.println("Host move left sent");
                             } else {
-                                System.out.println("❌ Game not in progress");
+                                System.out.println("Game not in progress");
                             }
                         } else if (direction.equals("R") || direction.equals("RIGHT")) {
                             if (server.sendHostMoveRight()) {
-                                System.out.println("➡️ Host move right sent");
+                                System.out.println("Host move right sent");
                             } else {
-                                System.out.println("❌ Game not in progress");
+                                System.out.println("Game not in progress");
                             }
                         } else {
-                            System.out.println("❌ Invalid direction. Use 'L' or 'R'");
+                            System.out.println("Invalid direction. Use 'L' or 'R'");
                         }
                     } else if (input.equalsIgnoreCase("rotate")) {
                         if (server.sendHostRotate()) {
-                            System.out.println("🔄 Host rotate sent");
+                            System.out.println("Host rotate sent");
                         } else {
-                            System.out.println("❌ Game not in progress");
+                            System.out.println("Game not in progress");
                         }
                     } else if (input.equalsIgnoreCase("drop")) {
                         if (server.sendHostHardDrop()) {
-                            System.out.println("⬇️ Host hard drop sent");
+                            System.out.println("Host hard drop sent");
                         } else {
-                            System.out.println("❌ Game not in progress");
+                            System.out.println("Game not in progress");
                         }
                     } else if (input.equalsIgnoreCase("pause")) {
                         if (server.pauseGameAsHost()) {
-                            System.out.println("⏸️ Game paused by host");
+                            System.out.println("⏸Game paused by host");
                         } else {
-                            System.out.println("❌ Failed to pause game");
+                            System.out.println("Failed to pause game");
                         }
                     } else if (input.equalsIgnoreCase("resume")) {
                         if (server.resumeGameAsHost()) {
-                            System.out.println("▶️ Game resumed by host");
+                            System.out.println("▶Game resumed by host");
                         } else {
-                            System.out.println("❌ Failed to resume game");
+                            System.out.println("Failed to resume game");
                         }
                     } else if (!input.isEmpty()) {
-                        System.out.println("❓ Unknown command: " + input);
+                        System.out.println("Unknown command: " + input);
                     }
                 } else {
                     Thread.sleep(100);
@@ -706,7 +777,7 @@ public class TetrisServer {
             scanner.close();
             
         } catch (IOException e) {
-            System.err.println("❌ Failed to start server: " + e.getMessage());
+            System.err.println("Failed to start server: " + e.getMessage());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("Server interrupted");
