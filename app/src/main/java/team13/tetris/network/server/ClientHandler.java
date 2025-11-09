@@ -31,8 +31,7 @@ public class ClientHandler implements Runnable {
         }
     }
     
-    
-    // 입출력 스트림 설정     
+    // 입출력 스트림 설정
     private void setupStreams() throws IOException {
         output = new ObjectOutputStream(clientSocket.getOutputStream());
         output.flush();

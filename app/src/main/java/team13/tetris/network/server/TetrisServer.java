@@ -55,7 +55,7 @@ public class TetrisServer {
         isRunning = true;
         
         System.out.println("Tetris Server started on port " + port);
-        System.out.println("aiting for players to connect...");
+        System.out.println("waiting for players to connect...");
         
         // 클라이언트 접속 대기 스레드
         threadPool.submit(this::acceptClients);
@@ -131,7 +131,7 @@ public class TetrisServer {
     }
     
     
-    // 클라이언트 연결을 해제합    
+    // 클라이언트 연결 해제    
     public synchronized void unregisterClient(String playerId) {
         ClientHandler removed = connectedClients.remove(playerId);
         if (removed != null) {
@@ -302,7 +302,6 @@ public class TetrisServer {
         }
     }
     
-    
     // 모든 클라이언트에게 메시지 전송
     public void broadcastMessage(NetworkMessage message) {
         List<ClientHandler> clients = new ArrayList<>(connectedClients.values());
@@ -318,8 +317,7 @@ public class TetrisServer {
         }
     }
     
-    
-    // 특정 플레이어에게 메시지 전송    
+    // 특정 플레이어에게 메시지 전송
     public void sendMessageToPlayer(String playerId, NetworkMessage message) {
         ClientHandler client = connectedClients.get(playerId);
         if (client != null) {
@@ -331,7 +329,6 @@ public class TetrisServer {
             }
         }
     }
-    
     
     // 다른 플레이어들에게 메시지 전송 (발신자 제외)
     public void broadcastToOthers(String senderPlayerId, NetworkMessage message) {

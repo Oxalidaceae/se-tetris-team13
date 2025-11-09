@@ -2,7 +2,7 @@ package team13.tetris.network.protocol;
 
 import java.io.Serializable;
 
-// 네트워크를 통해 전송되는 모든 메시지의 기본 클래스(모든 네트워크 메시지는 이 클래스를 상속받아야 합)
+// 네트워크를 통해 전송되는 모든 메시지의 기본 클래스(모든 네트워크 메시지는 이 클래스를 상속받아야 함)
 public abstract class NetworkMessage implements Serializable {
     private static final long serialVersionUID = 1L;
     
