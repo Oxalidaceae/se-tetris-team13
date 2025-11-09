@@ -22,7 +22,7 @@ public class TestTetrisServer {
             try {
                 port = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
-                System.err.println("❌ Invalid port number: " + args[1]);
+                System.err.println("Invalid port number: " + args[1]);
                 System.err.println("Using default port: " + DEFAULT_PORT);
             }
         }
@@ -36,11 +36,11 @@ public class TestTetrisServer {
         try {
             server.start();
             
-            System.out.println("🎮 P2P Tetris Server Started (Host Mode)!");
-            System.out.println("👤 Host Player: " + hostPlayerId);
-            System.out.println("📍 Server IP: " + server.getServerIP());
-            System.out.println("🚪 Port: " + port);
-            System.out.println("\n📋 Available Commands:");
+            System.out.println("P2P Tetris Server Started (Host Mode)!");
+            System.out.println("Host Player: " + hostPlayerId);
+            System.out.println("Server IP: " + server.getServerIP());
+            System.out.println("Port: " + port);
+            System.out.println("\n Available Commands:");
             System.out.println("  'mode normal' - Select normal game mode");
             System.out.println("  'mode item'   - Select item game mode");
             System.out.println("  'ready'       - Set host ready");
@@ -66,17 +66,17 @@ public class TestTetrisServer {
                     String input = scanner.nextLine().trim();
                     
                     if (input.equalsIgnoreCase("quit")) {
-                        System.out.println("🛑 Shutting down server...");
+                        System.out.println("Shutting down server...");
                         server.stop();
                         break;
                     } else if (input.equalsIgnoreCase("ready")) {
                         server.setHostReady();
-                        System.out.println("✅ Host ready signal sent!");
+                        System.out.println("Host ready signal sent!");
                     } else if (input.equalsIgnoreCase("reset")) {
                         server.resetReadyStates();
-                        System.out.println("🔄 Ready states reset");
+                        System.out.println("Ready states reset");
                     } else if (input.equalsIgnoreCase("status")) {
-                        System.out.println("📊 Server Status:");
+                        System.out.println("Server Status:");
                         System.out.println("  - IP: " + server.getServerIP());
                         System.out.println("  - Connected clients: " + server.getClientCount());
                         System.out.println("  - Game mode: " + (server.getSelectedGameMode() != null ? server.getSelectedGameMode() : "Not selected"));
@@ -87,53 +87,53 @@ public class TestTetrisServer {
                         try {
                             GameModeMessage.GameMode gameMode = GameModeMessage.GameMode.valueOf(mode);
                             server.selectGameMode(gameMode);
-                            System.out.println("🎯 Game mode selected: " + gameMode);
+                            System.out.println("Game mode selected: " + gameMode);
                         } catch (IllegalArgumentException e) {
-                            System.out.println("❌ Invalid game mode. Use 'normal' or 'item'");
+                            System.out.println("Invalid game mode. Use 'normal' or 'item'");
                         }
                     } else if (input.startsWith("move ")) {
                         String direction = input.substring(5).trim().toUpperCase();
                         if (direction.equals("L") || direction.equals("LEFT")) {
                             if (server.sendHostMoveLeft()) {
-                                System.out.println("⬅️ Host move left sent");
+                                System.out.println("Host move left sent");
                             } else {
-                                System.out.println("❌ Game not in progress");
+                                System.out.println("Game not in progress");
                             }
                         } else if (direction.equals("R") || direction.equals("RIGHT")) {
                             if (server.sendHostMoveRight()) {
-                                System.out.println("➡️ Host move right sent");
+                                System.out.println("Host move right sent");
                             } else {
-                                System.out.println("❌ Game not in progress");
+                                System.out.println("Game not in progress");
                             }
                         } else {
-                            System.out.println("❌ Invalid direction. Use 'L' or 'R'");
+                            System.out.println("Invalid direction. Use 'L' or 'R'");
                         }
                     } else if (input.equalsIgnoreCase("rotate")) {
                         if (server.sendHostRotate()) {
-                            System.out.println("🔄 Host rotate sent");
+                            System.out.println("Host rotate sent");
                         } else {
-                            System.out.println("❌ Game not in progress");
+                            System.out.println("Game not in progress");
                         }
                     } else if (input.equalsIgnoreCase("drop")) {
                         if (server.sendHostHardDrop()) {
-                            System.out.println("⬇️ Host hard drop sent");
+                            System.out.println("Host hard drop sent");
                         } else {
-                            System.out.println("❌ Game not in progress");
+                            System.out.println("Game not in progress");
                         }
                     } else if (input.equalsIgnoreCase("pause")) {
                         if (server.pauseGameAsHost()) {
-                            System.out.println("⏸️ Game paused by host");
+                            System.out.println("⏸Game paused by host");
                         } else {
-                            System.out.println("❌ Failed to pause game");
+                            System.out.println("Failed to pause game");
                         }
                     } else if (input.equalsIgnoreCase("resume")) {
                         if (server.resumeGameAsHost()) {
-                            System.out.println("▶️ Game resumed by host");
+                            System.out.println("▶Game resumed by host");
                         } else {
-                            System.out.println("❌ Failed to resume game");
+                            System.out.println("Failed to resume game");
                         }
                     } else if (!input.isEmpty()) {
-                        System.out.println("❓ Unknown command: " + input);
+                        System.out.println("Unknown command: " + input);
                     }
                 } else {
                     try {
@@ -148,7 +148,7 @@ public class TestTetrisServer {
             scanner.close();
             
         } catch (Exception e) {
-            System.err.println("❌ Failed to start server: " + e.getMessage());
+            System.err.println("Failed to start server: " + e.getMessage());
             e.printStackTrace();
         }
     }
