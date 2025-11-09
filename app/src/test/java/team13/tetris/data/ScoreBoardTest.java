@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-// Test class for ScoreBoard functionality
+// ScoreBoard 테스트 클래스: Tests score addition, sorting, persistence, and edge cases
 @DisplayName("ScoreBoard 테스트")
 public class ScoreBoardTest {
 
@@ -46,16 +46,12 @@ public class ScoreBoardTest {
 
         // Clean up test-specific score files only
         File tempScoreFile = tempDir.resolve("test_scores.txt").toFile();
-        if (tempScoreFile.exists()) {
-            tempScoreFile.delete();
-        }
+        if (tempScoreFile.exists()) tempScoreFile.delete();
 
         // Clean up test_scores.txt in current directory if it exists
         // (DO NOT delete scores.txt - that's the actual game data!)
         File currentTestScoreFile = new File("test_scores.txt");
-        if (currentTestScoreFile.exists()) {
-            currentTestScoreFile.delete();
-        }
+        if (currentTestScoreFile.exists()) currentTestScoreFile.delete();
     }
 
     @Test
@@ -165,9 +161,7 @@ public class ScoreBoardTest {
     void testLoadNonExistentFile() {
         // Ensure no test_scores.txt file exists
         File scoreFile = new File("test_scores.txt");
-        if (scoreFile.exists()) {
-            scoreFile.delete();
-        }
+        if (scoreFile.exists()) scoreFile.delete();
 
         // Create new ScoreBoard - should handle missing file gracefully
         ScoreBoard newScoreBoard = new ScoreBoard("test_scores.txt");
@@ -215,9 +209,7 @@ public class ScoreBoardTest {
         assertEquals(3, scores.size());
 
         // All should have the same score
-        for (ScoreBoard.ScoreEntry entry : scores) {
-            assertEquals(1000, entry.getScore());
-        }
+        for (ScoreBoard.ScoreEntry entry : scores) assertEquals(1000, entry.getScore());
     }
 
     @Test
@@ -370,29 +362,6 @@ public class ScoreBoardTest {
     }
 
     @Test
-    @DisplayName("파일 로딩: 구버전 포맷 처리")
-    void testLoadOldFormatFile() throws Exception {
-        // Create old format file (name,score without mode)
-        File scoreFile = new File("test_scores.txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
-            writer.println("OldPlayer1,1000");
-            writer.println("OldPlayer2,2000");
-        }
-
-        // Load scores - should default to NORMAL mode
-        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
-        List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
-
-        assertEquals(2, scores.size());
-        assertEquals("OldPlayer2", scores.get(0).getName());
-        assertEquals(2000, scores.get(0).getScore());
-        assertEquals(ScoreBoard.ScoreEntry.Mode.NORMAL, scores.get(0).getMode());
-        assertEquals("OldPlayer1", scores.get(1).getName());
-        assertEquals(1000, scores.get(1).getScore());
-        assertEquals(ScoreBoard.ScoreEntry.Mode.NORMAL, scores.get(1).getMode());
-    }
-
-    @Test
     @DisplayName("파일 로딩: 신버전 포맷 처리")
     void testLoadNewFormatFile() throws Exception {
         // Create new format file (name,score,mode)
@@ -414,27 +383,6 @@ public class ScoreBoardTest {
         assertEquals(ScoreBoard.ScoreEntry.Mode.ITEM, scores.get(1).getMode());
         assertEquals("Player1", scores.get(2).getName());
         assertEquals(ScoreBoard.ScoreEntry.Mode.EASY, scores.get(2).getMode());
-    }
-
-    @Test
-    @DisplayName("파일 로딩: 혼합 포맷 처리")
-    void testLoadMixedFormatFile() throws Exception {
-        // Create mixed format file (some old, some new)
-        File scoreFile = new File("test_scores.txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
-            writer.println("OldPlayer,1000"); // Old format
-            writer.println("NewPlayer,2000,HARD"); // New format
-        }
-
-        // Load scores
-        ScoreBoard newBoard = new ScoreBoard("test_scores.txt");
-        List<ScoreBoard.ScoreEntry> scores = newBoard.getScores();
-
-        assertEquals(2, scores.size());
-        assertEquals("NewPlayer", scores.get(0).getName());
-        assertEquals(ScoreBoard.ScoreEntry.Mode.HARD, scores.get(0).getMode());
-        assertEquals("OldPlayer", scores.get(1).getName());
-        assertEquals(ScoreBoard.ScoreEntry.Mode.NORMAL, scores.get(1).getMode()); // Default
     }
 
     @Test

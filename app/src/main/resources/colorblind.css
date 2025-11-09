@@ -1,9 +1,3 @@
-/* ================================
-   색맹(색각이상) 모드용 CSS
-   - Paul Tol의 색맹 안전 팔레트 사용
-   - 명도와 채도 차이로 구분 가능
-   ================================ */
-
 .root {
     -fx-background-color: #1a1a1a;
     -fx-font-family: "Roboto", "Noto Sans", sans-serif;
@@ -54,9 +48,6 @@
     -fx-border-color: #FFFFFF;
 }
 
-/* ================================
-   ListView 스타일
-   ================================ */
 .list-view {
     -fx-background-color: #1a1a1a;
     -fx-border-color: white;
@@ -66,6 +57,8 @@
     -fx-background-color: transparent;
     -fx-text-fill: #F5F5F5;
     -fx-font-size: 16px;
+    -fx-alignment: center;
+    -fx-font-family: "Monospaced";
 }
 
 .list-cell:selected {
@@ -77,11 +70,6 @@
     -fx-background-color: #0072B2;
 }
 
-/* ================================
-   화면 크기별 스타일
-   ================================ */
-
-/* Small 크기 (400x500) */
 .window-small .label {
     -fx-font-size: 12px;
 }
@@ -111,19 +99,37 @@
 }
 
 .window-small .cell {
-    -fx-font-size: 24px;
-    -fx-min-width: 14px;
-    -fx-min-height: 12px;
-    -fx-pref-width: 28px;
-    -fx-pref-height: 24px;
+    -fx-min-width: 21px;
+    -fx-min-height: 21px;
+    -fx-max-width: 21px;
+    -fx-max-height: 21px;
+}
+
+.window-small .preview-cell {
+    -fx-min-width: 21px;
+    -fx-min-height: 21px;
+    -fx-max-width: 21px;
+    -fx-max-height: 21px;
+}
+
+.window-small .cell-text {
+    -fx-font-size: 20px;
 }
 
 .window-small .list-view {
-    -fx-pref-height: 300px;
+    -fx-pref-height: 260px;
 }
 
 .window-small .score-label {
     -fx-font-size: 11px;
+}
+
+.right-panel {
+    -fx-padding: 40 60 20 20;
+    -fx-alignment: top-center;
+    -fx-spacing: 15;
+    -fx-min-width: 150;
+    -fx-max-width: 150;
 }
 
 .window-small .item-mode-label {
@@ -134,7 +140,13 @@
     -fx-font-size: 12px;
 }
 
-/* Medium 크기 (600x700) - 기본값 유지 */
+.window-small .right-panel {
+    -fx-padding: 30 40 10 15;
+    -fx-spacing: 8;
+    -fx-min-width: 100;
+    -fx-max-width: 100;
+}
+
 .window-medium .label {
     -fx-font-size: 16px;
 }
@@ -164,15 +176,25 @@
 }
 
 .window-medium .cell {
-    -fx-font-size: 34px;
-    -fx-min-width: 20px;
-    -fx-min-height: 16px;
-    -fx-pref-width: 40px;
-    -fx-pref-height: 32px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+
+.window-medium .preview-cell {
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+
+.window-medium .cell-text {
+    -fx-font-size: 32px;
 }
 
 .window-medium .list-view {
-    -fx-pref-height: 390px;
+    -fx-pref-height: 370px;
 }
 
 .window-medium .score-label {
@@ -187,7 +209,13 @@
     -fx-font-size: 16px;
 }
 
-/* Large 크기 (800x900) */
+.window-medium .right-panel {
+    -fx-padding: 40 60 20 20;
+    -fx-spacing: 15;
+    -fx-min-width: 150;
+    -fx-max-width: 150;
+}
+
 .window-large .label {
     -fx-font-size: 20px;
 }
@@ -217,11 +245,21 @@
 }
 
 .window-large .cell {
-    -fx-font-size: 44px;
-    -fx-min-width: 26px;
-    -fx-min-height: 20px;
-    -fx-pref-width: 52px;
-    -fx-pref-height: 40px;
+    -fx-min-width: 39px;
+    -fx-min-height: 39px;
+    -fx-max-width: 39px;
+    -fx-max-height: 39px;
+}
+
+.window-large .preview-cell {
+    -fx-min-width: 39px;
+    -fx-min-height: 39px;
+    -fx-max-width: 39px;
+    -fx-max-height: 39px;
+}
+
+.window-large .cell-text {
+    -fx-font-size: 42px;
 }
 
 .window-large .list-view {
@@ -240,9 +278,13 @@
     -fx-font-size: 20px;
 }
 
-/* ================================
-   일시정지 다이얼로그
-   ================================ */
+.window-large .right-panel {
+    -fx-padding: 60 100 30 30;
+    -fx-spacing: 20;
+    -fx-min-width: 200;
+    -fx-max-width: 200;
+}
+
 .pause-box {
     -fx-background-color: rgba(20,20,20,0.9);
     -fx-padding: 12px;
@@ -268,24 +310,43 @@
     -fx-text-fill: #777777;
 }
 
-/* ================================
-   게임 보드 셀 스타일
-   ================================ */
 .cell {
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+    -fx-padding: 0;
+}
+
+.preview-cell {
+    -fx-min-width: 22px;
+    -fx-min-height: 22px;
+    -fx-max-width: 22px;
+    -fx-max-height: 22px;
+}
+
+.cell-rect {
+    -fx-fill: transparent;
+    -fx-stroke: rgba(255, 255, 255, 0.3);
+    -fx-stroke-width: 0.2;
+}
+
+.cell-text {
     -fx-font-family: "Monospaced";
-    -fx-font-size: 14px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
+    -fx-text-fill: rgba(245,245,245,0.92);
     -fx-alignment: center;
-    -fx-min-width: 20px;
-    -fx-min-height: 16px;
 }
 
 .cell-empty {
-    -fx-text-fill: rgba(255,255,255,0.15);
+    -fx-text-fill: rgba(245,245,245,0.25);
+    -fx-fill: rgba(245,245,245,0.12);
 }
 
 .cell-border {
-    -fx-text-fill: rgba(255,255,255,0.75);
+    -fx-text-fill: rgba(245,245,245,0.75);
+    -fx-fill: rgba(245,245,245,0.45);
 }
 
 .score-label {
@@ -314,3 +375,119 @@
 .tetris-j-text { -fx-text-fill: #7B68EE !important; } /* J - 슬레이트 블루(보라 기운) - I(하늘색)와 색상군 분리되어 색약 모드에서도 혼동 최소화 */
 .tetris-l-text { -fx-text-fill: #FF7F0E !important; } /* L - 밝은 오렌지 (J와 색/명도 모두 차이, 어두운 배경에서 선명) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; } /* 라인 클리어 플래시/하이라이트: 순백(최대 대비) */
+
+.block { 
+    -fx-fill: #c4c4c4; 
+    -fx-stroke: rgba(0, 0, 0, 0.6); 
+    -fx-stroke-width: 0.2; 
+}
+
+/* I - 빗살무늬 ↗ (Canvas로 그림) */
+.block-I { 
+    -fx-fill: #56B4E9 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* O - 패턴 없음 */
+.block-O { 
+    -fx-fill: #F0E442 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* T - 빗살무늬 ↖ (Canvas로 그림) */
+.block-T { 
+    -fx-fill: #E377C2 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* S - 수평 줄무늬 (Canvas로 그림) */
+.block-S { 
+    -fx-fill: #009E73 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* Z - 빗살무늬 ↗ 넓은 간격 (Canvas로 그림) */
+.block-Z { 
+    -fx-fill: #E69F00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* J - 수직 줄무늬 (Canvas로 그림) */
+.block-J { 
+    -fx-fill: #7B68EE !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+/* L - 빗살무늬 ↖ 넓은 간격 (Canvas로 그림) */
+.block-L { 
+    -fx-fill: #FF7F0E !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+.block-flash { 
+    -fx-fill: #FFFFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-I { 
+    -fx-fill: #56B4E9 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-O { 
+    -fx-fill: #F0E442 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-T { 
+    -fx-fill: #E377C2 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-S { 
+    -fx-fill: #009E73 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-Z { 
+    -fx-fill: #E69F00 !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-J { 
+    -fx-fill: #7B68EE !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-L { 
+    -fx-fill: #FF7F0E !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+.block-flash { 
+    -fx-fill: #FFFFFF !important; 
+    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
+    -fx-stroke-width: 0.2 !important; 
+}
+
+.item-copy-block {
+    -fx-text-fill: #FFD966;
+    -fx-fill: #FFD966;
+}
+
+.block-ghost {
+    -fx-fill: rgba(200, 200, 200, 0.25) !important;
+    -fx-stroke: rgba(200, 200, 200, 0.4) !important;
+    -fx-stroke-width: 0.2 !important;
+}
+
+.tetris-ghost-text {
+    -fx-text-fill: rgba(200, 200, 200, 0.3) !important;
+}

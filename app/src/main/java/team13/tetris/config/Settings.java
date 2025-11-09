@@ -1,16 +1,14 @@
 package team13.tetris.config;
 
-// 사용자 설정 값 저장 클래스
 public class Settings {
     private boolean colorBlindMode = false;
-    private String windowSize = "MEDIUM"; // SMALL, MEDIUM, LARGE
-
-    private String keyLeft = "LEFT"; // 왼쪽 이동
-    private String keyRight = "RIGHT"; // 오른쪽 이동
-    private String keyDown = "DOWN"; // 아래쪽 이동(한칸씩)
-    private String keyRotate = "Z"; // 회전
-    private String keyDrop = "X"; // hard drop
-    private String pause = "P"; // 일시정지
+    private String windowSize = "MEDIUM";
+    private String keyLeft = "LEFT";
+    private String keyRight = "RIGHT";
+    private String keyDown = "DOWN";
+    private String keyRotate = "Z";
+    private String keyDrop = "X";
+    private String pause = "P";
 
     public boolean isColorBlindMode() {
         return colorBlindMode;
@@ -77,16 +75,16 @@ public class Settings {
     }
 
     public boolean isKeyAlreadyUsed(String key) {
-        if (key == null || key.trim().isEmpty()) {
-            return false;  // null이나 빈 문자열은 사용되지 않은 것으로 처리
-        }
+        if (key == null || key.trim().isEmpty()) return false;
+
         key = key.toUpperCase();
-        return key.equals(keyLeft.toUpperCase()) ||
-            key.equals(keyRight.toUpperCase()) ||
-            key.equals(keyDown.toUpperCase()) ||
-            key.equals(keyRotate.toUpperCase()) ||
-            key.equals(keyDrop.toUpperCase()) ||
-            key.equals(pause.toUpperCase());
+        
+        return key.equals(keyLeft.toUpperCase())
+                || key.equals(keyRight.toUpperCase())
+                || key.equals(keyDown.toUpperCase())
+                || key.equals(keyRotate.toUpperCase())
+                || key.equals(keyDrop.toUpperCase())
+                || key.equals(pause.toUpperCase());
     }
 
     public void restoreDefaultKeys() {
