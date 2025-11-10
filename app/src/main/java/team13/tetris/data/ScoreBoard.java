@@ -8,7 +8,7 @@ import java.util.List;
 public class ScoreBoard {
     public static class ScoreEntry {
         public enum Mode {
-            EASY, NORMAL, HARD, ITEM
+            EASY, NORMAL, HARD, ITEM, VERSUS, TIMER
         }
 
         private String name;

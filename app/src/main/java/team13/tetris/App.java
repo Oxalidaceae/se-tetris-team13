@@ -26,14 +26,15 @@ public class App extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
             settings.setColorBlindMode(manager.isColorBlindMode());
-            settings.setWindowSize(getCurrentWindowSize(primaryStage));
+            settings.setWindowSize(getCurrentWindowSize(primaryStage, manager));
             SettingsRepository.save(settings);
         });
     }
 
     // OS별로 약간의 픽셀 차이가 존재하므로 범위로 판단
-    private String getCurrentWindowSize(Stage stage) {
-        double width = stage.getWidth();
+    // 대전 모드인 경우 원래 창 크기를 사용
+    private String getCurrentWindowSize(Stage stage, SceneManager manager) {
+        double width = manager.getOriginalWidth();
         
         if (width <= 450) {
             return "SMALL";

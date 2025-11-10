@@ -7,9 +7,7 @@ public class Board {
     private final Object lock = new Object();
 
     public Board(int width, int height) {
-        if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException("Invalid board size");
-        }
+        if (width <= 0 || height <= 0) throw new IllegalArgumentException("Invalid board size");
         this.width = width;
         this.height = height;
         this.cells = new int[height][width];
@@ -61,9 +59,7 @@ public class Board {
                     if (shape[r][c] != 0) {
                         int x = px + c;
                         int y = py + r;
-                        if (x >= 0 && x < width && y >= 0 && y < height) {
-                            cells[y][x] = value;
-                        }
+                        if (x >= 0 && x < width && y >= 0 && y < height) cells[y][x] = value;
                     }
                 }
             }
@@ -129,15 +125,11 @@ public class Board {
         }
     }
     
-    /**
-     * 특정 위치(px, py)에 shape를 놓을 수 있는지 검사합니다.
-     *
-     * 검사 조건:
-     * - shape의 각 블록 셀(1)이 보드 범위를 벗어나지 않아야 합니다.
-     * - 해당 위치에 이미 다른 블록이 있지 않아야 합니다.
-     *
-     * 위 조건을 모두 만족하면 true, 아니면 false를 반환합니다.
-     */
+    // 특정 위치(px, py)에 shape를 놓을 수 있는지 검사합니다.
+    // 검사 조건:
+    // - shape의 각 블록 셀(1)이 보드 범위를 벗어나지 않아야 합니다.
+    // - 해당 위치에 이미 다른 블록이 있지 않아야 합니다.
+    // 위 조건을 모두 만족하면 true, 아니면 false를 반환합니다.
     public boolean fits(int[][] shape, int px, int py) {
         synchronized (lock) {
             for (int r = 0; r < shape.length; r++) {
@@ -145,10 +137,8 @@ public class Board {
                     if (shape[r][c] != 0) {
                         int x = px + c;
                         int y = py + r;
-                        if (x < 0 || x >= width || y < 0 || y >= height)
-                            return false;
-                        if (cells[y][x] != 0)
-                            return false;
+                        if (x < 0 || x >= width || y < 0 || y >= height) return false;
+                        if (cells[y][x] != 0) return false;
                     }
                 }
             }
@@ -156,9 +146,7 @@ public class Board {
         }
     }
 
-    /**
-     * 현재 보드에서 가득 찬 모든 행의 인덱스를 찾아 반환합니다.
-     */
+    // 현재 보드에서 가득 찬 모든 행의 인덱스를 찾아 반환합니다.
     public java.util.List<Integer> getFullLineIndices() {
         synchronized (lock) {
             java.util.List<Integer> fullLines = new java.util.ArrayList<>();
@@ -170,45 +158,32 @@ public class Board {
                         break;
                     }
                 }
-                if (full) {
-                    fullLines.add(r);
-                }
+                if (full) fullLines.add(r);
             }
             return fullLines;
         }
     }
 
-    /**
-     * 지정된 행 전체를 주어진 값으로 채웁니다.
-     */
+    // 지정된 행 전체를 주어진 값으로 채웁니다.
     public void fillLineWith(int row, int value) {
         synchronized (lock) {
-            if (row < 0 || row >= height)
-                return;
-            for (int c = 0; c < width; c++) {
-                cells[row][c] = value;
-            }
+            if (row < 0 || row >= height) return;
+            for (int c = 0; c < width; c++) cells[row][c] = value;
         }
     }
 
-    /**
-     * 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
-     * 제거된 행 위에 있는 모든 행을 한 칸씩 아래로 내리고,
-     * 맨 위 행은 0으로 채웁니다.
-     *
-     * @return 제거된 행의 개수
-     */
+    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
+    // 제거된 행 위에 있는 모든 행을 한 칸씩 아래로 내리고,
+    // 맨 위 행은 0으로 채웁니다.
+    // @return 제거된 행의 개수
     public int clearFullLines() {
         return clearFullLines(null);
     }
     
-    /**
-     * 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
-     * 아이템 블록(100번대 값)이 있는 행이 제거될 때 콜백을 호출합니다.
-     *
-     * @param itemCallback 아이템 블록이 제거될 때 호출되는 콜백
-     * @return 제거된 행의 개수
-     */
+    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
+    // 아이템 블록(100번대 값)이 있는 행이 제거될 때 콜백을 호출합니다.
+    // @param itemCallback 아이템 블록이 제거될 때 호출되는 콜백
+    // @return 제거된 행의 개수
     public int clearFullLines(Runnable itemCallback) {
         synchronized (lock) {
             int cleared = 0;
@@ -218,9 +193,7 @@ public class Board {
                 boolean hasItemBlock = false;
                 
                 // 범위 체크
-                if (r < 0 || r >= height) {
-                    continue;
-                }
+                if (r < 0 || r >= height)continue;
                 
                 // 행을 먼저 복사해서 안전하게 처리
                 int[] currentRow = new int[width];
@@ -231,37 +204,28 @@ public class Board {
                 }
                 
                 for (int c = 0; c < width; c++) {
-                    if (c < 0 || c >= width) {
-                        continue;
-                    }
+                    if (c < 0 || c >= width) continue;
                     
                     if (currentRow[c] == 0) {
                         full = false;
                         break;
                     }
                     // 아이템 블록 감지 (100번대 값)
-                    if (currentRow[c] >= 100 && currentRow[c] < 200) {
-                        hasItemBlock = true;
-                    }
+                    if (currentRow[c] >= 100 && currentRow[c] < 200) hasItemBlock = true;
                 }
                 
                 if (full) {
                     // 아이템 블록이 있으면 콜백 호출
-                    if (hasItemBlock && itemCallback != null) {
-                        itemCallback.run();
-                    }
+                    if (hasItemBlock && itemCallback != null) itemCallback.run();
                     
                     // shift everything above down
                     for (int rr = r; rr > 0; rr--) {
                         if (rr - 1 >= 0 && rr < height) {
-                            for (int c = 0; c < width; c++) {
-                                cells[rr][c] = cells[rr - 1][c];
-                            }
+                            for (int c = 0; c < width; c++) cells[rr][c] = cells[rr - 1][c];
                         }
                     }
                     // clear top row
-                    for (int c = 0; c < width; c++)
-                        cells[0][c] = 0;
+                    for (int c = 0; c < width; c++) cells[0][c] = 0;
                     
                     cleared++;
                     r++; // recheck same row index as lines moved down
@@ -271,23 +235,17 @@ public class Board {
         }
     }
 
-    /**
-     * {@link #clearFullLines()}를 호출하여 가득 찬 행을 제거하고,
-     * 제거된 행 수를 그대로 반환하는 편의 메서드입니다.
-     */
+    // {@link #clearFullLines()}를 호출하여 가득 찬 행을 제거하고,
+    // 제거된 행 수를 그대로 반환하는 편의 메서드입니다.
     public int clearLinesAndReturnCount() {
         return clearFullLines();
     }
 
-    /**
-     * 현재 보드 상태를 2차원 정수 배열로 복사하여 반환합니다.
-     * 반환되는 배열은 내부 배열(cells)의 방어적 복사본이므로,
-     * 호출자가 반환값을 수정하더라도 내부 상태에는 영향이 없습니다.
-     *
-     * 이 메서드는 내부 락을 사용해 복사 시점의 일관된 스냅샷을 제공합니다.
-     *
-     * @return 보드 상태의 복사본 (rows x cols)
-     */
+    // 현재 보드 상태를 2차원 정수 배열로 복사하여 반환합니다.
+    // 반환되는 배열은 내부 배열(cells)의 방어적 복사본이므로,
+    // 호출자가 반환값을 수정하더라도 내부 상태에는 영향이 없습니다.
+    // 이 메서드는 내부 락을 사용해 복사 시점의 일관된 스냅샷을 제공합니다.
+    // @return 보드 상태의 복사본 (rows x cols)
     public int[][] snapshot() {
         int[][] snap = new int[height][width];
         synchronized (lock) {
@@ -297,10 +255,8 @@ public class Board {
         return snap;
     }
     
-    /**
-     * 중력 효과를 적용하여 떠있는 블록들을 아래로 떨어뜨립니다.
-     * 무게추로 블록이 파괴된 후 호출됩니다.
-     */
+    // 중력 효과를 적용하여 떠있는 블록들을 아래로 떨어뜨립니다.
+    // 무게추로 블록이 파괴된 후 호출됩니다.
     public void applyGravity() {
         synchronized (lock) {
             for (int col = 0; col < width; col++) {

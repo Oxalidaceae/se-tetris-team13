@@ -3,9 +3,7 @@ package team13.tetris.game.util;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-/**
- * 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 '■'로 표현합니다.
- */
+// 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 '■'로 표현합니다.
 public final class AsciiBoardRenderer {
     private AsciiBoardRenderer() {}
 
@@ -44,10 +42,8 @@ public final class AsciiBoardRenderer {
         return sb.toString();
     }
 
-    /**
-     * 단일 테트로미노의 4x4 미리보기를 렌더링합니다 (테두리 없음).
-     * 모양이 4x4보다 작을 경우 중앙에 배치됩니다.
-     */
+    // 단일 테트로미노의 4x4 미리보기를 렌더링합니다 (테두리 없음).
+    // 모양이 4x4보다 작을 경우 중앙에 배치됩니다.
     public static String renderPreview(Tetromino piece) {
         StringBuilder sb = new StringBuilder();
         int size = 4;
