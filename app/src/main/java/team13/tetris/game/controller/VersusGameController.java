@@ -11,6 +11,16 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
+import java.util.HashSet;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class VersusGameController {
     private final VersusGameScene gameScene;
@@ -19,11 +29,25 @@ public class VersusGameController {
     private final GameEngine engine1; // Player 1
     private final GameEngine engine2; // Player 2
     
+    // 각 플레이어별 독립적인 키 상태 추적
+    private final Set<String> player1PressedKeys = new HashSet<>();
+    private final Set<KeyCode> player2PressedKeys = new HashSet<>();
+    
+    // 각 키별 첫 입력 시간 추적 (초기 지연용)
+    private final java.util.Map<String, Long> player1KeyPressTime = new java.util.HashMap<>();
+    private final java.util.Map<KeyCode, Long> player2KeyPressTime = new java.util.HashMap<>();
+    
+    // 입력 처리 타이머
+    private Timeline inputTimer;
+    private static final long INPUT_DELAY_MS = 50; // 50ms (반복 간격)
+    private static final long INITIAL_DELAY_MS = 500; // 500ms (첫 반복까지 지연)
+    
     private final Player1Listener player1Listener;
     private final Player2Listener player2Listener;
     
     private boolean gameOver1 = false;
     private boolean gameOver2 = false;
+    private boolean paused = false;
     
     // 넘어온 블록 큐 (LIFO - 가장 최근 것부터 처리)
     private final Queue<int[][]> incomingBlocksForPlayer1 = new LinkedList<>();
@@ -58,10 +82,214 @@ public class VersusGameController {
         this.player1Listener = new Player1Listener();
         this.player2Listener = new Player2Listener();
         
+        // 입력 처리 타이머 시작
+        startInputTimer();
+        
         // 타이머 모드인 경우 타이머 시작
         if (timerMode) {
             startTimer();
         }
+    }
+    
+    private void pause() {
+        if (!paused && !gameOver1 && !gameOver2) {
+            paused = true;
+            
+            // 입력 타이머 정지
+            if (inputTimer != null) {
+                inputTimer.pause();
+            }
+            
+            // 게임 엔진 정지
+            engine1.stopAutoDrop();
+            engine2.stopAutoDrop();
+            
+            // 타이머 모드인 경우 타이머 일시정지
+            if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
+                timerExecutor.shutdown();
+            }
+            
+            showPauseWindow();
+        }
+    }
+    
+    private void resume() {
+        if (paused && !gameOver1 && !gameOver2) {
+            paused = false;
+            
+            // 입력 타이머 재개
+            if (inputTimer != null) {
+                inputTimer.play();
+            }
+            
+            // 게임 엔진 재개
+            engine1.startAutoDrop();
+            engine2.startAutoDrop();
+            
+            // 타이머 모드인 경우 타이머 재시작
+            if (timerMode) {
+                startTimer();
+            }
+        }
+    }
+    
+    private void showPauseWindow() {
+        javafx.application.Platform.runLater(() -> {
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(gameScene.getScene().getWindow());
+
+            Label resumeLabel = new Label("Resume");
+            Label quit = new Label("Quit");
+
+            // CSS 클래스 부여
+            resumeLabel.getStyleClass().add("pause-option");
+            quit.getStyleClass().add("pause-option");
+
+            VBox box = new VBox(8, resumeLabel, quit);
+            box.getStyleClass().add("pause-box");
+            box.setAlignment(Pos.CENTER);
+
+            Scene dialogScene = new Scene(box);
+            dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+
+            // 선택 상태 관리
+            final int[] selected = new int[]{0}; // 기본 Resume 선택
+            applySelection(resumeLabel, quit, selected[0]);
+
+            dialogScene.setOnKeyPressed(ev -> {
+                if (ev.getCode() == KeyCode.UP || ev.getCode() == KeyCode.DOWN) {
+                    selected[0] = (selected[0] == 0) ? 1 : 0;
+                    applySelection(resumeLabel, quit, selected[0]);
+                } else if (ev.getCode() == KeyCode.ENTER) {
+                    dialog.close();
+                    if (selected[0] == 0) {
+                        resume();
+                    } else {
+                        // Quit 선택 시 ExitScene으로 이동
+                        sceneManager.showExitScene(settings, () -> {
+                            paused = true;
+                            showPauseWindow();
+                        });
+                    }
+                } else if (ev.getCode() == KeyCode.ESCAPE) {
+                    // ESC로 Resume
+                    dialog.close();
+                    resume();
+                }
+            });
+
+            dialog.setScene(dialogScene);
+            dialog.setTitle("Paused");
+            dialog.setWidth(220);
+            dialog.setHeight(150);
+            dialog.showAndWait();
+        });
+    }
+    
+    private void applySelection(Label resume, Label quit, int selectedIndex) {
+        if (selectedIndex == 0) {
+            resume.getStyleClass().remove("selected");
+            quit.getStyleClass().remove("selected");
+            resume.getStyleClass().add("selected");
+        } else {
+            resume.getStyleClass().remove("selected");
+            quit.getStyleClass().remove("selected");
+            quit.getStyleClass().add("selected");
+        }
+    }
+    
+    private void startInputTimer() {
+        inputTimer = new Timeline(new KeyFrame(Duration.millis(INPUT_DELAY_MS), event -> {
+            processInputs();
+        }));
+        inputTimer.setCycleCount(Timeline.INDEFINITE);
+        inputTimer.play();
+    }
+    
+    private void processInputs() {
+        // 일시정지 중에는 입력 처리하지 않음
+        if (paused) {
+            return;
+        }
+        
+        long currentTime = System.currentTimeMillis();
+        
+        // Player 1 입력 처리
+        if (!gameOver1) {
+            if (player1PressedKeys.contains(settings.getKeyLeft())) {
+                if (shouldProcessKey(player1KeyPressTime, settings.getKeyLeft(), currentTime)) {
+                    engine1.moveLeft();
+                }
+            }
+            if (player1PressedKeys.contains(settings.getKeyRight())) {
+                if (shouldProcessKey(player1KeyPressTime, settings.getKeyRight(), currentTime)) {
+                    engine1.moveRight();
+                }
+            }
+            if (player1PressedKeys.contains(settings.getKeyDown())) {
+                if (shouldProcessKey(player1KeyPressTime, settings.getKeyDown(), currentTime)) {
+                    engine1.softDrop();
+                }
+            }
+            if (player1PressedKeys.contains(settings.getKeyRotate())) {
+                if (shouldProcessKey(player1KeyPressTime, settings.getKeyRotate(), currentTime)) {
+                    engine1.rotateCW();
+                }
+            }
+            if (player1PressedKeys.contains(settings.getKeyDrop())) {
+                if (shouldProcessKey(player1KeyPressTime, settings.getKeyDrop(), currentTime)) {
+                    engine1.hardDrop();
+                }
+            }
+        }
+        
+        // Player 2 입력 처리
+        if (!gameOver2) {
+            if (player2PressedKeys.contains(KeyCode.A)) {
+                if (shouldProcessKey(player2KeyPressTime, KeyCode.A, currentTime)) {
+                    engine2.moveLeft();
+                }
+            }
+            if (player2PressedKeys.contains(KeyCode.D)) {
+                if (shouldProcessKey(player2KeyPressTime, KeyCode.D, currentTime)) {
+                    engine2.moveRight();
+                }
+            }
+            if (player2PressedKeys.contains(KeyCode.S)) {
+                if (shouldProcessKey(player2KeyPressTime, KeyCode.S, currentTime)) {
+                    engine2.softDrop();
+                }
+            }
+            if (player2PressedKeys.contains(KeyCode.Q)) {
+                if (shouldProcessKey(player2KeyPressTime, KeyCode.Q, currentTime)) {
+                    engine2.rotateCW();
+                }
+            }
+            if (player2PressedKeys.contains(KeyCode.W)) {
+                if (shouldProcessKey(player2KeyPressTime, KeyCode.W, currentTime)) {
+                    engine2.hardDrop();
+                }
+            }
+        }
+    }
+    
+    // 키가 처리되어야 하는지 확인 (첫 입력 후 500ms 지연, 이후 50ms 간격)
+    private <T> boolean shouldProcessKey(java.util.Map<T, Long> keyPressTimeMap, T key, long currentTime) {
+        Long pressTime = keyPressTimeMap.get(key);
+        if (pressTime == null) {
+            return false; // 키가 눌리지 않음
+        }
+        
+        long elapsedTime = currentTime - pressTime;
+        
+        // 첫 입력은 즉시 처리되고, INITIAL_DELAY_MS 이전에는 반복하지 않음
+        if (elapsedTime < INITIAL_DELAY_MS) {
+            return false;
+        }
+        
+        // INITIAL_DELAY_MS 이후에는 INPUT_DELAY_MS 간격으로 처리
+        return true;
     }
     
     private void startTimer() {
@@ -79,6 +307,11 @@ public class VersusGameController {
     }
     
     private void checkTimeUp() {
+        // 입력 타이머 정지
+        if (inputTimer != null) {
+            inputTimer.stop();
+        }
+        
         engine1.stopAutoDrop();
         engine2.stopAutoDrop();
         
@@ -99,48 +332,95 @@ public class VersusGameController {
 
     public void attachToScene(Scene scene) {
         scene.setOnKeyPressed(this::handleKeyPress);
+        scene.setOnKeyReleased(this::handleKeyRelease);
     }
 
     private void handleKeyPress(KeyEvent event) {
         KeyCode code = event.getCode();
+        String keyString = code.toString();
+        long currentTime = System.currentTimeMillis();
         
-        // Player 1 controls (Arrow keys - Settings 기반)
-        if (!gameOver1) {
-            String keyPressed = code.toString();
-            if (keyPressed.equals(settings.getKeyLeft())) {
-                engine1.moveLeft();
-            } else if (keyPressed.equals(settings.getKeyRight())) {
-                engine1.moveRight();
-            } else if (keyPressed.equals(settings.getKeyDown())) {
-                engine1.softDrop();
-            } else if (keyPressed.equals(settings.getKeyRotate())) {
-                engine1.rotateCW();
-            } else if (keyPressed.equals(settings.getKeyDrop())) {
-                engine1.hardDrop();
+        // ESC or Pause key to pause
+        if (code == KeyCode.ESCAPE || keyString.equals(settings.getPause())) {
+            if (!paused && !gameOver1 && !gameOver2) {
+                pause();
+            }
+            return;
+        }
+        
+        // 일시정지 중에는 게임 입력 처리하지 않음
+        if (paused) {
+            return;
+        }
+        
+        // 키 상태 업데이트 및 첫 입력 시간 기록
+        // Player 1 keys
+        if (keyString.equals(settings.getKeyLeft()) ||
+            keyString.equals(settings.getKeyRight()) ||
+            keyString.equals(settings.getKeyDown()) ||
+            keyString.equals(settings.getKeyRotate()) ||
+            keyString.equals(settings.getKeyDrop())) {
+            
+            // 첫 입력인 경우 즉시 처리하고 시간 기록
+            if (!player1PressedKeys.contains(keyString)) {
+                player1PressedKeys.add(keyString);
+                player1KeyPressTime.put(keyString, currentTime);
+                
+                // 첫 입력은 즉시 실행
+                if (!gameOver1) {
+                    if (keyString.equals(settings.getKeyLeft())) {
+                        engine1.moveLeft();
+                    } else if (keyString.equals(settings.getKeyRight())) {
+                        engine1.moveRight();
+                    } else if (keyString.equals(settings.getKeyDown())) {
+                        engine1.softDrop();
+                    } else if (keyString.equals(settings.getKeyRotate())) {
+                        engine1.rotateCW();
+                    } else if (keyString.equals(settings.getKeyDrop())) {
+                        engine1.hardDrop();
+                    }
+                }
             }
         }
         
-        // Player 2 controls (WASDQ)
-        if (!gameOver2) {
-            if (code == KeyCode.A) {
-                engine2.moveLeft();
-            } else if (code == KeyCode.D) {
-                engine2.moveRight();
-            } else if (code == KeyCode.S) {
-                engine2.softDrop();
-            } else if (code == KeyCode.Q) {
-                engine2.rotateCW();
-            } else if (code == KeyCode.W) {
-                engine2.hardDrop();
+        // Player 2 keys
+        if (code == KeyCode.A || code == KeyCode.D || code == KeyCode.S || 
+            code == KeyCode.Q || code == KeyCode.W) {
+            
+            // 첫 입력인 경우 즉시 처리하고 시간 기록
+            if (!player2PressedKeys.contains(code)) {
+                player2PressedKeys.add(code);
+                player2KeyPressTime.put(code, currentTime);
+                
+                // 첫 입력은 즉시 실행
+                if (!gameOver2) {
+                    if (code == KeyCode.A) {
+                        engine2.moveLeft();
+                    } else if (code == KeyCode.D) {
+                        engine2.moveRight();
+                    } else if (code == KeyCode.S) {
+                        engine2.softDrop();
+                    } else if (code == KeyCode.Q) {
+                        engine2.rotateCW();
+                    } else if (code == KeyCode.W) {
+                        engine2.hardDrop();
+                    }
+                }
             }
         }
+    }
+    
+    private void handleKeyRelease(KeyEvent event) {
+        KeyCode code = event.getCode();
+        String keyString = code.toString();
         
-        // ESC to exit
-        if (code == KeyCode.ESCAPE) {
-            engine1.stopAutoDrop();
-            engine2.stopAutoDrop();
-            sceneManager.showMainMenu(settings);
-        }
+        // 키를 뗄 때 각 플레이어의 상태에서 제거
+        player1PressedKeys.remove(keyString);
+        player2PressedKeys.remove(code);
+        
+        // 시간 기록도 제거
+        player1KeyPressTime.remove(keyString);
+        player2KeyPressTime.remove(code);
     }
 
     public Player1Listener getPlayer1Listener() {

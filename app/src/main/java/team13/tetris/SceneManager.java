@@ -264,6 +264,14 @@ public class SceneManager {
     public boolean isColorBlindMode() {
         return colorBlindMode;
     }
+    
+    // 대전 모드에서 확장된 창 크기가 아닌 원래 창 크기를 반환
+    public double getOriginalWidth() {
+        if (previousWidth > 0) {
+            return previousWidth;
+        }
+        return stage.getWidth();
+    }
 
     public void setColorBlindMode(boolean enabled) {
         this.colorBlindMode = enabled;
