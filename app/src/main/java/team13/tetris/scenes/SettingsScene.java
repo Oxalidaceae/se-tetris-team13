@@ -8,7 +8,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
+
 import javafx.scene.layout.VBox;
 
 public class SettingsScene {
@@ -46,14 +46,14 @@ public class SettingsScene {
         Button keyBtn = new Button("Key Settings");
         keyBtn.setOnAction(e -> manager.showKeySettings(settings));
         
-        ToggleButton colorBlindBtn = new ToggleButton();
+        Button colorBlindBtn = new Button();
         
         boolean isColorBlind = settings.isColorBlindMode();
-        colorBlindBtn.setSelected(isColorBlind);
         colorBlindBtn.setText(isColorBlind ? "Color Blind Mode: ON" : "Color Blind Mode: OFF");
 
         colorBlindBtn.setOnAction(e -> {
-            boolean newState = colorBlindBtn.isSelected();
+            boolean currentState = settings.isColorBlindMode();
+            boolean newState = !currentState;
             colorBlindBtn.setText(newState ? "Color Blind Mode: ON" : "Color Blind Mode: OFF");
 
             manager.setColorBlindMode(newState);
@@ -95,7 +95,6 @@ public class SettingsScene {
                     manager.setWindowSize(600, 700);
                     settings.setColorBlindMode(false);
                     settings.setWindowSize("MEDIUM");
-                    colorBlindBtn.setSelected(false);
                     colorBlindBtn.setText("Color Blind Mode: OFF");
                     settings.restoreDefaultKeys();
 
