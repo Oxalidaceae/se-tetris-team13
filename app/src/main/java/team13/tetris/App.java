@@ -26,15 +26,18 @@ public class App extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
             settings.setColorBlindMode(manager.isColorBlindMode());
-            settings.setWindowSize(getCurrentWindowSize(primaryStage));
+            // 대전 모드 중이면 이전 크기 기준으로, 아니면 현재 크기 기준으로 저장
+            if (manager.isInVersusMode()) {
+                settings.setWindowSize(getCurrentWindowSize(manager.getPreviousWidth()));
+            } else {
+                settings.setWindowSize(getCurrentWindowSize(primaryStage.getWidth()));
+            }
             SettingsRepository.save(settings);
         });
     }
 
     // OS별로 약간의 픽셀 차이가 존재하므로 범위로 판단
-    private String getCurrentWindowSize(Stage stage) {
-        double width = stage.getWidth();
-        
+    private String getCurrentWindowSize(double width) {
         if (width <= 450) {
             return "SMALL";
         } else if (width >= 750) {

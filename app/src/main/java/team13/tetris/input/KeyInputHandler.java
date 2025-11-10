@@ -4,10 +4,13 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import team13.tetris.config.Settings;
+import java.util.Set;
+import java.util.HashSet;
 
 public class KeyInputHandler {
     private final Settings settings;
     private KeyInputCallback callback;
+    private final Set<KeyCode> pressedKeys = new HashSet<>();
 
     public KeyInputHandler(Settings settings) {
         this.settings = settings;
@@ -16,26 +19,41 @@ public class KeyInputHandler {
     public void attachToScene(Scene scene, KeyInputCallback callback) {
         this.callback = callback;
         scene.setOnKeyPressed(this::handleKeyPress);
+        scene.setOnKeyReleased(this::handleKeyRelease);
     }
 
     private void handleKeyPress(KeyEvent event) {
         if (callback == null) return;
 
         KeyCode keyCode = event.getCode();
+        
+        // 키 상태 추가 (키 반복 허용)
+        pressedKeys.add(keyCode);
 
+        // else if 제거하여 동시 입력 지원
         if (isLeftClicked(keyCode)) {
             callback.onLeftPressed();
-        } else if (isRightClicked(keyCode)) {
+        }
+        if (isRightClicked(keyCode)) {
             callback.onRightPressed();
-        } else if (isRotateClicked(keyCode)) {
+        }
+        if (isRotateClicked(keyCode)) {
             callback.onRotatePressed();
-        } else if (isDropClicked(keyCode)) {
+        }
+        if (isDropClicked(keyCode)) {
             callback.onDropPressed();
-        } else if (isHardDropClicked(keyCode)) {
+        }
+        if (isHardDropClicked(keyCode)) {
             callback.onHardDropPressed();
-        } else if (isPauseClicked(keyCode)) {
+        }
+        if (isPauseClicked(keyCode)) {
             callback.onPausePressed();
         }
+    }
+    
+    private void handleKeyRelease(KeyEvent event) {
+        // 키를 뗄 때 상태에서 제거
+        pressedKeys.remove(event.getCode());
     }
 
     private boolean isKeyMatch(KeyCode userPressed, String configuredKey) {

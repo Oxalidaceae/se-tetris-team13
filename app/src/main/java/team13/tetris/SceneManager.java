@@ -31,6 +31,16 @@ public class SceneManager {
     // 대전 모드 이전 창 크기 저장
     private double previousWidth = 0;
     private double previousHeight = 0;
+    
+    // 대전 모드 중인지 확인
+    public boolean isInVersusMode() {
+        return previousWidth > 0 && previousHeight > 0;
+    }
+    
+    // 대전 모드 이전 창 크기 가져오기
+    public double getPreviousWidth() {
+        return previousWidth;
+    }
 
     public SceneManager(Stage stage) {
         this.stage = stage;

@@ -11,6 +11,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
+import java.util.HashSet;
+import javafx.animation.AnimationTimer;
 
 public class VersusGameController {
     private final VersusGameScene gameScene;
@@ -18,6 +21,15 @@ public class VersusGameController {
     private final Settings settings;
     private final GameEngine engine1; // Player 1
     private final GameEngine engine2; // Player 2
+    
+    // 각 플레이어별 독립적인 키 상태 추적
+    private final Set<String> player1PressedKeys = new HashSet<>();
+    private final Set<KeyCode> player2PressedKeys = new HashSet<>();
+    
+    // 입력 처리 타이머
+    private AnimationTimer inputTimer;
+    private long lastInputTime = 0;
+    private static final long INPUT_DELAY_NANOS = 50_000_000L; // 50ms (20fps 입력 처리)
     
     private final Player1Listener player1Listener;
     private final Player2Listener player2Listener;
@@ -58,9 +70,66 @@ public class VersusGameController {
         this.player1Listener = new Player1Listener();
         this.player2Listener = new Player2Listener();
         
+        // 입력 처리 타이머 시작
+        startInputTimer();
+        
         // 타이머 모드인 경우 타이머 시작
         if (timerMode) {
             startTimer();
+        }
+    }
+    
+    private void startInputTimer() {
+        inputTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                // 50ms마다 입력 처리 (초당 20회)
+                if (now - lastInputTime >= INPUT_DELAY_NANOS) {
+                    processInputs();
+                    lastInputTime = now;
+                }
+            }
+        };
+        inputTimer.start();
+    }
+    
+    private void processInputs() {
+        // Player 1 입력 처리
+        if (!gameOver1) {
+            if (player1PressedKeys.contains(settings.getKeyLeft())) {
+                engine1.moveLeft();
+            }
+            if (player1PressedKeys.contains(settings.getKeyRight())) {
+                engine1.moveRight();
+            }
+            if (player1PressedKeys.contains(settings.getKeyDown())) {
+                engine1.softDrop();
+            }
+            if (player1PressedKeys.contains(settings.getKeyRotate())) {
+                engine1.rotateCW();
+            }
+            if (player1PressedKeys.contains(settings.getKeyDrop())) {
+                engine1.hardDrop();
+            }
+        }
+        
+        // Player 2 입력 처리
+        if (!gameOver2) {
+            if (player2PressedKeys.contains(KeyCode.A)) {
+                engine2.moveLeft();
+            }
+            if (player2PressedKeys.contains(KeyCode.D)) {
+                engine2.moveRight();
+            }
+            if (player2PressedKeys.contains(KeyCode.S)) {
+                engine2.softDrop();
+            }
+            if (player2PressedKeys.contains(KeyCode.Q)) {
+                engine2.rotateCW();
+            }
+            if (player2PressedKeys.contains(KeyCode.W)) {
+                engine2.hardDrop();
+            }
         }
     }
     
@@ -79,6 +148,11 @@ public class VersusGameController {
     }
     
     private void checkTimeUp() {
+        // 입력 타이머 정지
+        if (inputTimer != null) {
+            inputTimer.stop();
+        }
+        
         engine1.stopAutoDrop();
         engine2.stopAutoDrop();
         
@@ -99,48 +173,47 @@ public class VersusGameController {
 
     public void attachToScene(Scene scene) {
         scene.setOnKeyPressed(this::handleKeyPress);
+        scene.setOnKeyReleased(this::handleKeyRelease);
     }
 
     private void handleKeyPress(KeyEvent event) {
         KeyCode code = event.getCode();
+        String keyString = code.toString();
         
-        // Player 1 controls (Arrow keys - Settings 기반)
-        if (!gameOver1) {
-            String keyPressed = code.toString();
-            if (keyPressed.equals(settings.getKeyLeft())) {
-                engine1.moveLeft();
-            } else if (keyPressed.equals(settings.getKeyRight())) {
-                engine1.moveRight();
-            } else if (keyPressed.equals(settings.getKeyDown())) {
-                engine1.softDrop();
-            } else if (keyPressed.equals(settings.getKeyRotate())) {
-                engine1.rotateCW();
-            } else if (keyPressed.equals(settings.getKeyDrop())) {
-                engine1.hardDrop();
-            }
+        // 키 상태만 업데이트 (실제 처리는 processInputs에서)
+        // Player 1 keys
+        if (keyString.equals(settings.getKeyLeft()) ||
+            keyString.equals(settings.getKeyRight()) ||
+            keyString.equals(settings.getKeyDown()) ||
+            keyString.equals(settings.getKeyRotate()) ||
+            keyString.equals(settings.getKeyDrop())) {
+            player1PressedKeys.add(keyString);
         }
         
-        // Player 2 controls (WASDQ)
-        if (!gameOver2) {
-            if (code == KeyCode.A) {
-                engine2.moveLeft();
-            } else if (code == KeyCode.D) {
-                engine2.moveRight();
-            } else if (code == KeyCode.S) {
-                engine2.softDrop();
-            } else if (code == KeyCode.Q) {
-                engine2.rotateCW();
-            } else if (code == KeyCode.W) {
-                engine2.hardDrop();
-            }
+        // Player 2 keys
+        if (code == KeyCode.A || code == KeyCode.D || code == KeyCode.S || 
+            code == KeyCode.Q || code == KeyCode.W) {
+            player2PressedKeys.add(code);
         }
         
-        // ESC to exit
+        // ESC to exit (즉시 처리)
         if (code == KeyCode.ESCAPE) {
+            if (inputTimer != null) {
+                inputTimer.stop();
+            }
             engine1.stopAutoDrop();
             engine2.stopAutoDrop();
             sceneManager.showMainMenu(settings);
         }
+    }
+    
+    private void handleKeyRelease(KeyEvent event) {
+        KeyCode code = event.getCode();
+        String keyString = code.toString();
+        
+        // 키를 뗄 때 각 플레이어의 상태에서 제거
+        player1PressedKeys.remove(keyString);
+        player2PressedKeys.remove(code);
     }
 
     public Player1Listener getPlayer1Listener() {
@@ -339,6 +412,11 @@ public class VersusGameController {
     }
 
     private void checkWinner() {
+        // 입력 타이머 정지
+        if (inputTimer != null) {
+            inputTimer.stop();
+        }
+        
         // 타이머가 있으면 정지
         if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
             timerExecutor.shutdown();
