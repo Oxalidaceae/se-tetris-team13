@@ -310,3 +310,12 @@
 .tetris-j-text { -fx-text-fill: #005AFF !important; } /* J - 블루 */
 .tetris-l-text { -fx-text-fill: #FFA500 !important; } /* L - 밝은 오렌지 (J와 보색) */
 .tetris-flash-text { -fx-text-fill: #FFFFFF !important; }
+.tetris-gray-text { -fx-text-fill: #808080 !important; } /* 상대방에게서 넘어온 회색 블록 */
+.tetris-generic-text { -fx-text-fill: #AAAAAA !important; }
+
+/* 넘어올 블록 미리보기 그리드 스타일 */
+.incoming-grid {
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+}
+

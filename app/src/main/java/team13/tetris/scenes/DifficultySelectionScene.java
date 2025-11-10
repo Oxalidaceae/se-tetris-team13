@@ -29,7 +29,7 @@ public class DifficultySelectionScene {
         easyBtn.setOnAction(e -> manager.showGame(settings, ScoreBoard.ScoreEntry.Mode.EASY));
         normalBtn.setOnAction(e -> manager.showGame(settings, ScoreBoard.ScoreEntry.Mode.NORMAL));
         hardBtn.setOnAction(e -> manager.showGame(settings, ScoreBoard.ScoreEntry.Mode.HARD));
-        backBtn.setOnAction(e -> manager.showMainMenu(settings));
+        backBtn.setOnAction(e -> manager.showSoloModeSelection(settings));
 
         VBox layout = new VBox(15, title, easyBtn, normalBtn, hardBtn, backBtn);
         layout.setStyle("-fx-alignment: center;");

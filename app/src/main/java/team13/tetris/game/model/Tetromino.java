@@ -2,18 +2,14 @@ package team13.tetris.game.model;
 
 import java.util.Arrays;
 
-/**
- * 테트로미노 래퍼 클래스.
- * - 색상은 문자열/인라인 스타일이 아닌 "CSS 클래스명"으로만 노출한다.
- *   * 블록(도형/영역)용: block-I, block-O, ... (예: Rectangle/Panes)
- *   * 텍스트용: tetris-i-text, tetris-o-text, ... (예: Label)
- * - 일반/색맹 테마 전환은 CSS 파일 교체만으로 처리 가능.
- */
+// 테트로미노 래퍼 클래스.
+// - 색상은 문자열/인라인 스타일이 아닌 "CSS 클래스명"으로만 노출한다.
+//   * 블록(도형/영역)용: block-I, block-O, ... (예: Rectangle/Panes)
+//   * 텍스트용: tetris-i-text, tetris-o-text, ... (예: Label)
+// - 일반/색맹 테마 전환은 CSS 파일 교체만으로 처리 가능.
 public class Tetromino {
 
-    /**
-     * 아이템 타입 정의
-     */
+    // 아이템 타입 정의
     public enum ItemType {
         COPY,      // 미노 복사 (C 마크)
         WEIGHT,    // 무게추 (W 마크)
@@ -407,19 +403,19 @@ public class Tetromino {
         return kind;
     }
 
-    /** 뷰(노드)가 붙일 블록용 CSS 클래스명 (예: "block-L") */
+    // 뷰(노드)가 붙일 블록용 CSS 클래스명 (예: "block-L")
     public String getBlockStyleClass() {
         if (kind != null) return kind.getBlockStyleClass();
         return blockClassForId(id);
     }
 
-    /** 텍스트 라벨에 붙일 CSS 클래스명 (예: "tetris-l-text") */
+    // 텍스트 라벨에 붙일 CSS 클래스명 (예: "tetris-l-text")
     public String getTextStyleClass() {
         if (kind != null) return kind.getTextStyleClass();
         return textClassForId(id);
     }
 
-    /** id -> Kind 조회 (레거시/raw shape 지원용) */
+    // id -> Kind 조회 (레거시/raw shape 지원용)
     public static Kind kindForId(int id) {
         for (Kind k : Kind.values()) {
             if (k.getId() == id) return k;
@@ -427,7 +423,7 @@ public class Tetromino {
         return null;
     }
 
-    /* ===== 내부 유틸: raw 생성자 호환용 매핑 ===== */
+    // ===== 내부 유틸: raw 생성자 호환용 매핑 =====
 
     private static String blockClassForId(int id) {
         switch (id) {
@@ -678,10 +674,8 @@ public class Tetromino {
         return 0;
     }
 
-    /**
-     * 현재 미노의 블록 위치들을 반환 (아이템 효과 처리용)
-     * @return 블록이 있는 위치들의 배열 [행, 열]
-     */
+    // 현재 미노의 블록 위치들을 반환 (아이템 효과 처리용)
+    // @return 블록이 있는 위치들의 배열 [행, 열]
     public int[][] getBlockPositions() {
         int[][] currentShape = getShape();
         java.util.List<int[]> positions = new java.util.ArrayList<>();

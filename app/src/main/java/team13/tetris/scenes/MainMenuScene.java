@@ -2,7 +2,6 @@ package team13.tetris.scenes;
 
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
-import team13.tetris.data.ScoreBoard;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -22,13 +21,11 @@ public class MainMenuScene {
         title.getStyleClass().add("label-title");
 
         Button startBtn = new Button("Start Game");
-        Button itemModeBtn = new Button("Start Item Mode");
         Button optionBtn = new Button("Options");
         Button scoreBtn = new Button("Scoreboard");
         Button exitBtn = new Button("Exit");
 
-        startBtn.setOnAction(e -> manager.showDifficultySelection(settings));
-        itemModeBtn.setOnAction(e -> manager.showGame(settings, ScoreBoard.ScoreEntry.Mode.ITEM));
+        startBtn.setOnAction(e -> manager.showGameModeSelection(settings));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
         exitBtn.setOnAction(e -> manager.showExitScene(
@@ -36,7 +33,7 @@ public class MainMenuScene {
             () -> manager.showMainMenu(settings)
         ));
 
-        VBox layout = new VBox(10, title, startBtn, itemModeBtn, optionBtn, scoreBtn, exitBtn);
+        VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);

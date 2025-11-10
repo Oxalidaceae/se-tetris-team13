@@ -6,9 +6,7 @@ import team13.tetris.game.model.Tetromino;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * 엔진 이벤트를 여러 리스너로 전달하기 위한 간단한 합성(Composite) 리스너입니다.
- */
+// 엔진 이벤트를 여러 리스너로 전달하기 위한 간단한 합성(Composite) 리스너입니다.
 public class CompositeGameStateListener implements GameStateListener {
     private final List<GameStateListener> delegates = new CopyOnWriteArrayList<>();
 
