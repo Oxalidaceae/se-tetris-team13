@@ -3,7 +3,7 @@ package team13.tetris.game.util;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-// 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 'O'로 표현합니다.
+// 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 '■'로 표현합니다.
 public final class AsciiBoardRenderer {
     private AsciiBoardRenderer() {}
 
@@ -29,7 +29,7 @@ public final class AsciiBoardRenderer {
                         if (shape[sr][sc] != 0) occupied = true;
                     }
                 }
-                sb.append(occupied ? 'O' : ' ');
+                sb.append(occupied ? '■' : ' ');
             }
             sb.append('X');
             sb.append('\n');
@@ -62,7 +62,7 @@ public final class AsciiBoardRenderer {
                     if (shape[r][c] != 0) {
                         int rr = offR + r;
                         int cc = offC + c;
-                        if (rr >= 0 && rr < size && cc >= 0 && cc < size) grid[rr][cc] = 'O';
+                        if (rr >= 0 && rr < size && cc >= 0 && cc < size) grid[rr][cc] = '■';
                     }
                 }
             }
