@@ -535,13 +535,10 @@ public class VersusGameController {
         Board board = engine.getBoard();
         int width = board.getWidth();
         
-        // 마지막으로 고정된 블록의 실제 셀 위치들 가져오기 [x, y]
-        java.util.List<int[]> lockedCells = engine.getLastLockedCells();
+        // 중력/스플릿 블록으로 인한 라인클리어인지 확인
+        boolean isGravityOrSplitClear = engine.isLastClearByGravityOrSplit();
         
-        // 삭제된 줄의 인덱스 가져오기
-        java.util.List<Integer> clearedLineIndices = engine.getClearedLineIndices();
-        
-        // 회색 블록으로 채운 패턴 생성 (마지막 블록의 정확한 위치만 비움)
+        // 회색 블록으로 채운 패턴 생성
         int[][] pattern = new int[lines][width];
         
         // 일단 모두 회색 블록으로 채움
@@ -551,18 +548,31 @@ public class VersusGameController {
             }
         }
         
-        // 마지막 블록이 삭제된 줄에 있는 경우, 해당 위치만 비움
-        if (clearedLineIndices != null) {
-            for (int[] cell : lockedCells) {
-                int cellX = cell[0];
-                int cellY = cell[1];
-                
-                // 이 셀이 삭제된 줄에 있는지 확인
-                for (int i = 0; i < clearedLineIndices.size(); i++) {
-                    if (clearedLineIndices.get(i) == cellY) {
-                        // 삭제된 줄의 몇 번째 줄인지 찾아서 패턴에 반영
-                        pattern[i][cellX] = 0; // 빈 공간
-                        break;
+        if (isGravityOrSplitClear) {
+            // 중력/스플릿 블록: 각 줄마다 랜덤한 한 칸을 빈 공간으로
+            java.util.Random random = new java.util.Random();
+            for (int r = 0; r < lines; r++) {
+                int randomCol = random.nextInt(width); // 0 ~ width-1 랜덤 선택
+                pattern[r][randomCol] = 0; // 빈 공간
+            }
+        } else {
+            // 일반 블록: 마지막 블록의 정확한 위치만 제외
+            java.util.List<int[]> lockedCells = engine.getLastLockedCells();
+            java.util.List<Integer> clearedLineIndices = engine.getClearedLineIndices();
+            
+            // 마지막 블록이 삭제된 줄에 있는 경우, 해당 위치만 비움
+            if (clearedLineIndices != null) {
+                for (int[] cell : lockedCells) {
+                    int cellX = cell[0];
+                    int cellY = cell[1];
+                    
+                    // 이 셀이 삭제된 줄에 있는지 확인
+                    for (int i = 0; i < clearedLineIndices.size(); i++) {
+                        if (clearedLineIndices.get(i) == cellY) {
+                            // 삭제된 줄의 몇 번째 줄인지 찾아서 패턴에 반영
+                            pattern[i][cellX] = 0; // 빈 공간
+                            break;
+                        }
                     }
                 }
             }
