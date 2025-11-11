@@ -57,6 +57,9 @@ public class GameEngine {
     
     private int[][] boardSnapshotBeforeClear = null; // 라인 클리어 전 보드 상태 저장
     private java.util.List<Integer> clearedLineIndices = null; // 삭제된 줄 인덱스 저장
+    
+    // 라인클리어를 유발한 아이템 타입 추적 (대전 모드 공격 패턴용)
+    private boolean lastClearWasByGravityOrSplit = false;
 
     public GameEngine(Board board, GameStateListener listener) {
         this(board, listener, ScoreBoard.ScoreEntry.Mode.NORMAL);
@@ -505,6 +508,18 @@ public class GameEngine {
                         // 보드 업데이트
                         listener.onBoardUpdated(board);
                         
+                        // LINE_CLEAR 효과 후 남아있는 full line이 있는지 체크
+                        java.util.List<Integer> remainingFullLines = board.getFullLineIndices();
+                        if (!remainingFullLines.isEmpty()) {
+                            // 남은 full line이 있으면 일반 라인클리어 처리
+                            board.clearFullLines();
+                            int cleared = remainingFullLines.size();
+                            totalLinesCleared += cleared;
+                            addScoreForClearedLines(cleared);
+                            updateSpeedForLinesCleared(cleared, totalLinesCleared);
+                            listener.onBoardUpdated(board);
+                        }
+                        
                         // 다음 블록 생성
                         spawnNext();
                     });
@@ -825,6 +840,9 @@ public class GameEngine {
         // 이미 게임오버 상태라면 더 이상 처리하지 않음
         if (current == null) return;
         
+        // 기본적으로 일반 라인클리어로 간주
+        lastClearWasByGravityOrSplit = false;
+        
         // 아이템이 착지한 경우 즉시 효과 발동 (current를 null로 만들기 전에)
         if (itemModeEnabled && current != null && current.isItemPiece()) {
             Tetromino.Kind kind = current.getKind();
@@ -832,8 +850,10 @@ public class GameEngine {
 
             // 무게추는 softDrop에서 이미 처리되므로 여기서는 제외
             if (kind == Tetromino.Kind.GRAVITY) {
+                lastClearWasByGravityOrSplit = true; // 중력 블록으로 라인클리어
                 processGravityEffect();
             } else if (kind == Tetromino.Kind.SPLIT) {
+                lastClearWasByGravityOrSplit = true; // 스플릿 블록으로 라인클리어
                 processSplitEffect();
             } else if (itemType == Tetromino.ItemType.LINE_CLEAR) {
                 // LINE_CLEAR는 자체적으로 라인 제거 및 다음 블록 생성을 처리하므로
@@ -1120,6 +1140,10 @@ public class GameEngine {
     
     public java.util.List<Integer> getClearedLineIndices() {
         return clearedLineIndices;
+    }
+    
+    public boolean isLastClearByGravityOrSplit() {
+        return lastClearWasByGravityOrSplit;
     }
     
     private void recordLastLockedColumns() {
