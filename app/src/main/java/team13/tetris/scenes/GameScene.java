@@ -142,11 +142,13 @@ public class GameScene {
                     } else if (val < 0) {
                         fillCell(cell, FILLED_SYMBOL, "block-flash", "tetris-flash-text");
                     } else if (val >= 100 && val < 200) {
-                        // COPY 아이템 블록 (100번대 값)
-                        fillCell(cell, "C", "item-copy-block", "item-copy-block");
+                        // COPY 아이템 블록 (100번대 값) - 원래 블록 색상 유지
+                        Tetromino.Kind kind = Tetromino.kindForId(val - 100);
+                        fillCell(cell, "C", blockClassForKind(kind), "item-copy-block");
                     } else if (val >= 200 && val < 300) {
-                        // LINE_CLEAR 아이템 블록 (200번대 값)
-                        fillCell(cell, "L", "item-copy-block", "item-copy-block");
+                        // LINE_CLEAR 아이템 블록 (200번대 값) - 원래 블록 색상 유지
+                        Tetromino.Kind kind = Tetromino.kindForId(val - 200);
+                        fillCell(cell, "L", blockClassForKind(kind), "item-copy-block");
                     } else if (val >= 300 && val < 400) {
                         // WEIGHT 아이템 블록 (300번대 값)
                         Tetromino.Kind kind = Tetromino.kindForId(val - 300);
@@ -159,8 +161,8 @@ public class GameScene {
                         // SPLIT 아이템 블록 (500번대 값)
                         Tetromino.Kind kind = Tetromino.kindForId(val - 500);
                         fillCell(cell, "S", blockClassForKind(kind), textClassForKind(kind));
-                    } else {
-                        // 일반 블록
+                    } else if (val >= 1 && val <= 7) {
+                        // 일반 블록 (1~7)
                         Tetromino.Kind kind = Tetromino.kindForId(val);
                         fillCell(cell, FILLED_SYMBOL, blockClassForKind(kind), textClassForKind(kind));
                     }
@@ -485,7 +487,15 @@ public class GameScene {
             if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass)) {
                 label.getStyleClass().add(textClass);
             }
-            label.setText(symbol == null ? "" : symbol);
+            
+            // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
+            boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
+                                                      symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
+            if (settings.isColorBlindMode() && !isItemBlock) {
+                label.setText(" "); // 일반 블록은 글자 숨김
+            } else {
+                label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
+            }
             
             // 색맹 모드에서 패턴 적용
             if (blockClass != null && settings.isColorBlindMode()) {

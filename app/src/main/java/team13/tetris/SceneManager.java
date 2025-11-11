@@ -171,6 +171,13 @@ public class SceneManager {
         stage.setWidth(versusWidth);
         stage.setHeight(versusHeight);
         
+        // SceneManager의 windowSizeClass 업데이트 (대전 모드용)
+        switch (settings.getWindowSize()) {
+            case "SMALL" -> windowSizeClass = "window-small";
+            case "LARGE" -> windowSizeClass = "window-large";
+            default -> windowSizeClass = "window-medium";
+        }
+        
         // Player 1 설정 (아이템 모드 여부에 따라 Mode 설정)
         Board board1 = new Board(10, 20);
         CompositeGameStateListener composite1 = new CompositeGameStateListener();
