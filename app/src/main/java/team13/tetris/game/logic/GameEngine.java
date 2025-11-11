@@ -441,24 +441,21 @@ public class GameEngine {
             return;
         }
 
-        // L 블록(lineClearBlockIndex)이 있는 행을 찾기
-        int[][] shape = current.getShape();
-        int lineClearBlockIndex = current.getLineClearBlockIndex();
-        int blockCount = 0;
+        // 보드를 스캔하여 LINE_CLEAR 마커(200번대 값)가 있는 행을 찾기
         int targetRow = -1;
-
-        for (int r = 0; r < shape.length; r++) {
-            for (int c = 0; c < shape[r].length; c++) {
-                if (shape[r][c] != 0) {
-                    if (blockCount == lineClearBlockIndex) {
-                        targetRow = py + r; // 월드 좌표에서의 행
-                        break;
-                    }
-                    blockCount++;
+        
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                int cellValue = board.getCell(x, y);
+                // LINE_CLEAR 마커는 200번대 (200-299)
+                if (cellValue >= 200 && cellValue < 300) {
+                    targetRow = y;
+                    break;
                 }
             }
-            if (targetRow != -1)
+            if (targetRow != -1) {
                 break;
+            }
         }
 
         // 유효한 행인지 확인
@@ -480,30 +477,37 @@ public class GameEngine {
             delayTimer.schedule(new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    // 흰색 플래시를 원래 상태로 복원
-                    for (int c = 0; c < board.getWidth(); c++) {
-                        board.setCell(c, finalTargetRow, originalRow[c]);
-                    }
-                    
-                    // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
-                    // 위쪽 행들을 한 줄씩 아래로 복사
-                    for (int r = finalTargetRow; r > 0; r--) {
+                    javafx.application.Platform.runLater(() -> {
+                        // 흰색 플래시를 원래 상태로 복원
                         for (int c = 0; c < board.getWidth(); c++) {
-                            board.setCell(c, r, board.getCell(c, r - 1));
+                            board.setCell(c, finalTargetRow, originalRow[c]);
                         }
-                    }
+                        
+                        // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
+                        // 위쪽 행들을 한 줄씩 아래로 복사
+                        for (int r = finalTargetRow; r > 0; r--) {
+                            for (int c = 0; c < board.getWidth(); c++) {
+                                board.setCell(c, r, board.getCell(c, r - 1));
+                            }
+                        }
 
-                    // 맨 위 행을 빈 공간으로 설정
-                    for (int c = 0; c < board.getWidth(); c++) board.setCell(c, 0, 0);
+                        // 맨 위 행을 빈 공간으로 설정
+                        for (int c = 0; c < board.getWidth(); c++) {
+                            board.setCell(c, 0, 0);
+                        }
 
-                    totalLinesCleared += 1;
+                        totalLinesCleared += 1;
 
-                    // 점수 적산 (일반 라인클리어와 동일)
-                    addScoreForClearedLines(1);
-                    updateSpeedForLinesCleared(1, totalLinesCleared);
+                        // 점수 적산 (일반 라인클리어와 동일)
+                        addScoreForClearedLines(1);
+                        updateSpeedForLinesCleared(1, totalLinesCleared);
 
-                    // 보드 업데이트
-                    listener.onBoardUpdated(board);
+                        // 보드 업데이트
+                        listener.onBoardUpdated(board);
+                        
+                        // 다음 블록 생성
+                        spawnNext();
+                    });
                     
                     delayTimer.cancel(); // Timer 정리
                 }
@@ -821,14 +825,6 @@ public class GameEngine {
         // 이미 게임오버 상태라면 더 이상 처리하지 않음
         if (current == null) return;
         
-        
-        // 보드 상태 스냅샷 저장 (라인 클리어 전 상태)
-        boardSnapshotBeforeClear = board.snapshot();
-        
-        // lastLockedColumns와 lastLockedCells를 미리 백업 (다른 블록이 떨어지면서 덮어씌워질 수 있으므로)
-        tempLockedColumnsForEvent = new java.util.HashSet<>(lastLockedColumns);
-        tempLockedCellsForEvent = new java.util.ArrayList<>(lastLockedCells);
-
         // 아이템이 착지한 경우 즉시 효과 발동 (current를 null로 만들기 전에)
         if (itemModeEnabled && current != null && current.isItemPiece()) {
             Tetromino.Kind kind = current.getKind();
@@ -840,9 +836,20 @@ public class GameEngine {
             } else if (kind == Tetromino.Kind.SPLIT) {
                 processSplitEffect();
             } else if (itemType == Tetromino.ItemType.LINE_CLEAR) {
+                // LINE_CLEAR는 자체적으로 라인 제거 및 다음 블록 생성을 처리하므로
+                // 일반 라인 클리어 로직을 실행하지 않음
                 processLineClearEffect();
+                current = null; // 조작 방지
+                return; // 여기서 종료
             }
         }
+        
+        // 아이템 효과 적용 후 보드 상태 스냅샷 저장 (라인 클리어 전 상태)
+        boardSnapshotBeforeClear = board.snapshot();
+        
+        // lastLockedColumns와 lastLockedCells를 미리 백업 (다른 블록이 떨어지면서 덮어씌워질 수 있으므로)
+        tempLockedColumnsForEvent = new java.util.HashSet<>(lastLockedColumns);
+        tempLockedCellsForEvent = new java.util.ArrayList<>(lastLockedCells);
 
         java.util.List<Integer> fullLines = board.getFullLineIndices();
         
@@ -923,11 +930,13 @@ public class GameEngine {
                 }
 
                 // 아이템 효과를 먼저 처리 (clearFullLines 전에)
+                // 단, GRAVITY/SPLIT/LINE_CLEAR는 이미 착지 시점에 처리되었으므로 제외
                 if (itemModeEnabled && finalHasItemBlock && finalDetectedItemType != null) {
                     if (finalDetectedItemType == Tetromino.ItemType.COPY) {
                         copyEffectProcessed = true;
+                        processItemEffect(finalDetectedItemType, finalItemPieceKind);
                     }
-                    processItemEffect(finalDetectedItemType, finalItemPieceKind);
+                    // GRAVITY, SPLIT, LINE_CLEAR는 착지 시 이미 처리되었으므로 여기서는 처리하지 않음
                 }
 
                 // 아이템 효과를 처리하는 콜백 정의 (더미)
@@ -976,10 +985,10 @@ public class GameEngine {
         if (itemModeEnabled && cleared > 0) {
             totalLinesCleared += cleared;
             
-            // 10줄마다 아이템 미노 생성 (10, 20, 30, ... 의 배수마다)
+            // 
             int beforeClear = totalLinesCleared - cleared;
-            int currentGroup = totalLinesCleared / 1;
-            int previousGroup = beforeClear / 1;
+            int currentGroup = totalLinesCleared / 2;
+            int previousGroup = beforeClear / 2;
 
             if (currentGroup > previousGroup) generateItemPiece();
         }
