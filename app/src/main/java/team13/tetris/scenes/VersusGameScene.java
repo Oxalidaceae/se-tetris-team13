@@ -80,10 +80,19 @@ public class VersusGameScene {
         incomingGrid1 = createIncomingGrid(); // 넘어올 블록 표시
         scoreLabel1 = new Label("Player 1\nScore: 0");
         scoreLabel1.getStyleClass().add("score-label");
+        scoreLabel1.setPrefWidth(150);
         
         Label incomingLabel1 = new Label("Incoming:");
         incomingLabel1.getStyleClass().add("label");
-        incomingLabel1.setStyle("-fx-font-size: 10px;");
+        
+        // 화면 크기에 따라 incoming 글자 크기 조정
+        String incomingFontSize = "10px"; // 기본 크기
+        if ("MEDIUM".equals(settings.getWindowSize())) {
+            incomingFontSize = "12px";
+        } else if ("LARGE".equals(settings.getWindowSize())) {
+            incomingFontSize = "16px"; // LARGE에서 더 큰 글자
+        }
+        incomingLabel1.setStyle("-fx-font-size: " + incomingFontSize + ";");
 
         VBox player1Panel = new VBox(12);
         HBox player1Game = new HBox(12);
@@ -93,17 +102,52 @@ public class VersusGameScene {
             timerLabel1 = new Label("Time: 120");
             timerLabel1.getStyleClass().add("label-title");
             timerLabel1.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
-            VBox right1 = new VBox(8, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1, timerLabel1);
-            right1.getStyleClass().add("right-panel");
-            right1.setAlignment(Pos.TOP_CENTER);
-            HBox.setMargin(right1, new Insets(0, 0, 0, 50));
-            player1Game.getChildren().addAll(boardGrid1, right1);
+            
+            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
+            if ("SMALL".equals(settings.getWindowSize())) {
+                // 타이머를 위쪽에, incoming을 아래쪽에 배치
+                VBox right1 = new VBox(6, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 50));
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            } else if ("MEDIUM".equals(settings.getWindowSize())) {
+                // 타이머를 위쪽에, incoming을 아래쪽에 배치 (조금 더 넓은 간격)
+                VBox right1 = new VBox(8, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            } else {
+                // LARGE: 타이머를 위쪽에, incoming을 아래쪽에 배치
+                VBox right1 = new VBox(10, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (20 -> 80)
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            }
         } else {
-            VBox right1 = new VBox(8, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
-            right1.getStyleClass().add("right-panel");
-            right1.setAlignment(Pos.TOP_CENTER);
-            HBox.setMargin(right1, new Insets(0, 0, 0, 50));
-            player1Game.getChildren().addAll(boardGrid1, right1);
+            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
+            if ("SMALL".equals(settings.getWindowSize())) {
+                VBox right1 = new VBox(8, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 50));
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            } else if ("MEDIUM".equals(settings.getWindowSize())) {
+                VBox right1 = new VBox(10, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            } else {
+                // LARGE: incoming을 아래쪽에 배치
+                VBox right1 = new VBox(12, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
+                right1.getStyleClass().add("right-panel");
+                right1.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right1, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (20 -> 80)
+                player1Game.getChildren().addAll(boardGrid1, right1);
+            }
         }
         player1Panel.getChildren().add(player1Game);
 
@@ -114,10 +158,19 @@ public class VersusGameScene {
         incomingGrid2 = createIncomingGrid(); // 넘어올 블록 표시
         scoreLabel2 = new Label("Player 2\nScore: 0");
         scoreLabel2.getStyleClass().add("score-label");
+        scoreLabel2.setPrefWidth(150);
         
         Label incomingLabel2 = new Label("Incoming:");
         incomingLabel2.getStyleClass().add("label");
-        incomingLabel2.setStyle("-fx-font-size: 10px;");
+        
+        // 화면 크기에 따라 incoming 글자 크기 조정 (Player 2도 동일)
+        String incomingFontSize2 = "10px"; // 기본 크기
+        if ("MEDIUM".equals(settings.getWindowSize())) {
+            incomingFontSize2 = "12px";
+        } else if ("LARGE".equals(settings.getWindowSize())) {
+            incomingFontSize2 = "16px"; // LARGE에서 더 큰 글자
+        }
+        incomingLabel2.setStyle("-fx-font-size: " + incomingFontSize2 + ";");
 
         VBox player2Panel = new VBox(12);
         HBox player2Game = new HBox(12);
@@ -127,17 +180,52 @@ public class VersusGameScene {
             timerLabel2 = new Label("Time: 120");
             timerLabel2.getStyleClass().add("label-title");
             timerLabel2.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
-            VBox right2 = new VBox(8, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2, timerLabel2);
-            right2.getStyleClass().add("right-panel");
-            right2.setAlignment(Pos.TOP_CENTER);
-            HBox.setMargin(right2, new Insets(0, 0, 0, 50));
-            player2Game.getChildren().addAll(boardGrid2, right2);
+            
+            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
+            if ("SMALL".equals(settings.getWindowSize())) {
+                // 타이머를 위쪽에, incoming을 아래쪽에 배치
+                VBox right2 = new VBox(6, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 50));
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            } else if ("MEDIUM".equals(settings.getWindowSize())) {
+                // 타이머를 위쪽에, incoming을 아래쪽에 배치 (조금 더 넓은 간격)
+                VBox right2 = new VBox(8, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            } else {
+                // LARGE: 타이머를 위쪽에, incoming을 아래쪽에 배치
+                VBox right2 = new VBox(10, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (40 -> 80)
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            }
         } else {
-            VBox right2 = new VBox(8, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
-            right2.getStyleClass().add("right-panel");
-            right2.setAlignment(Pos.TOP_CENTER);
-            HBox.setMargin(right2, new Insets(0, 0, 0, 50));
-            player2Game.getChildren().addAll(boardGrid2, right2);
+            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
+            if ("SMALL".equals(settings.getWindowSize())) {
+                VBox right2 = new VBox(8, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 50));
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            } else if ("MEDIUM".equals(settings.getWindowSize())) {
+                VBox right2 = new VBox(10, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 30));
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            } else {
+                // LARGE: incoming을 아래쪽에 배치
+                VBox right2 = new VBox(12, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
+                right2.getStyleClass().add("right-panel");
+                right2.setAlignment(Pos.TOP_CENTER);
+                HBox.setMargin(right2, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (40 -> 80)
+                player2Game.getChildren().addAll(boardGrid2, right2);
+            }
         }
         player2Panel.getChildren().add(player2Game);
 
@@ -209,16 +297,28 @@ public class VersusGameScene {
         // 캐시 맵 선택
         Map<String, Label> cache = (grid == incomingGrid1 || incomingGrid1 == null) ? incomingCache1 : incomingCache2;
 
+        // 화면 크기에 따라 셀 크기 조정
+        double cellSize = 25; // LARGE 크기
+        double fontSize = 30; // LARGE 폰트 크기
+        
+        if ("SMALL".equals(settings.getWindowSize())) {
+            cellSize = 13;
+            fontSize = 8;
+        } else if ("MEDIUM".equals(settings.getWindowSize())) {
+            cellSize = 15;
+            fontSize = 9;
+        }
+
         // 10x10 크기로 넘어올 블록을 보여줌
         for (int r = 0; r < 10; r++) {
             for (int c = 0; c < 10; c++) {
-                // incoming 전용 작은 셀 생성
+                // incoming 전용 셀 생성
                 Label cell = new Label(" ");
                 cell.setAlignment(Pos.CENTER);
-                cell.setMinSize(10, 10);
-                cell.setMaxSize(10, 10);
-                cell.setPrefSize(10, 10);
-                cell.setStyle("-fx-border-color: #333; -fx-border-width: 0.3; -fx-background-color: transparent; -fx-font-size: 6px; -fx-padding: 0;");
+                cell.setMinSize(cellSize, cellSize);
+                cell.setMaxSize(cellSize, cellSize);
+                cell.setPrefSize(cellSize, cellSize);
+                cell.setStyle("-fx-border-color: #333; -fx-border-width: 0.3; -fx-background-color: transparent; -fx-font-size: " + fontSize + "px; -fx-padding: 0;");
                 grid.add(cell, c, r);
                 // 캐시에 저장
                 cache.put(r + "," + c, cell);
@@ -229,33 +329,8 @@ public class VersusGameScene {
     }
 
     public Scene createScene() {
-        // Settings에 따라 동적으로 Scene 크기 설정
-        int sceneWidth;
-        int sceneHeight;
-        String windowSizeClass;
-        
-        switch (settings.getWindowSize()) {
-            case "SMALL" -> {
-                sceneWidth = 900;
-                sceneHeight = 500;
-                windowSizeClass = "window-small";
-            }
-            case "LARGE" -> {
-                sceneWidth = 1600;
-                sceneHeight = 900;
-                windowSizeClass = "window-large";
-            }
-            default -> {  // MEDIUM
-                sceneWidth = 1200;
-                sceneHeight = 700;
-                windowSizeClass = "window-medium";
-            }
-        }
-        
-        this.scene = new Scene(root, sceneWidth, sceneHeight);
-        
-        // window size class 적용
-        root.getStyleClass().add(windowSizeClass);
+        // SceneManager에서 이미 stage 크기를 설정했으므로 Scene만 생성
+        this.scene = new Scene(root);
         
         return scene;
     }
@@ -579,7 +654,7 @@ public class VersusGameScene {
             }
 
             // 점수 업데이트
-            scoreLabel.setText(playerName + "\nScore: " + engine.getScore());
+            scoreLabel.setText(playerName + "\nScore:\n" + engine.getScore());
     }
 
     // CellView 오버로딩 메서드들
@@ -768,8 +843,10 @@ public class VersusGameScene {
             // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
             boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
                                                       symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
-            if (settings.isColorBlindMode() && !isItemBlock) {
-                label.setText(" "); // 일반 블록은 글자 숨김
+            boolean isGhostBlock = "block-ghost".equals(blockClass);
+            
+            if ((settings.isColorBlindMode() && !isItemBlock) || isGhostBlock) {
+                label.setText(" "); // 일반 블록은 색맹모드에서 글자 숨김, 고스트 블록은 항상 글자 숨김
             } else {
                 label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
             }

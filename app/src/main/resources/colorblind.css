@@ -125,7 +125,7 @@
 }
 
 .right-panel {
-    -fx-padding: 40 60 20 20;
+    -fx-padding: 40 0 20 0;
     -fx-alignment: top-center;
     -fx-spacing: 15;
     -fx-min-width: 150;
@@ -141,7 +141,7 @@
 }
 
 .window-small .right-panel {
-    -fx-padding: 30 40 10 15;
+    -fx-padding: 30 0 10 0;
     -fx-spacing: 8;
     -fx-min-width: 100;
     -fx-max-width: 100;
@@ -210,7 +210,7 @@
 }
 
 .window-medium .right-panel {
-    -fx-padding: 40 60 20 20;
+    -fx-padding: 40 0 20 0;
     -fx-spacing: 15;
     -fx-min-width: 150;
     -fx-max-width: 150;
@@ -279,7 +279,7 @@
 }
 
 .window-large .right-panel {
-    -fx-padding: 60 100 30 30;
+    -fx-padding: 60 0 30 0;
     -fx-spacing: 20;
     -fx-min-width: 200;
     -fx-max-width: 200;
@@ -352,6 +352,7 @@
 .score-label {
     -fx-text-fill: white;
     -fx-font-family: "Monospaced";
+    -fx-alignment: center;
     -fx-font-size: 14px;
 }
 

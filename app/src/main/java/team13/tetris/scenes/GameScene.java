@@ -35,7 +35,7 @@ public class GameScene {
     private final Label itemModeLabel;
     private static final double BOARD_CELL_SIZE = 28.0;
     private static final double PREVIEW_CELL_SIZE = 22.0;
-    private static final String FILLED_SYMBOL = "■";
+    private static final String FILLED_SYMBOL = "";
 
     public GameScene(
             SceneManager manager,

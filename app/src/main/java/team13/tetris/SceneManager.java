@@ -155,7 +155,7 @@ public class SceneManager {
         
         switch (settings.getWindowSize()) {
             case "SMALL" -> {
-                versusWidth = 800;   // 400 × 2
+                versusWidth = 950;   // 400 × 2
                 versusHeight = 500;
             }
             case "LARGE" -> {
