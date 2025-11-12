@@ -420,9 +420,23 @@
     -fx-stroke-width: 0.2 !important; 
 }
 
+.block-gray {
+    -fx-fill: #808080; /* 회색 */
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 0.2;
+}
+
+.block-weight,
+.block-gravity,
+.block-split {
+    -fx-fill: #b0b0b0; /* 회색 */
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 0.2;
+}
+
 .item-copy-block {
-    -fx-text-fill: #FFD966;
-    -fx-fill: #FFD966;
+    -fx-text-fill: #693B87;
+    -fx-fill: #693B87;
 }
 
 .block-ghost {

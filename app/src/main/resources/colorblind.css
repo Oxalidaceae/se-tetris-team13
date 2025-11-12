@@ -437,50 +437,10 @@
     -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
     -fx-stroke-width: 0.2 !important; 
 }
-.block-I { 
-    -fx-fill: #56B4E9 !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-O { 
-    -fx-fill: #F0E442 !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-T { 
-    -fx-fill: #E377C2 !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-S { 
-    -fx-fill: #009E73 !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-Z { 
-    -fx-fill: #E69F00 !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-J { 
-    -fx-fill: #7B68EE !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-L { 
-    -fx-fill: #FF7F0E !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
-.block-flash { 
-    -fx-fill: #FFFFFF !important; 
-    -fx-stroke: rgba(0, 0, 0, 0.6) !important; 
-    -fx-stroke-width: 0.2 !important; 
-}
 
 .item-copy-block {
-    -fx-text-fill: #FFD966;
-    -fx-fill: #FFD966;
+    -fx-text-fill: #0400FF;
+    -fx-fill: #0400FF;
 }
 
 .block-ghost {

@@ -467,19 +467,19 @@ public class VersusGameScene {
                     } else if (val >= 300 && val < 400) {
                         // WEIGHT 아이템
                         Tetromino.Kind kind = Tetromino.kindForId(val - 300);
-                        String blockClass = (kind != null) ? "block-" + kind.name() : "block-generic";
+                        String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
                         cell.setBlock("W", blockClass, textClass);
                     } else if (val >= 400 && val < 500) {
                         // GRAVITY 아이템
                         Tetromino.Kind kind = Tetromino.kindForId(val - 400);
-                        String blockClass = (kind != null) ? "block-" + kind.name() : "block-generic";
+                        String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
                         cell.setBlock("G", blockClass, textClass);
                     } else if (val >= 500 && val < 600) {
                         // SPLIT 아이템
                         Tetromino.Kind kind = Tetromino.kindForId(val - 500);
-                        String blockClass = (kind != null) ? "block-" + kind.name() : "block-generic";
+                        String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
                         String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
                         cell.setBlock("S", blockClass, textClass);
                     } else if (val >= 1000) {
@@ -503,7 +503,7 @@ public class VersusGameScene {
                 int py = engine.getPieceY();
                 int ghostY = engine.getGhostY();
                 String textClass = current.getTextStyleClass();
-                String blockClass = "block-" + current.getKind().name();
+                String blockClass = current.getBlockStyleClass();
                 
                 // 고스트 블록 그리기 (현재 블록보다 먼저 그려서 뒤에 표시됨)
                 if (ghostY != -1 && ghostY != py) {
@@ -575,7 +575,7 @@ public class VersusGameScene {
             if (next != null) {
                 int[][] nextShape = next.getShape();
                 String textClass = next.getTextStyleClass();
-                String blockClass = "block-" + next.getKind().name();
+                String blockClass = next.getBlockStyleClass();
                 
                 // 블록의 실제 크기 계산 (솔로 모드와 동일)
                 int minRow = 4, maxRow = -1, minCol = 4, maxCol = -1;
@@ -706,7 +706,7 @@ public class VersusGameScene {
             cssBlockClass = "block-item";
             textClass = "item-copy-block";
         } else if (blockClass.contains("tetris-gray-text")) {
-            symbol = "X";
+            symbol = " ";
             cssBlockClass = "block-gray";
             textClass = "tetris-gray-text";
         }
