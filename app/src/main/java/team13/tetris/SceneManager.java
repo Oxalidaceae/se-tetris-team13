@@ -238,9 +238,9 @@ public class SceneManager {
         changeScene(new KeySettingsScene(this, settings).getScene());
     }
 
-    public void showExitScene(Settings settings, Runnable onCancel) {
+    public void showExitScene(Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         previousScene = stage.getScene();
-        changeScene(new ExitScene(this, settings, onCancel).getScene());
+        changeScene(new ExitScene(this, settings, title, onConfirm, onCancel).getScene());
     }
     
     public void restorePreviousScene() {

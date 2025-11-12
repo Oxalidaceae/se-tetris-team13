@@ -11,22 +11,29 @@ import team13.tetris.config.Settings;
 public class ExitScene {
     private final SceneManager manager;
     private final Settings settings;
+    private final String title;
+    private final Runnable onConfirm;
     private final Runnable onCancel;
 
-    public ExitScene(SceneManager manager, Settings settings, Runnable onCancel) {
+    public ExitScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         this.manager = manager;
         this.settings = settings;
+        this.title = title;
+        this.onConfirm = onConfirm;
         this.onCancel = onCancel;
     }
 
     public Scene getScene() {
-        Label title = new Label("Exit Game?");
+        Label title = new Label(this.title);
         title.getStyleClass().add("label-title");
 
         Button confirmBtn = new Button("Confirm");
         Button cancelBtn = new Button("Cancel");
 
-        confirmBtn.setOnAction(e -> manager.exitWithSave(settings));
+        // confirmBtn.setOnAction(e -> manager.exitWithSave(settings));
+        confirmBtn.setOnAction(e -> {
+            if (onConfirm != null) onConfirm.run();
+        });
         cancelBtn.setOnAction(e -> {
             if (onCancel != null) onCancel.run();
         });
