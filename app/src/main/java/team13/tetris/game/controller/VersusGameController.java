@@ -165,13 +165,14 @@ public class VersusGameController {
                     dialog.close();
                     if (selected[0] == 0) {
                         resume();
-                    } else {
-                        // Quit 선택 시 ExitScene으로 이동
-                        sceneManager.showExitScene(settings, () -> {
-                            paused = true;
-                            showPauseWindow();
-                        });
-                    }
+                    } 
+                    //else {
+                    //    // Quit 선택 시 ExitScene으로 이동
+                    //    sceneManager.showExitScene(settings, () -> {
+                    //        paused = true;
+                    //        showPauseWindow();
+                    //    });
+                    //}
                 } else if (ev.getCode() == KeyCode.ESCAPE) {
                     // ESC로 Resume
                     dialog.close();

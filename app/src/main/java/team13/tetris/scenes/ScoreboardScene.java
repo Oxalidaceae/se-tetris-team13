@@ -49,7 +49,7 @@ public class ScoreboardScene {
         
         if (highlightName != null && highlightScore != null && highlightMode != null) {
             Button exitBtn = new Button("Exit");
-            exitBtn.setOnAction(e -> manager.showExitScene(settings, () -> manager.showScoreboard(settings, highlightName, highlightScore, highlightMode)));
+            exitBtn.setOnAction(e -> manager.showExitScene(settings,"Exit Game?", () -> manager.exitWithSave(settings), () -> manager.showScoreboard(settings, highlightName, highlightScore, highlightMode)));
             layout = new VBox(15, title, scoreList, backBtn, exitBtn);
         } 
         else {

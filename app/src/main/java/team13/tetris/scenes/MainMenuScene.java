@@ -30,6 +30,8 @@ public class MainMenuScene {
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
         exitBtn.setOnAction(e -> manager.showExitScene(
             settings,
+            "Exit Game?",
+            () -> manager.exitWithSave(settings),
             () -> manager.showMainMenu(settings)
         ));
 
