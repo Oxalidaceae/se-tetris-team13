@@ -26,7 +26,7 @@ public class GameSceneControllerTest {
 
 	// 테스트용 SceneManager (메서드 호출 추적)
 	private static class TestSceneManager extends SceneManager {
-		int showExitSceneCalled = 0;
+		int showConfirmSceneCalled = 0;
 		int restorePreviousSceneCalled = 0;
 
 		public TestSceneManager() {
@@ -34,7 +34,9 @@ public class GameSceneControllerTest {
 		}
 
 		@Override
-		public void showExitScene(Settings settings, Runnable onCancel) { showExitSceneCalled++; }
+		public void showConfirmScene(Settings settings, String title, Runnable onConfirm, Runnable onCancel) { 
+			showConfirmSceneCalled++; 
+		}
 
 		@Override
 		public void restorePreviousScene() { restorePreviousSceneCalled++; }
@@ -394,7 +396,7 @@ public class GameSceneControllerTest {
 
 		// SceneManager가 정상적으로 설정되었는지 간접 확인
 		// (실제 호출은 pause window에서 사용자 선택에 따라 결정됨)
-		assertEquals(0, mockSceneManager.showExitSceneCalled);
+		assertEquals(0, mockSceneManager.showConfirmSceneCalled);
 		assertEquals(0, mockSceneManager.restorePreviousSceneCalled);
 	}
 
