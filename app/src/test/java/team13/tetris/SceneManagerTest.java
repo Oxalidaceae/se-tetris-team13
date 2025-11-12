@@ -471,7 +471,7 @@ public class SceneManagerTest {
     }
 
     @Test
-    @DisplayName("ExitScene으로 전환할 수 있는지 확인")
+    @DisplayName("confirmScene으로 전환할 수 있는지 확인")
     void testShowExitScene() {
         javafx.application.Platform.runLater(() -> {
             // 먼저 메인 메뉴 표시
@@ -479,31 +479,32 @@ public class SceneManagerTest {
             Scene originalScene = stage.getScene();
             assertNotNull(originalScene, "Original scene should not be null");
 
-            // ExitScene으로 전환
+            // confirmScene으로 전환
+            Runnable onConfirm = () -> {};
             Runnable onCancel = () -> {};
-            sceneManager.showExitScene(settings, onCancel);
+            sceneManager.showConfirmScene(settings, "Test Title", onConfirm, onCancel);
 
-            Scene exitScene = stage.getScene();
-            assertNotNull(exitScene, "Stage should have a scene after showing exit scene");
-            assertNotNull(exitScene.getRoot(), "Exit scene should have a root node");
-            assertNotSame(originalScene, exitScene, "Exit scene should be different from original scene");
+            Scene confirmScene = stage.getScene();
+            assertNotNull(confirmScene, "Stage should have a scene after showing confirm scene");
+            assertNotNull(confirmScene.getRoot(), "Confirm scene should have a root node");
+            assertNotSame(originalScene, confirmScene, "Confirm scene should be different from original scene");
         });
 
         waitForFX();
     }
 
     @Test
-    @DisplayName("ExitScene에서 이전 씬으로 복원할 수 있는지 확인")
+    @DisplayName("confirmScene에서 이전 씬으로 복원할 수 있는지 확인")
     void testRestorePreviousScene() {
         javafx.application.Platform.runLater(() -> {
             // 메인 메뉴 표시
             sceneManager.showMainMenu(settings);
             Scene mainMenuScene = stage.getScene();
 
-            // ExitScene으로 전환
-            sceneManager.showExitScene(settings, () -> {});
-            Scene exitScene = stage.getScene();
-            assertNotSame(mainMenuScene, exitScene, "Exit scene should be different");
+            // confirmScene으로 전환
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
+            Scene confirmScene = stage.getScene();
+            assertNotSame(mainMenuScene, confirmScene, "Confirm scene should be different");
 
             // 이전 씬으로 복원
             sceneManager.restorePreviousScene();
@@ -528,58 +529,58 @@ public class SceneManagerTest {
     }
 
     @Test
-    @DisplayName("여러 번 ExitScene을 표시할 수 있는지 확인")
+    @DisplayName("여러 번 confirmScene을 표시할 수 있는지 확인")
     void testMultipleExitSceneShows() {
         javafx.application.Platform.runLater(() -> {
             sceneManager.showMainMenu(settings);
 
-            // 첫 번째 ExitScene 표시
-            sceneManager.showExitScene(settings, () -> {});
-            assertNotNull(stage.getScene(), "Scene should exist after first exit scene");
+            // 첫 번째 confirmScene 표시
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
+            assertNotNull(stage.getScene(), "Scene should exist after first confirm scene");
 
             // 복원
             sceneManager.restorePreviousScene();
 
-            // 두 번째 ExitScene 표시
-            sceneManager.showExitScene(settings, () -> {});
-            assertNotNull(stage.getScene(), "Scene should exist after second exit scene");
+            // 두 번째 confirmScene 표시
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
+            assertNotNull(stage.getScene(), "Scene should exist after second confirm scene");
         });
 
         waitForFX();
     }
 
     @Test
-    @DisplayName("ExitScene의 onCancel 콜백이 null이어도 표시할 수 있는지 확인")
+    @DisplayName("confirmScene의 콜백이 null이어도 표시할 수 있는지 확인")
     void testShowExitSceneWithNullCallback() {
         javafx.application.Platform.runLater(() -> {
             sceneManager.showMainMenu(settings);
 
-            assertDoesNotThrow(() -> sceneManager.showExitScene(settings, null),
-                    "showExitScene should not throw with null callback");
+            assertDoesNotThrow(() -> sceneManager.showConfirmScene(settings, "Test Title", null, null),
+                    "showConfirmScene should not throw with null callbacks");
 
-            assertNotNull(stage.getScene(), "Scene should exist after showing exit scene with null callback");
+            assertNotNull(stage.getScene(), "Scene should exist after showing confirm scene with null callbacks");
         });
 
         waitForFX();
     }
 
     @Test
-    @DisplayName("다른 씬들 사이에서 ExitScene을 표시할 수 있는지 확인")
+    @DisplayName("다른 씬들 사이에서 confirmScene을 표시할 수 있는지 확인")
     void testExitSceneFromDifferentScenes() {
         javafx.application.Platform.runLater(() -> {
-            // Settings에서 ExitScene
+            // Settings에서 confirmScene
             sceneManager.showSettings(settings);
             Scene settingsScene = stage.getScene();
-            sceneManager.showExitScene(settings, () -> {});
-            assertNotSame(settingsScene, stage.getScene(), "Should switch to exit scene");
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
+            assertNotSame(settingsScene, stage.getScene(), "Should switch to confirm scene");
             sceneManager.restorePreviousScene();
             assertSame(settingsScene, stage.getScene(), "Should restore settings scene");
 
-            // Scoreboard에서 ExitScene
+            // Scoreboard에서 confirmScene
             sceneManager.showScoreboard(settings);
             Scene scoreboardScene = stage.getScene();
-            sceneManager.showExitScene(settings, () -> {});
-            assertNotSame(scoreboardScene, stage.getScene(), "Should switch to exit scene");
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
+            assertNotSame(scoreboardScene, stage.getScene(), "Should switch to confirm scene");
             sceneManager.restorePreviousScene();
             assertSame(scoreboardScene, stage.getScene(), "Should restore scoreboard scene");
         });
@@ -588,34 +589,34 @@ public class SceneManagerTest {
     }
 
     @Test
-    @DisplayName("ExitScene이 CSS를 올바르게 적용하는지 확인")
+    @DisplayName("confirmScene이 CSS를 올바르게 적용하는지 확인")
     void testExitSceneAppliesCSS() {
         javafx.application.Platform.runLater(() -> {
             sceneManager.showMainMenu(settings);
-            sceneManager.showExitScene(settings, () -> {});
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
 
-            Scene exitScene = stage.getScene();
-            assertNotNull(exitScene, "Exit scene should not be null");
-            assertFalse(exitScene.getStylesheets().isEmpty(),
-                    "Exit scene should have stylesheets applied");
+            Scene confirmScene = stage.getScene();
+            assertNotNull(confirmScene, "Confirm scene should not be null");
+            assertFalse(confirmScene.getStylesheets().isEmpty(),
+                    "Confirm scene should have stylesheets applied");
         });
 
         waitForFX();
     }
 
     @Test
-    @DisplayName("색맹 모드에서 ExitScene이 colorblind.css를 적용하는지 확인")
+    @DisplayName("색맹 모드에서 confirmScene이 colorblind.css를 적용하는지 확인")
     void testExitSceneColorBlindMode() {
         javafx.application.Platform.runLater(() -> {
             sceneManager.setColorBlindMode(true);
             sceneManager.showMainMenu(settings);
-            sceneManager.showExitScene(settings, () -> {});
+            sceneManager.showConfirmScene(settings, "Test Title", () -> {}, () -> {});
 
-            Scene exitScene = stage.getScene();
-            assertNotNull(exitScene, "Exit scene should not be null");
-            assertFalse(exitScene.getStylesheets().isEmpty(), "Exit scene should have stylesheets");
-            assertTrue(exitScene.getStylesheets().get(0).contains("colorblind.css"),
-                    "Exit scene should use colorblind.css when color blind mode is enabled");
+            Scene confirmScene = stage.getScene();
+            assertNotNull(confirmScene, "Confirm scene should not be null");
+            assertFalse(confirmScene.getStylesheets().isEmpty(), "Confirm scene should have stylesheets");
+            assertTrue(confirmScene.getStylesheets().get(0).contains("colorblind.css"),
+                    "Confirm scene should use colorblind.css when color blind mode is enabled");
         });
 
         waitForFX();
