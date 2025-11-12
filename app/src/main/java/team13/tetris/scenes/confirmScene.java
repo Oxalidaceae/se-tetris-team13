@@ -8,14 +8,14 @@ import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
-public class ExitScene {
+public class confirmScene {
     private final SceneManager manager;
     private final Settings settings;
     private final String title;
     private final Runnable onConfirm;
     private final Runnable onCancel;
 
-    public ExitScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
+    public confirmScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         this.manager = manager;
         this.settings = settings;
         this.title = title;

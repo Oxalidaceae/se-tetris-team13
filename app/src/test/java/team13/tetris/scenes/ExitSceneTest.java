@@ -15,7 +15,7 @@ public class ExitSceneTest {
     private TestSceneManager testSceneManager;
     private Settings testSettings;
     private TestRunnable testOnCancel;
-    private ExitScene exitScene;
+    private confirmScene exitScene;
 
     // Test용 SceneManager 구현
     static class TestSceneManager extends SceneManager {
@@ -51,14 +51,14 @@ public class ExitSceneTest {
         testOnCancel = new TestRunnable();
 
         // ExitScene 인스턴스 생성
-        exitScene = new ExitScene(testSceneManager, testSettings, testOnCancel);
+        exitScene = new confirmScene(testSceneManager, testSettings, testOnCancel);
     }
 
     @Test
     @DisplayName("생성자: 정상적인 매개변수로 객체 생성")
     void testConstructor() {
         // 정상적인 매개변수로 생성
-        ExitScene scene = new ExitScene(testSceneManager, testSettings, testOnCancel);
+        confirmScene scene = new confirmScene(testSceneManager, testSettings, testOnCancel);
         assertNotNull(scene);
     }
 
@@ -66,7 +66,7 @@ public class ExitSceneTest {
     @DisplayName("생성자: null onCancel로 객체 생성")
     void testConstructorWithNullOnCancel() {
         // onCancel이 null이어도 정상 생성되어야 함
-        ExitScene scene = new ExitScene(testSceneManager, testSettings, null);
+        confirmScene scene = new confirmScene(testSceneManager, testSettings, null);
         assertNotNull(scene);
     }
 
@@ -79,7 +79,7 @@ public class ExitSceneTest {
         Settings customSettings = new Settings();
         TestRunnable customRunnable = new TestRunnable();
 
-        ExitScene scene = new ExitScene(customManager, customSettings, customRunnable);
+        confirmScene scene = new confirmScene(customManager, customSettings, customRunnable);
         assertNotNull(scene);
     }
 
@@ -93,8 +93,8 @@ public class ExitSceneTest {
         TestRunnable runnable1 = new TestRunnable();
         TestRunnable runnable2 = new TestRunnable();
 
-        ExitScene scene1 = new ExitScene(manager1, settings1, runnable1);
-        ExitScene scene2 = new ExitScene(manager2, settings2, runnable2);
+        confirmScene scene1 = new confirmScene(manager1, settings1, runnable1);
+        confirmScene scene2 = new confirmScene(manager2, settings2, runnable2);
 
         // 각각 독립적인 객체여야 함
         assertNotSame(scene1, scene2);
@@ -107,7 +107,7 @@ public class ExitSceneTest {
     void testNullSceneManager() {
         // null SceneManager로도 생성할 수 있어야 함 (실제 사용에서는 문제가 될 수 있지만)
         assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(null, testSettings, testOnCancel);
+            confirmScene scene = new confirmScene(null, testSettings, testOnCancel);
             assertNotNull(scene);
         });
     }
@@ -117,7 +117,7 @@ public class ExitSceneTest {
     void testNullSettings() {
         // null Settings로도 생성할 수 있어야 함
         assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(testSceneManager, null, testOnCancel);
+            confirmScene scene = new confirmScene(testSceneManager, null, testOnCancel);
             assertNotNull(scene);
         });
     }
@@ -127,7 +127,7 @@ public class ExitSceneTest {
     void testAllNullParameters() {
         // 모든 매개변수가 null이어도 생성할 수 있어야 함
         assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(null, null, null);
+            confirmScene scene = new confirmScene(null, null, null);
             assertNotNull(scene);
         });
     }
@@ -221,8 +221,8 @@ public class ExitSceneTest {
         assertNotSame(settings1, settings2);
 
         // 각각 독립적으로 사용 가능해야 함
-        ExitScene scene1 = new ExitScene(testSceneManager, settings1, testOnCancel);
-        ExitScene scene2 = new ExitScene(testSceneManager, settings2, testOnCancel);
+        confirmScene scene1 = new confirmScene(testSceneManager, settings1, testOnCancel);
+        confirmScene scene2 = new confirmScene(testSceneManager, settings2, testOnCancel);
 
         assertNotNull(scene1);
         assertNotNull(scene2);

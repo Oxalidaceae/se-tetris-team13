@@ -236,7 +236,7 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                         resume();
                     } else if (selected[0] == 1) {
                         // Main Menu 선택
-                        manager.showExitScene(
+                        manager.showConfirmScene(
                             settings,
                             "Return to Main Menu?",
                             () -> manager.showMainMenu(settings),
@@ -248,7 +248,7 @@ public class GameSceneController implements GameStateListener, KeyInputHandler.K
                         );
                     } else {
                         // Quit 선택 - 확인 화면 표시
-                        manager.showExitScene(
+                        manager.showConfirmScene(
                             settings,
                             "Exit Game?",
                             () -> manager.exitWithSave(settings),
