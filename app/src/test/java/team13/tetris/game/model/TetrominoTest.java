@@ -112,17 +112,6 @@ public class TetrominoTest {
     }
 
     @Test
-    @DisplayName("반시계방향 회전이 올바르게 동작해야 함")
-    void testRotateCounter() {
-        Tetromino original = new Tetromino(Kind.T, 0);
-        Tetromino rotated = original.rotateCounter();
-
-        assertNotNull(rotated);
-        assertEquals(Kind.T, rotated.getKind());
-        assertNotSame(original, rotated);
-    }
-
-    @Test
     @DisplayName("4번 시계방향 회전 시 원래 모양으로 돌아와야 함")
     void testFourClockwiseRotationsReturnToOriginal() {
         Tetromino original = new Tetromino(Kind.L);
@@ -131,30 +120,6 @@ public class TetrominoTest {
             .rotateClockwise()
             .rotateClockwise()
             .rotateClockwise();
-
-        assertArrayEquals(original.getShape(), rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("4번 반시계방향 회전 시 원래 모양으로 돌아와야 함")
-    void testFourCounterRotationsReturnToOriginal() {
-        Tetromino original = new Tetromino(Kind.J);
-        Tetromino rotated = original
-            .rotateCounter()
-            .rotateCounter()
-            .rotateCounter()
-            .rotateCounter();
-
-        assertArrayEquals(original.getShape(), rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("시계방향 회전 후 반시계방향 회전 시 원래 모양으로 돌아와야 함")
-    void testClockwiseThenCounter() {
-        Tetromino original = new Tetromino(Kind.S);
-        Tetromino rotated = original
-            .rotateClockwise()
-            .rotateCounter();
 
         assertArrayEquals(original.getShape(), rotated.getShape());
     }
@@ -181,24 +146,6 @@ public class TetrominoTest {
         int[][] expected = {
             { 1, 1 },
             { 1, 0 }
-        };
-
-        assertArrayEquals(expected, rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("raw shape의 반시계방향 회전이 올바르게 동작해야 함")
-    void testRawShapeRotateCounter() {
-        int[][] shape = {
-            { 1, 0 },
-            { 1, 1 }
-        };
-        Tetromino tetromino = new Tetromino(1, shape);
-        Tetromino rotated = tetromino.rotateCounter();
-
-        int[][] expected = {
-            { 0, 1 },
-            { 1, 1 }
         };
 
         assertArrayEquals(expected, rotated.getShape());
@@ -426,25 +373,6 @@ public class TetrominoTest {
     }
 
     @Test
-    @DisplayName("O 미노 COPY 아이템 반시계방향 회전 시 올바른 인덱스가 계산되어야 함")
-    void testOMinoCopyCounterRotation() {
-        // O 미노는 블록 위치가 고정: (0,1), (0,2), (1,1), (1,2)
-        // 반시계방향 회전: 0 -> 2 -> 3 -> 1 -> 0
-        Tetromino copyItem0 = new Tetromino(Kind.O, 0, 0);
-        Tetromino rotated1 = copyItem0.rotateCounter();
-        assertEquals(2, rotated1.getCopyBlockIndex());
-
-        Tetromino rotated2 = rotated1.rotateCounter();
-        assertEquals(3, rotated2.getCopyBlockIndex());
-
-        Tetromino rotated3 = rotated2.rotateCounter();
-        assertEquals(1, rotated3.getCopyBlockIndex());
-
-        Tetromino rotated4 = rotated3.rotateCounter();
-        assertEquals(0, rotated4.getCopyBlockIndex());
-    }
-
-    @Test
     @DisplayName("I 미노 회전 시 4개 블록이 유지되어야 함")
     void testIMinoRotationMaintainsBlockCount() {
         Tetromino iTetromino = new Tetromino(Kind.I);
@@ -465,7 +393,6 @@ public class TetrominoTest {
             Tetromino tetromino = new Tetromino(kind);
             assertDoesNotThrow(() -> {
                 tetromino.rotateClockwise();
-                tetromino.rotateCounter();
             }, kind + " 회전 시 예외가 발생하지 않아야 함");
         }
     }

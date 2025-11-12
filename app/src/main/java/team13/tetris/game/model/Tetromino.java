@@ -2,11 +2,9 @@ package team13.tetris.game.model;
 
 import java.util.Arrays;
 
-// 테트로미노 래퍼 클래스.
-// - 색상은 문자열/인라인 스타일이 아닌 "CSS 클래스명"으로만 노출한다.
-//   * 블록(도형/영역)용: block-I, block-O, ... (예: Rectangle/Panes)
-//   * 텍스트용: tetris-i-text, tetris-o-text, ... (예: Label)
-// - 일반/색맹 테마 전환은 CSS 파일 교체만으로 처리 가능.
+// =========== 반시계 코드 처리 필요 ====================
+// 테트로미노 클래스
+// 일반/색맹 테마 전환은 CSS 파일 교체만으로 처리 가능
 public class Tetromino {
 
     // 아이템 타입 정의
@@ -108,21 +106,13 @@ public class Tetromino {
             this.textStyleClass = textStyleClass;
         }
 
-        public int[][] getRotation(int idx) {
-            return rotations[idx % rotations.length];
-        }
+        public int[][] getRotation(int idx) { return rotations[idx % rotations.length]; }
 
-        public int getId() {
-            return id;
-        }
+        public int getId() { return id; }
 
-        public String getBlockStyleClass() {
-            return blockStyleClass;
-        }
+        public String getBlockStyleClass() { return blockStyleClass; }
 
-        public String getTextStyleClass() {
-            return textStyleClass;
-        }
+        public String getTextStyleClass() { return textStyleClass; }
     }
 
     private final Kind kind;     // raw shape로 생성되면 null
@@ -146,9 +136,7 @@ public class Tetromino {
     private boolean isLocked;              // 이동 잠금 상태 (무게추가 착지했을 때 true)
 
     // 미리 정의된 Kind로 생성
-    public Tetromino(Kind kind) {
-        this(kind, 0);
-    }
+    public Tetromino(Kind kind) { this(kind, 0); }
 
     public Tetromino(Kind kind, int rotation) {
         this.kind = kind;
@@ -160,6 +148,7 @@ public class Tetromino {
         this.copyBlockIndex = -1;
         this.copyBlockRow = -1;
         this.copyBlockCol = -1;
+
         // LINE_CLEAR 전용 필드 초기화
         this.lineClearBlockIndex = -1;
         this.lineClearBlockRow = -1;
@@ -168,20 +157,21 @@ public class Tetromino {
         this.isLocked = false;
     }
 
-    // 레거시 호환: id + raw shape로 생성
+    // 레거시 호환(id + raw shape로 생성)
     public Tetromino(int id, int[][] shape) {
         this.kind = null;
         this.rotation = 0;
         this.id = id;
         this.shape = new int[shape.length][];
-        for (int i = 0; i < shape.length; i++) {
+        for (int i = 0; i < shape.length; i++)
             this.shape[i] = Arrays.copyOf(shape[i], shape[i].length);
-        }
+        
         this.isItemPiece = false;
         this.itemType = null;
         this.copyBlockIndex = -1;
         this.copyBlockRow = -1;
         this.copyBlockCol = -1;
+
         // LINE_CLEAR 전용 필드 초기화
         this.lineClearBlockIndex = -1;
         this.lineClearBlockRow = -1;
@@ -284,55 +274,33 @@ public class Tetromino {
         this.lineClearBlockCol = foundCol;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
     
-    public ItemType getItemType() {
-        return itemType;
-    }
+    public ItemType getItemType() { return itemType; }
     
-    public boolean canRotate() {
-        return canRotate;
-    }
-    
-    public boolean isLocked() {
-        return isLocked;
-    }
-    
-    public void setLocked(boolean locked) {
-        this.isLocked = locked;
-    }
-    
+    public boolean canRotate() { return canRotate; }
+
+    public boolean isLocked() { return isLocked; }
+
+    public void setLocked(boolean locked) { this.isLocked = locked; }
+
     // LINE_CLEAR 아이템 전용 getter 메소드들 (COPY와 분리)
-    public int getLineClearBlockIndex() {
-        return lineClearBlockIndex;
-    }
+    public int getLineClearBlockIndex() { return lineClearBlockIndex; }
     
-    public int getLineClearBlockRow() {
-        return lineClearBlockRow;
-    }
+    public int getLineClearBlockRow() { return lineClearBlockRow; }
     
-    public int getLineClearBlockCol() {
-        return lineClearBlockCol;
-    }
+    public int getLineClearBlockCol() { return lineClearBlockCol; }
 
     public int[][] getShape() {
         int[][] src = (kind != null) ? kind.getRotation(rotation) : shape;
         int[][] copy = new int[src.length][];
-        for (int i = 0; i < src.length; i++) {
-            copy[i] = Arrays.copyOf(src[i], src[i].length);
-        }
+        for (int i = 0; i < src.length; i++) copy[i] = Arrays.copyOf(src[i], src[i].length);
         return copy;
     }
 
-    public int getHeight() {
-        return getShape().length;
-    }
+    public int getHeight() { return getShape().length; }
 
-    public int getWidth() {
-        return getShape()[0].length;
-    }
+    public int getWidth() { return getShape()[0].length; }
 
     public Tetromino rotateClockwise() {
         if (kind != null) {
@@ -340,17 +308,19 @@ public class Tetromino {
             if (isItemPiece) {
                 // LINE_CLEAR 아이템인 경우 lineClearBlockIndex를 사용
                 if (itemType == ItemType.LINE_CLEAR) {
-                    int newLineClearBlockIndex = calculateRotatedLineClearBlockIndex(true);
-                    return new Tetromino(kind, (rotation + 1) % 4, newLineClearBlockIndex, ItemType.LINE_CLEAR);
+                    int newLineClearBlockIndex = calculateRotatedLineClearBlockIndex();
+                    return new Tetromino(kind, (rotation + 1) % 4, 
+                            newLineClearBlockIndex, ItemType.LINE_CLEAR);
                 } else {
                     // 다른 아이템들은 copyBlockIndex 사용
-                    int newCopyBlockIndex = calculateRotatedCopyBlockIndex(true);
+                    int newCopyBlockIndex = calculateRotatedCopyBlockIndex();
                     return new Tetromino(kind, (rotation + 1) % 4, newCopyBlockIndex);
                 }
             } else {
                 return new Tetromino(kind, (rotation + 1) % 4);
             }
         }
+
         // raw shape 회전
         int[][] s = getShape();
         int h = s.length, w = s[0].length;
@@ -363,45 +333,11 @@ public class Tetromino {
         return new Tetromino(id, out);
     }
 
-    public Tetromino rotateCounter() {
-        if (kind != null) {
-            // 아이템 미노인 경우 회전 후 새로운 블록 인덱스 계산
-            if (isItemPiece) {
-                // LINE_CLEAR 아이템인 경우 lineClearBlockIndex를 사용
-                if (itemType == ItemType.LINE_CLEAR) {
-                    int newLineClearBlockIndex = calculateRotatedLineClearBlockIndex(false);
-                    return new Tetromino(kind, (rotation + 3) % 4, newLineClearBlockIndex, ItemType.LINE_CLEAR);
-                } else {
-                    // 다른 아이템들은 copyBlockIndex 사용
-                    int newCopyBlockIndex = calculateRotatedCopyBlockIndex(false);
-                    return new Tetromino(kind, (rotation + 3) % 4, newCopyBlockIndex);
-                }
-            } else {
-                return new Tetromino(kind, (rotation + 3) % 4);
-            }
-        }
-        int[][] s = getShape();
-        int h = s.length, w = s[0].length;
-        int[][] out = new int[w][h];
-        for (int r = 0; r < h; r++) {
-            for (int c = 0; c < w; c++) {
-                out[w - 1 - c][r] = s[r][c];
-            }
-        }
-        return new Tetromino(id, out);
-    }
-
     // 편의 팩토리
-    public static Tetromino of(Kind k) {
-        return new Tetromino(k, 0);
-    }
+    public static Tetromino of(Kind k) { return new Tetromino(k, 0); }
     
-    /**
-     * 이 테트로미노의 Kind를 반환합니다. raw shape로 생성된 경우 null을 반환할 수 있습니다.
-     */
-    public Kind getKind() {
-        return kind;
-    }
+    // 이 테트로미노의 Kind를 반환. raw shape로 생성된 경우 null을 반환할 수 있음.
+    public Kind getKind() { return kind; }
 
     // 뷰(노드)가 붙일 블록용 CSS 클래스명 (예: "block-L")
     public String getBlockStyleClass() {
@@ -417,14 +353,12 @@ public class Tetromino {
 
     // id -> Kind 조회 (레거시/raw shape 지원용)
     public static Kind kindForId(int id) {
-        for (Kind k : Kind.values()) {
+        for (Kind k : Kind.values())
             if (k.getId() == id) return k;
-        }
         return null;
     }
 
-    // ===== 내부 유틸: raw 생성자 호환용 매핑 =====
-
+    // 내부 유틸: raw 생성자 호환용 매핑
     private static String blockClassForId(int id) {
         switch (id) {
             case 1: return "block-I";
@@ -452,19 +386,13 @@ public class Tetromino {
     }
     
     // 아이템 관련 메서드들
-    public boolean isItemPiece() {
-        return isItemPiece;
-    }
+    public boolean isItemPiece() { return isItemPiece; }
     
-    public int getCopyBlockIndex() {
-        return copyBlockIndex;
-    }
+    public int getCopyBlockIndex() { return copyBlockIndex; }
     
     // 회전 후 copyBlock의 새로운 인덱스를 계산
-    private int calculateRotatedCopyBlockIndex(boolean clockwise) {
-        if (!isItemPiece || kind == null) {
-            return -1;
-        }
+    private int calculateRotatedCopyBlockIndex() {
+        if (!isItemPiece || kind == null) return -1;
         
         // 현재 copyBlockIndex의 위치 찾기
         int originalRow = copyBlockRow;
@@ -472,11 +400,7 @@ public class Tetromino {
         
         // 회전 후의 블록 위치들을 계산
         Tetromino rotatedTetromino;
-        if (clockwise) {
-            rotatedTetromino = new Tetromino(kind, (rotation + 1) % 4);
-        } else {
-            rotatedTetromino = new Tetromino(kind, (rotation + 3) % 4);
-        }
+        rotatedTetromino = new Tetromino(kind, (rotation + 1) % 4);
         
         // 회전 변환을 적용하여 원래 위치가 새로운 위치로 어떻게 변환되는지 계산
         int newRow, newCol;
@@ -485,34 +409,19 @@ public class Tetromino {
         if (kind == Kind.O) {
             // O미노는 특별한 회전 패턴 사용 - 블록 위치는 고정, C마크만 이동
             // O미노의 실제 블록 위치: (0,1), (0,2), (1,1), (1,2)
-            if (clockwise) {
-                // O미노의 시계방향 C마크 이동: (0,1) -> (0,2) -> (1,2) -> (1,1)
-                if (originalRow == 0 && originalCol == 1) {
-                    newRow = 0; newCol = 2;
-                } else if (originalRow == 0 && originalCol == 2) {
-                    newRow = 1; newCol = 2;
-                } else if (originalRow == 1 && originalCol == 2) {
-                    newRow = 1; newCol = 1;
-                } else if (originalRow == 1 && originalCol == 1) {
-                    newRow = 0; newCol = 1;
-                } else {
-                    // 예외 상황: 기본값
-                    newRow = 0; newCol = 1;
-                }
+
+            // O미노의 시계방향 C마크 이동: (0,1) -> (0,2) -> (1,2) -> (1,1)
+            if (originalRow == 0 && originalCol == 1) {
+                newRow = 0; newCol = 2;
+            } else if (originalRow == 0 && originalCol == 2) {
+                newRow = 1; newCol = 2;
+            } else if (originalRow == 1 && originalCol == 2) {
+                newRow = 1; newCol = 1;
+            } else if (originalRow == 1 && originalCol == 1) {
+                newRow = 0; newCol = 1;
             } else {
-                // O미노의 반시계방향 C마크 이동: (0,1) -> (1,1) -> (1,2) -> (0,2)
-                if (originalRow == 0 && originalCol == 1) {
-                    newRow = 1; newCol = 1;
-                } else if (originalRow == 1 && originalCol == 1) {
-                    newRow = 1; newCol = 2;
-                } else if (originalRow == 1 && originalCol == 2) {
-                    newRow = 0; newCol = 2;
-                } else if (originalRow == 0 && originalCol == 2) {
-                    newRow = 0; newCol = 1;
-                } else {
-                    // 예외 상황: 기본값
-                    newRow = 0; newCol = 1;
-                }
+                // 예외 상황: 기본값
+                newRow = 0; newCol = 1;
             }
             
             // O미노의 경우 블록 위치는 항상 고정: (0,1), (0,2), (1,1), (1,2)
@@ -534,33 +443,20 @@ public class Tetromino {
         
         if (kind == Kind.I) {
             // I미노는 4x4 격자 미노 회전 공식 사용
-            if (clockwise) {
-                // 시계방향 회전: (r, c) -> (c, 3-r)
-                newRow = originalCol;
-                newCol = 3 - originalRow;
-            } else {
-                // 반시계방향 회전: (r, c) -> (3-c, r)
-                newRow = 3 - originalCol;
-                newCol = originalRow;
-            }
+            // 시계방향 회전: (r, c) -> (c, 3-r)
+            newRow = originalCol;
+            newCol = 3 - originalRow;
         } else {
             // 3x3 격자 미노 (J, L, S, Z, T) - 새로운 공식 적용
-            if (clockwise) {
-                // 시계방향 회전: (r, c) -> (c, 2-r) [3x3 격자 기준]
-                newRow = originalCol;
-                newCol = 2 - originalRow;
-            } else {
-                // 반시계방향 회전: (r, c) -> (2-c, r) [3x3 격자 기준]
-                newRow = 2 - originalCol;
-                newCol = originalRow;
-            }
+            // 시계방향 회전: (r, c) -> (c, 2-r) [3x3 격자 기준]
+            newRow = originalCol;
+            newCol = 2 - originalRow;
         }
         
         // 회전된 블록 위치들 중에서 새로운 위치와 일치하는 인덱스 찾기
         for (int i = 0; i < rotatedPositions.length; i++) {
-            if (rotatedPositions[i][0] == newRow && rotatedPositions[i][1] == newCol) {
+            if (rotatedPositions[i][0] == newRow && rotatedPositions[i][1] == newCol)
                 return i;
-            }
         }
         
         // 만약 찾지 못했다면 첫 번째 블록으로 기본 설정
@@ -568,10 +464,9 @@ public class Tetromino {
     }
     
     // LINE_CLEAR 아이템 전용: 회전 후 lineClearBlock의 새로운 인덱스를 계산 
-    private int calculateRotatedLineClearBlockIndex(boolean clockwise) {
-        if (!isItemPiece || kind == null || itemType != ItemType.LINE_CLEAR) {
+    private int calculateRotatedLineClearBlockIndex() {
+        if (!isItemPiece || kind == null || itemType != ItemType.LINE_CLEAR)
             return -1;
-        }
         
         // 현재 lineClearBlockIndex의 위치 찾기
         int originalRow = lineClearBlockRow;
@@ -579,12 +474,8 @@ public class Tetromino {
         
         // 회전 후의 블록 위치들을 계산
         Tetromino rotatedTetromino;
-        if (clockwise) {
-            rotatedTetromino = new Tetromino(kind, (rotation + 1) % 4);
-        } else {
-            rotatedTetromino = new Tetromino(kind, (rotation + 3) % 4);
-        }
-        
+        rotatedTetromino = new Tetromino(kind, (rotation + 1) % 4);
+
         // 회전 변환을 적용하여 원래 위치가 새로운 위치로 어떻게 변환되는지 계산
         int newRow, newCol;
         
@@ -592,34 +483,18 @@ public class Tetromino {
         if (kind == Kind.O) {
             // O미노는 특별한 회전 패턴 사용 - 블록 위치는 고정, L마크만 이동
             // O미노의 실제 블록 위치: (0,1), (0,2), (1,1), (1,2)
-            if (clockwise) {
-                // O미노의 시계방향 L마크 이동: (0,1) -> (0,2) -> (1,2) -> (1,1)
-                if (originalRow == 0 && originalCol == 1) {
-                    newRow = 0; newCol = 2;
-                } else if (originalRow == 0 && originalCol == 2) {
-                    newRow = 1; newCol = 2;
-                } else if (originalRow == 1 && originalCol == 2) {
-                    newRow = 1; newCol = 1;
-                } else if (originalRow == 1 && originalCol == 1) {
-                    newRow = 0; newCol = 1;
-                } else {
-                    // 예외 상황: 기본값
-                    newRow = 0; newCol = 1;
-                }
+            // O미노의 시계방향 L마크 이동: (0,1) -> (0,2) -> (1,2) -> (1,1)
+            if (originalRow == 0 && originalCol == 1) {
+                newRow = 0; newCol = 2;
+            } else if (originalRow == 0 && originalCol == 2) {
+                newRow = 1; newCol = 2;
+            } else if (originalRow == 1 && originalCol == 2) {
+                newRow = 1; newCol = 1;
+            } else if (originalRow == 1 && originalCol == 1) {
+                newRow = 0; newCol = 1;
             } else {
-                // O미노의 반시계방향 L마크 이동: (0,1) -> (1,1) -> (1,2) -> (0,2)
-                if (originalRow == 0 && originalCol == 1) {
-                    newRow = 1; newCol = 1;
-                } else if (originalRow == 1 && originalCol == 1) {
-                    newRow = 1; newCol = 2;
-                } else if (originalRow == 1 && originalCol == 2) {
-                    newRow = 0; newCol = 2;
-                } else if (originalRow == 0 && originalCol == 2) {
-                    newRow = 0; newCol = 1;
-                } else {
-                    // 예외 상황: 기본값
-                    newRow = 0; newCol = 1;
-                }
+                // 예외 상황: 기본값
+                newRow = 0; newCol = 1;
             }
             
             // O미노의 경우 블록 위치는 항상 고정: (0,1), (0,2), (1,1), (1,2)
@@ -641,26 +516,14 @@ public class Tetromino {
         
         if (kind == Kind.I) {
             // I미노는 4x4 격자 미노 회전 공식 사용
-            if (clockwise) {
-                // 시계방향 회전: (r, c) -> (c, 3-r)
-                newRow = originalCol;
-                newCol = 3 - originalRow;
-            } else {
-                // 반시계방향 회전: (r, c) -> (3-c, r)
-                newRow = 3 - originalCol;
-                newCol = originalRow;
-            }
+            // 시계방향 회전: (r, c) -> (c, 3-r)
+            newRow = originalCol;
+            newCol = 3 - originalRow;
         } else {
             // 3x3 격자 미노 (J, L, S, Z, T) - 새로운 공식 적용
-            if (clockwise) {
-                // 시계방향 회전: (r, c) -> (c, 2-r) [3x3 격자 기준]
-                newRow = originalCol;
-                newCol = 2 - originalRow;
-            } else {
-                // 반시계방향 회전: (r, c) -> (2-c, r) [3x3 격자 기준]
-                newRow = 2 - originalCol;
-                newCol = originalRow;
-            }
+            // 시계방향 회전: (r, c) -> (c, 2-r) [3x3 격자 기준]
+            newRow = originalCol;
+            newCol = 2 - originalRow;
         }
         
         // 회전된 블록 위치들 중에서 새로운 위치와 일치하는 인덱스 찾기
@@ -675,16 +538,14 @@ public class Tetromino {
     }
 
     // 현재 미노의 블록 위치들을 반환 (아이템 효과 처리용)
-    // @return 블록이 있는 위치들의 배열 [행, 열]
+    // return 값: 블록이 있는 위치들의 배열 [행, 열]
     public int[][] getBlockPositions() {
         int[][] currentShape = getShape();
         java.util.List<int[]> positions = new java.util.ArrayList<>();
         
         for (int r = 0; r < currentShape.length; r++) {
             for (int c = 0; c < currentShape[r].length; c++) {
-                if (currentShape[r][c] != 0) {
-                    positions.add(new int[]{r, c});
-                }
+                if (currentShape[r][c] != 0) positions.add(new int[]{r, c});
             }
         }
         
