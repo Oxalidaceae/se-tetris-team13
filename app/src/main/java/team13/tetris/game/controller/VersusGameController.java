@@ -246,30 +246,42 @@ public class VersusGameController {
         
         // Player 2 입력 처리
         if (!gameOver2) {
-            if (player2PressedKeys.contains(KeyCode.A)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.A, currentTime)) {
-                    engine2.moveLeft();
+            // Player 2 키들을 KeyCode로 변환하여 확인
+            try {
+                KeyCode leftKey2 = KeyCode.valueOf(settings.getKeyLeftP2());
+                KeyCode rightKey2 = KeyCode.valueOf(settings.getKeyRightP2());
+                KeyCode downKey2 = KeyCode.valueOf(settings.getKeyDownP2());
+                KeyCode rotateKey2 = KeyCode.valueOf(settings.getKeyRotateP2());
+                KeyCode dropKey2 = KeyCode.valueOf(settings.getKeyDropP2());
+                
+                if (player2PressedKeys.contains(leftKey2)) {
+                    if (shouldProcessKey(player2KeyPressTime, leftKey2, currentTime)) {
+                        engine2.moveLeft();
+                    }
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.D)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.D, currentTime)) {
-                    engine2.moveRight();
+                if (player2PressedKeys.contains(rightKey2)) {
+                    if (shouldProcessKey(player2KeyPressTime, rightKey2, currentTime)) {
+                        engine2.moveRight();
+                    }
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.S)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.S, currentTime)) {
-                    engine2.softDrop();
+                if (player2PressedKeys.contains(downKey2)) {
+                    if (shouldProcessKey(player2KeyPressTime, downKey2, currentTime)) {
+                        engine2.softDrop();
+                    }
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.Q)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.Q, currentTime)) {
-                    engine2.rotateCW();
+                if (player2PressedKeys.contains(rotateKey2)) {
+                    if (shouldProcessKey(player2KeyPressTime, rotateKey2, currentTime)) {
+                        engine2.rotateCW();
+                    }
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.W)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.W, currentTime)) {
-                    engine2.hardDrop();
+                if (player2PressedKeys.contains(dropKey2)) {
+                    if (shouldProcessKey(player2KeyPressTime, dropKey2, currentTime)) {
+                        engine2.hardDrop();
+                    }
                 }
+            } catch (IllegalArgumentException e) {
+                // 유효하지 않은 KeyCode인 경우 무시
+                System.err.println("Invalid Player 2 key configuration: " + e.getMessage());
             }
         }
     }
@@ -384,8 +396,11 @@ public class VersusGameController {
         }
         
         // Player 2 keys
-        if (code == KeyCode.A || code == KeyCode.D || code == KeyCode.S || 
-            code == KeyCode.Q || code == KeyCode.W) {
+        if (keyString.equals(settings.getKeyLeftP2()) ||
+            keyString.equals(settings.getKeyRightP2()) ||
+            keyString.equals(settings.getKeyDownP2()) ||
+            keyString.equals(settings.getKeyRotateP2()) ||
+            keyString.equals(settings.getKeyDropP2())) {
             
             // 첫 입력인 경우 즉시 처리하고 시간 기록
             if (!player2PressedKeys.contains(code)) {
@@ -394,15 +409,15 @@ public class VersusGameController {
                 
                 // 첫 입력은 즉시 실행
                 if (!gameOver2) {
-                    if (code == KeyCode.A) {
+                    if (keyString.equals(settings.getKeyLeftP2())) {
                         engine2.moveLeft();
-                    } else if (code == KeyCode.D) {
+                    } else if (keyString.equals(settings.getKeyRightP2())) {
                         engine2.moveRight();
-                    } else if (code == KeyCode.S) {
+                    } else if (keyString.equals(settings.getKeyDownP2())) {
                         engine2.softDrop();
-                    } else if (code == KeyCode.Q) {
+                    } else if (keyString.equals(settings.getKeyRotateP2())) {
                         engine2.rotateCW();
-                    } else if (code == KeyCode.W) {
+                    } else if (keyString.equals(settings.getKeyDropP2())) {
                         engine2.hardDrop();
                     }
                 }
