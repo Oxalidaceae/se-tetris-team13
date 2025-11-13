@@ -210,8 +210,8 @@ public class Board {
                         full = false;
                         break;
                     }
-                    // 아이템 블록 감지 (100번대 값)
-                    if (currentRow[c] >= 100 && currentRow[c] < 200) hasItemBlock = true;
+                    // 아이템 블록 감지 (100-599: COPY, LINE_CLEAR, WEIGHT, GRAVITY, SPLIT)
+                    if (currentRow[c] >= 100 && currentRow[c] < 600) hasItemBlock = true;
                 }
                 
                 if (full) {

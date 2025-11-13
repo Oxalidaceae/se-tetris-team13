@@ -9,7 +9,7 @@ import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
 import team13.tetris.scenes.DifficultySelectionScene;
-import team13.tetris.scenes.ExitScene;
+import team13.tetris.scenes.confirmScene;
 import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
@@ -155,7 +155,7 @@ public class SceneManager {
         
         switch (settings.getWindowSize()) {
             case "SMALL" -> {
-                versusWidth = 800;   // 400 × 2
+                versusWidth = 950;   // 400 × 2
                 versusHeight = 500;
             }
             case "LARGE" -> {
@@ -170,6 +170,13 @@ public class SceneManager {
         
         stage.setWidth(versusWidth);
         stage.setHeight(versusHeight);
+        
+        // SceneManager의 windowSizeClass 업데이트 (대전 모드용)
+        switch (settings.getWindowSize()) {
+            case "SMALL" -> windowSizeClass = "window-small";
+            case "LARGE" -> windowSizeClass = "window-large";
+            default -> windowSizeClass = "window-medium";
+        }
         
         // Player 1 설정 (아이템 모드 여부에 따라 Mode 설정)
         Board board1 = new Board(10, 20);
@@ -238,9 +245,9 @@ public class SceneManager {
         changeScene(new KeySettingsScene(this, settings).getScene());
     }
 
-    public void showExitScene(Settings settings, Runnable onCancel) {
+    public void showConfirmScene(Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         previousScene = stage.getScene();
-        changeScene(new ExitScene(this, settings, onCancel).getScene());
+        changeScene(new confirmScene(this, settings, title, onConfirm, onCancel).getScene());
     }
     
     public void restorePreviousScene() {

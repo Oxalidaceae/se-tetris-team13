@@ -28,8 +28,10 @@ public class MainMenuScene {
         startBtn.setOnAction(e -> manager.showGameModeSelection(settings));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
-        exitBtn.setOnAction(e -> manager.showExitScene(
+        exitBtn.setOnAction(e -> manager.showConfirmScene(
             settings,
+            "Exit Game?",
+            () -> manager.exitWithSave(settings),
             () -> manager.showMainMenu(settings)
         ));
 
