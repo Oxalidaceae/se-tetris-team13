@@ -127,7 +127,7 @@ public class KeySettingsScene {
                 alert.setContentText("사용할 수 없는 키입니다. 다른 키를 눌러주세요.");
                 alert.showAndWait();
                 waitingForKey = null;
-                
+                clearAllHighlights(); // 하이라이트 제거
                 return;
             }
 
@@ -138,7 +138,7 @@ public class KeySettingsScene {
                 alert.setContentText("이미 다른 동작에 사용 중인 키입니다: " + key.getName());
                 alert.showAndWait();
                 waitingForKey = null;
-
+                clearAllHighlights(); // 하이라이트 제거
                 return;
             }
 
