@@ -167,28 +167,73 @@ public class GameEngine {
         }
     }
 
-    // 미노 복사 아이템을 생성합니다.
-    // 기본 미노와 같은 형태이지만 랜덤한 블록 하나가 'C' 표시됩니다.
+    // 이전 코드 - 삭제 예정
+    // // 미노 복사 아이템을 생성합니다.
+    // // 기본 미노와 같은 형태이지만 랜덤한 블록 하나가 'C' 표시됩니다.
+    // private Tetromino createItemPiece(Tetromino.Kind itemKind, Tetromino.Kind targetKind) {
+    //     if (itemKind == Tetromino.Kind.COPY) {
+    //         // 복사 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
+    //         int copyBlockIndex = (int) (Math.random() * 4);
+    //         Tetromino result = new Tetromino(targetKind, 0, copyBlockIndex);
+    //         return result;
+    //     } else if (itemKind == Tetromino.Kind.WEIGHT) {
+    //         // 무게추 아이템: copyBlockIndex는 사용하지 않음
+    //         return new Tetromino(itemKind, 0, 0);
+    //     } else if (itemKind == Tetromino.Kind.GRAVITY) {
+    //         // 중력 아이템: copyBlockIndex는 사용하지 않음
+    //         return new Tetromino(itemKind, 0, 0);
+    //     } else if (itemKind == Tetromino.Kind.SPLIT) {
+    //         // 분할 아이템: copyBlockIndex는 사용하지 않음
+    //         return new Tetromino(itemKind, 0, 0);
+    //     } else {
+    //         // 다른 아이템들 (향후 구현)
+    //         return new Tetromino(itemKind, 0, 0);
+    //     }
+    // }
+
+    // 미노 복사 아이템을 생성
+    // 기본 미노와 같은 형태이지만 랜덤한 블록 하나가 'C' 표시
     private Tetromino createItemPiece(Tetromino.Kind itemKind, Tetromino.Kind targetKind) {
+        // COPY 아이템 → targetKind 미노에서 copyBlockIndex 랜덤 선택
         if (itemKind == Tetromino.Kind.COPY) {
-            // 복사 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
-            int copyBlockIndex = (int) (Math.random() * 4);
-            Tetromino result = new Tetromino(targetKind, 0, copyBlockIndex);
-            return result;
-        } else if (itemKind == Tetromino.Kind.WEIGHT) {
-            // 무게추 아이템: copyBlockIndex는 사용하지 않음
-            return new Tetromino(itemKind, 0, 0);
-        } else if (itemKind == Tetromino.Kind.GRAVITY) {
-            // 중력 아이템: copyBlockIndex는 사용하지 않음
-            return new Tetromino(itemKind, 0, 0);
-        } else if (itemKind == Tetromino.Kind.SPLIT) {
-            // 분할 아이템: copyBlockIndex는 사용하지 않음
-            return new Tetromino(itemKind, 0, 0);
-        } else {
-            // 다른 아이템들 (향후 구현)
-            return new Tetromino(itemKind, 0, 0);
+            int copyBlockIndex = (int) (Math.random() * 4);  // 4개의 블록 중 하나
+            return Tetromino.item(targetKind, 0, Tetromino.ItemType.COPY, copyBlockIndex);
         }
+
+        // WEIGHT 아이템
+        if (itemKind == Tetromino.Kind.WEIGHT) {
+            return Tetromino.item(
+                Tetromino.Kind.WEIGHT,
+                0,
+                Tetromino.ItemType.WEIGHT,
+                0 // 인덱스는 의미 없음
+            );
+        }
+
+        // GRAVITY 아이템
+        if (itemKind == Tetromino.Kind.GRAVITY) {
+            return Tetromino.item(
+                Tetromino.Kind.GRAVITY,
+                0,
+                Tetromino.ItemType.GRAVITY,
+                0
+            );
+        }
+
+        // SPLIT 아이템
+        if (itemKind == Tetromino.Kind.SPLIT) {
+            return Tetromino.item(
+                Tetromino.Kind.SPLIT,
+                0,
+                Tetromino.ItemType.SPLIT,
+                0
+            );
+        }
+
+        // fallback: COPY와 동일 처리
+        return Tetromino.item(targetKind, 0, Tetromino.ItemType.COPY, 0);
     }
+
 
     // 10줄이 삭제될 때마다 호출되어 다음 미노를 아이템 미노로 설정합니다.
     // 현재 구현된 5가지 아이템 중 하나를 20% 확률로 선택합니다.
@@ -230,15 +275,28 @@ public class GameEngine {
         }
     }
 
-    // LINE_CLEAR 아이템 미노를 생성합니다.
-    // COPY 아이템의 코드를 복사해서 만든 독립적인 구현입니다.
-    private Tetromino createLineClearItemPiece(Tetromino.Kind targetKind) {
-        // 라인클리어 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
-        int lineClearBlockIndex = (int) (Math.random() * 4);
-        Tetromino result = new Tetromino(targetKind, 0, lineClearBlockIndex, Tetromino.ItemType.LINE_CLEAR);
-        return result;
-    }
+    // 예전 코드 - 삭제 예정
+    // // LINE_CLEAR 아이템 미노를 생성합니다.
+    // // COPY 아이템의 코드를 복사해서 만든 독립적인 구현입니다.
+    // private Tetromino createLineClearItemPiece(Tetromino.Kind targetKind) {
+    //     // 라인클리어 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
+    //     int lineClearBlockIndex = (int) (Math.random() * 4);
+    //     Tetromino result = new Tetromino(targetKind, 0, lineClearBlockIndex, Tetromino.ItemType.LINE_CLEAR);
+    //     return result;
+    // }
 
+    // LINE_CLEAR 아이템 미노를 생성
+    // COPY 아이템의 코드를 복사해서 만든 독립적인 구현
+    private Tetromino createLineClearItemPiece(Tetromino.Kind targetKind) {
+        // LINE_CLEAR 마크는 블록 4개 중 랜덤 선택
+        int lineClearBlockIndex = (int) (Math.random() * 4);
+
+        return Tetromino.lineClearItem(
+            targetKind,           // LINE_CLEAR는 copy가 아닌 "타겟 미노 모양" 기반
+            0,           // 초기 회전값
+            lineClearBlockIndex   // L 마크 블록 위치
+        );
+    }
     
     // 아이템 미노의 특수 효과를 처리합니다.
     // COPY: 특정 미노 타입으로 다음 미노를 복사합니다.

@@ -223,7 +223,14 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(COPY) 생성 시 isItemPiece가 true여야 함")
     void testCreateItemPieceCopy() {
-        Tetromino itemPiece = new Tetromino(Kind.T, 0, 1);
+        // Tetromino itemPiece = new Tetromino(Kind.T, 0, 1);
+        Tetromino itemPiece = Tetromino.item(
+            Kind.T,
+            0,
+            ItemType.COPY,
+            1
+        );
+
         assertTrue(itemPiece.isItemPiece());
         assertEquals(ItemType.COPY, itemPiece.getItemType());
         assertEquals(1, itemPiece.getCopyBlockIndex());
@@ -232,7 +239,14 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(WEIGHT)는 회전할 수 없어야 함")
     void testWeightCannotRotate() {
-        Tetromino weight = new Tetromino(Kind.WEIGHT, 0, 0);
+        // Tetromino weight = new Tetromino(Kind.WEIGHT, 0, 0);
+        Tetromino weight = Tetromino.item(
+            Kind.WEIGHT,
+            0,
+            ItemType.WEIGHT,
+            0
+        );
+        
         assertFalse(weight.canRotate());
         assertTrue(weight.isItemPiece());
         assertEquals(ItemType.WEIGHT, weight.getItemType());
@@ -241,7 +255,14 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(GRAVITY)는 회전할 수 없어야 함")
     void testGravityCannotRotate() {
-        Tetromino gravity = new Tetromino(Kind.GRAVITY, 0, 0);
+        // Tetromino gravity = new Tetromino(Kind.GRAVITY, 0, 0);
+        Tetromino gravity = Tetromino.item(
+            Kind.GRAVITY,
+            0,
+            ItemType.GRAVITY,
+            0
+        );
+        
         assertFalse(gravity.canRotate());
         assertTrue(gravity.isItemPiece());
         assertEquals(ItemType.GRAVITY, gravity.getItemType());
@@ -250,7 +271,14 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(SPLIT)는 회전할 수 없어야 함")
     void testSplitCannotRotate() {
-        Tetromino split = new Tetromino(Kind.SPLIT, 0, 0);
+        // Tetromino split = new Tetromino(Kind.SPLIT, 0, 0);
+        Tetromino split = Tetromino.item(
+            Kind.SPLIT,
+            0,
+            ItemType.SPLIT,
+            0
+        );
+        
         assertFalse(split.canRotate());
         assertTrue(split.isItemPiece());
         assertEquals(ItemType.SPLIT, split.getItemType());
@@ -259,7 +287,13 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(LINE_CLEAR) 생성 시 올바른 타입이 설정되어야 함")
     void testCreateItemPieceLineClear() {
-        Tetromino lineClear = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        // Tetromino lineClear = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino lineClear = Tetromino.lineClearItem(
+            Kind.T,
+            0,
+            2
+        );
+        
         assertTrue(lineClear.isItemPiece());
         assertEquals(ItemType.LINE_CLEAR, lineClear.getItemType());
         assertEquals(2, lineClear.getLineClearBlockIndex());
@@ -330,7 +364,14 @@ public class TetrominoTest {
     @Test
     @DisplayName("COPY 아이템 미노 회전 시 copyBlockIndex가 올바르게 업데이트되어야 함")
     void testCopyItemRotation() {
-        Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
+        // Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
+        Tetromino copyItem = Tetromino.item(
+            Kind.T,
+            0,
+            ItemType.COPY,
+            1
+        );
+        
         assertEquals(1, copyItem.getCopyBlockIndex());
 
         Tetromino rotated = copyItem.rotateClockwise();
@@ -343,7 +384,13 @@ public class TetrominoTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템 미노 회전 시 lineClearBlockIndex가 올바르게 업데이트되어야 함")
     void testLineClearItemRotation() {
-        Tetromino lineClearItem = new Tetromino(Kind.L, 0, 2, ItemType.LINE_CLEAR);
+        // Tetromino lineClearItem = new Tetromino(Kind.L, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino lineClearItem = Tetromino.lineClearItem(
+            Kind.L,
+            0,
+            2
+        );
+        
         assertEquals(2, lineClearItem.getLineClearBlockIndex());
 
         Tetromino rotated = lineClearItem.rotateClockwise();
@@ -358,7 +405,14 @@ public class TetrominoTest {
     void testOMinoCopyClockwiseRotation() {
         // O 미노는 블록 위치가 고정: (0,1), (0,2), (1,1), (1,2)
         // 시계방향 회전: 0 -> 1 -> 3 -> 2 -> 0
-        Tetromino copyItem0 = new Tetromino(Kind.O, 0, 0);
+        // Tetromino copyItem0 = new Tetromino(Kind.O, 0, 0);
+        Tetromino copyItem0 = Tetromino.item(
+            Kind.O,
+            0,
+            ItemType.COPY,
+            0
+        );
+
         Tetromino rotated1 = copyItem0.rotateClockwise();
         assertEquals(1, rotated1.getCopyBlockIndex());
 
@@ -411,8 +465,19 @@ public class TetrominoTest {
     @Test
     @DisplayName("COPY 아이템과 LINE_CLEAR 아이템은 서로 독립적이어야 함")
     void testCopyAndLineClearAreIndependent() {
-        Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
-        Tetromino lineClearItem = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        // Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
+        Tetromino copyItem = Tetromino.item(
+            Kind.T,
+            0,
+            ItemType.COPY,
+            1
+        );
+        // Tetromino lineClearItem = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino lineClearItem = Tetromino.lineClearItem(
+            Kind.T,
+            0,
+            2
+        );
 
         assertEquals(ItemType.COPY, copyItem.getItemType());
         assertEquals(ItemType.LINE_CLEAR, lineClearItem.getItemType());
