@@ -1,20 +1,14 @@
 package team13.tetris.scenes;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
@@ -24,9 +18,8 @@ import team13.tetris.game.model.Tetromino;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VersusGameScene {
+public class VersusGameScene extends BaseGameScene {
     private final SceneManager manager;
-    private final Settings settings;
     private GameEngine engine1; // Player 1
     private GameEngine engine2; // Player 2
     private final HBox root;
@@ -38,11 +31,7 @@ public class VersusGameScene {
     // UI 업데이트 throttle을 위한 변수
     private volatile boolean updatePending = false;
     
-    // 셀 캐싱 (성능 최적화) - CellView로 변경
-    private final Map<String, CellView> cellCache1 = new HashMap<>();
-    private final Map<String, CellView> cellCache2 = new HashMap<>();
-    private final Map<String, CellView> previewCache1 = new HashMap<>();
-    private final Map<String, CellView> previewCache2 = new HashMap<>();
+    // incoming grid용 캐시만 유지
     private final Map<String, Label> incomingCache1 = new HashMap<>();
     private final Map<String, Label> incomingCache2 = new HashMap<>();
     
@@ -64,8 +53,8 @@ public class VersusGameScene {
             GameEngine engine1,
             GameEngine engine2,
             boolean timerMode) {
+        super(settings);
         this.manager = manager;
-        this.settings = settings;
         this.engine1 = engine1;
         this.engine2 = engine2;
         this.timerMode = timerMode;
@@ -241,52 +230,6 @@ public class VersusGameScene {
         updateGrid();
     }
 
-    private GridPane createBoardGrid(Board board) {
-        int w = board.getWidth();
-        int h = board.getHeight();
-
-        GridPane grid = new GridPane();
-        grid.getStyleClass().add("board-grid");
-        
-        // 캐시 맵 선택 - CellView로 변경
-        Map<String, CellView> cache = (grid == boardGrid1 || boardGrid1 == null) ? cellCache1 : cellCache2;
-
-        for (int gy = 0; gy < h + 2; gy++) {
-            for (int gx = 0; gx < w + 2; gx++) {
-                CellView cell = new CellView(28, settings); // 기본 셀 크기
-
-                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
-                    cell.setBorder();
-                }
-
-                grid.add(cell, gx, gy);
-                // 캐시에 저장
-                cache.put(gy + "," + gx, cell);
-            }
-        }
-
-        return grid;
-    }
-
-    private GridPane createPreviewGrid() {
-        GridPane grid = new GridPane();
-        grid.getStyleClass().add("preview-grid");
-        
-        // 캐시 맵 선택 - CellView로 변경
-        Map<String, CellView> cache = (grid == previewGrid1 || previewGrid1 == null) ? previewCache1 : previewCache2;
-
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
-                CellView cell = new CellView(22, settings); // 프리뷰 셀 크기
-                grid.add(cell, c, r);
-                // 캐시에 저장
-                cache.put(r + "," + c, cell);
-            }
-        }
-
-        return grid;
-    }
-
     private GridPane createIncomingGrid() {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("incoming-grid");
@@ -437,17 +380,12 @@ public class VersusGameScene {
         int w = b.getWidth();
         int h = b.getHeight();
         
-        // 캐시 선택 - CellView로 변경
-        Map<String, CellView> boardCache = (boardGrid == boardGrid1) ? cellCache1 : cellCache2;
-        Map<String, CellView> prevCache = (previewGrid == previewGrid1) ? previewCache1 : previewCache2;
-        
-        // Platform.runLater 제거 - 이미 updateGrid()에서 처리됨
         // 보드 업데이트
         for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     int val = b.getCell(x, y);
-                    // 캐시에서 직접 가져오기 (getNodeByRowColumnIndex 대신)
-                    CellView cell = boardCache.get((y + 1) + "," + (x + 1));
+                    // getNodeByRowColumnIndex 사용
+                    CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
                     if (cell == null) continue;
 
                     if (val == 0) {
@@ -513,10 +451,10 @@ public class VersusGameScene {
                                 int bx = px + c;
                                 int by = ghostY + r;
                                 if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                                    CellView cell = boardCache.get((by + 1) + "," + (bx + 1));
+                                    CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
                                     if (cell != null) {
                                         // 고스트 블록은 반투명하게 표시
-                                        cell.setBlock("O", "block-ghost", "tetris-ghost-text");
+                                        cell.setBlock("", "block-ghost", "tetris-ghost-text");
                                     }
                                 }
                             }
@@ -532,8 +470,8 @@ public class VersusGameScene {
                             int bx = px + c;
                             int by = py + r;
                             if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                                // 캐시에서 직접 가져오기
-                                CellView cell = boardCache.get((by + 1) + "," + (bx + 1));
+                                // getNodeByRowColumnIndex 사용
+                                CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
                                 if (cell != null) {
                                     // 아이템 미노 표시 로직
                                     if (current.isItemPiece()) {
@@ -601,7 +539,7 @@ public class VersusGameScene {
                 // 먼저 모든 셀을 비움
                 for (int r = 0; r < 4; r++) {
                     for (int c = 0; c < 4; c++) {
-                        CellView cell = prevCache.get(r + "," + c);
+                        CellView cell = (CellView) getNodeByRowColumnIndex(r, c, previewGrid);
                         if (cell != null) {
                             applyCellEmpty(cell);
                         }
@@ -616,8 +554,8 @@ public class VersusGameScene {
                             int displayRow = r - minRow + offsetRow;
                             int displayCol = c - minCol + offsetCol;
                             
-                            // 캐시에서 직접 가져오기
-                            CellView cell = prevCache.get(displayRow + "," + displayCol);
+                            // getNodeByRowColumnIndex 사용
+                            CellView cell = (CellView) getNodeByRowColumnIndex(displayRow, displayCol, previewGrid);
                             if (cell != null) {
                                 // 아이템 미노 표시 로직
                                 if (next.isItemPiece()) {
@@ -655,11 +593,6 @@ public class VersusGameScene {
 
             // 점수 업데이트
             scoreLabel.setText(playerName + "\nScore:\n" + engine.getScore());
-    }
-
-    // CellView 오버로딩 메서드들
-    private void applyCellEmpty(CellView cell) {
-        cell.setEmpty();
     }
 
     private void applyCellBlockText(CellView cell, String blockClass) {
@@ -712,181 +645,5 @@ public class VersusGameScene {
         }
         
         cell.setBlock(symbol, cssBlockClass, textClass);
-    }
-
-    // CellView: Rectangle 기반의 사각형 셀 (솔로 모드와 동일)
-    private static final class CellView extends StackPane {
-        private final Rectangle rect;
-        private final Canvas patternCanvas;
-        private final Label label;
-        private final Settings settings;
-
-        private CellView(double size, Settings settings) {
-            this.settings = settings;
-            setMinSize(size, size);
-            setPrefSize(size, size);
-            setMaxSize(size, size);
-            setAlignment(Pos.CENTER);
-            getStyleClass().add("cell");
-
-            rect = new Rectangle(size, size);
-            rect.getStyleClass().add("cell-rect");
-            rect.setStrokeWidth(0);
-            rect.widthProperty().bind(widthProperty());
-            rect.heightProperty().bind(heightProperty());
-
-            patternCanvas = new Canvas(size, size);
-            patternCanvas.widthProperty().bind(widthProperty());
-            patternCanvas.heightProperty().bind(heightProperty());
-            patternCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-            patternCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-
-            label = new Label(" ");
-            label.setAlignment(Pos.CENTER);
-            label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            label.getStyleClass().add("cell-text");
-
-            getChildren().addAll(rect, patternCanvas, label);
-
-            setEmpty();
-        }
-
-        private String currentPattern = null;
-
-        private void redrawPattern() {
-            if (currentPattern == null || currentPattern.equals("none")) {
-                clearCanvas();
-                return;
-            }
-
-            double w = patternCanvas.getWidth();
-            double h = patternCanvas.getHeight();
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, w, h);
-            gc.setStroke(Color.rgb(0, 0, 0, 0.7));
-            gc.setLineWidth(1);
-
-            switch (currentPattern) {
-                case "horizontal": // S - 수평 줄무늬
-                    for (double y = 0; y < h; y += 5) {
-                        gc.strokeLine(0, y, w, y);
-                    }
-                    break;
-                case "vertical": // J - 수직 줄무늬
-                    for (double x = 0; x < w; x += 5) {
-                        gc.strokeLine(x, 0, x, h);
-                    }
-                    break;
-                case "diagonal-right": // I - 빗살무늬 ↗
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left": // T - 빗살무늬 ↖
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-                case "diagonal-right-wide": // Z - 빗살무늬 ↗ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left-wide": // L - 빗살무늬 ↖ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-            }
-        }
-
-        private void clearCanvas() {
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, patternCanvas.getWidth(), patternCanvas.getHeight());
-        }
-
-        private void clearDynamicStyles() {
-            ObservableList<String> rectClasses = rect.getStyleClass();
-            rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-
-            ObservableList<String> labelClasses = label.getStyleClass();
-            labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-        }
-
-        private void setEmpty() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-empty")) rect.getStyleClass().add("cell-empty");
-            if (!label.getStyleClass().contains("cell-empty")) label.getStyleClass().add("cell-empty");
-            label.setText(" ");
-        }
-
-        private void setBorder() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
-            if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
-            label.setText("X");
-        }
-
-        private void setBlock(String symbol, String blockClass, String textClass) {
-            clearDynamicStyles();
-            if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass)) {
-                rect.getStyleClass().add(blockClass);
-            }
-            if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass)) {
-                label.getStyleClass().add(textClass);
-            }
-            
-            // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
-            boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
-                                                      symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
-            boolean isGhostBlock = "block-ghost".equals(blockClass);
-            
-            if ((settings.isColorBlindMode() && !isItemBlock) || isGhostBlock) {
-                label.setText(" "); // 일반 블록은 색맹모드에서 글자 숨김, 고스트 블록은 항상 글자 숨김
-            } else {
-                label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
-            }
-            
-            // 색맹 모드에서 패턴 적용
-            if (blockClass != null && settings.isColorBlindMode()) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-        }
-
-        private void applyPattern(String blockClass) {
-            switch (blockClass) {
-                case "block-I":
-                    currentPattern = "diagonal-right";
-                    break;
-                case "block-O":
-                    currentPattern = "none";
-                    break;
-                case "block-T":
-                    currentPattern = "diagonal-left";
-                    break;
-                case "block-S":
-                    currentPattern = "horizontal";
-                    break;
-                case "block-Z":
-                    currentPattern = "diagonal-right-wide";
-                    break;
-                case "block-J":
-                    currentPattern = "vertical";
-                    break;
-                case "block-L":
-                    currentPattern = "diagonal-left-wide";
-                    break;
-                default:
-                    currentPattern = null;
-            }
-            redrawPattern();
-        }
     }
 }
