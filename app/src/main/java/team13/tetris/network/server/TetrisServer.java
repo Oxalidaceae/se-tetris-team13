@@ -159,8 +159,8 @@ public class TetrisServer {
         System.out.println("Game mode selected: " + gameMode);
     }
     
-    // 플레이어 준비 상태를 설정 (확장 가능)
-    public void setPlayerReady(String playerId, boolean ready) {
+    // 플레이어 준비 상태를 설정 (내부 전용 - ClientHandler에서만 호출)
+    void setPlayerReady(String playerId, boolean ready) {
         if (ready) {
             playerReadyStates.put(playerId, true);
             System.out.println("Player " + playerId + " is ready!");
@@ -171,20 +171,6 @@ public class TetrisServer {
         
         // 모든 플레이어가 준비되면 게임 시작
         checkAllReady();
-    }
-    
-    // 서버(호스트) 준비 상태를 설정
-    public void setServerReady(boolean ready) {
-        setPlayerReady(hostPlayerId, ready);
-    }
-    
-    // 클라이언트 준비 상태를 설정 (하위 호환성)
-    public void setClientReady(boolean ready) {
-        // 첫 번째 클라이언트의 준비 상태 설정
-        if (!connectedClients.isEmpty()) {
-            String firstClientId = connectedClients.keySet().iterator().next();
-            setPlayerReady(firstClientId, ready);
-        }
     }
     
     // 모든 플레이어가 준비되었는지 확인
@@ -237,21 +223,21 @@ public class TetrisServer {
         return playerReadyStates.getOrDefault(hostPlayerId, false);
     }
     
+    // 안쓰일거 같아서 주석처리
+    // // 클라이언트 준비 상태 반환 (첫 번째 클라이언트).
+    // public boolean isClientReady() {
+    //     if (connectedClients.isEmpty()) {
+    //         return false;
+    //     }
+    //     String firstClientId = connectedClients.keySet().iterator().next();
+    //     return playerReadyStates.getOrDefault(firstClientId, false);
+    // }
     
-    // 클라이언트 준비 상태 반환 (첫 번째 클라이언트).
-    public boolean isClientReady() {
-        if (connectedClients.isEmpty()) {
-            return false;
-        }
-        String firstClientId = connectedClients.keySet().iterator().next();
-        return playerReadyStates.getOrDefault(firstClientId, false);
-    }
     
-    
-    // 특정 플레이어의 준비 상태 반환
-    public boolean isPlayerReady(String playerId) {
-        return playerReadyStates.getOrDefault(playerId, false);
-    }
+    // // 특정 플레이어의 준비 상태 반환
+    // public boolean isPlayerReady(String playerId) {
+    //     return playerReadyStates.getOrDefault(playerId, false);
+    // }
     
     
     // P2P 준비 상태 초기화
@@ -365,13 +351,6 @@ public class TetrisServer {
         }
     }
     
-    // 클라이언트 입력을 호스트에게 알림
-    public void notifyHostInput(InputMessage inputMessage) {
-        if (hostMessageListener != null) {
-            hostMessageListener.onInputReceived(inputMessage);
-        }
-    }
-    
     // 클라이언트 보드 업데이트를 호스트에게 알림
     public void notifyHostBoardUpdate(BoardUpdateMessage boardUpdate) {
         if (hostMessageListener != null) {
@@ -383,13 +362,6 @@ public class TetrisServer {
     public void notifyHostAttack(AttackMessage attackMessage) {
         if (hostMessageListener != null) {
             hostMessageListener.onAttackReceived(attackMessage);
-        }
-    }
-    
-    // 클라이언트 줄 삭제를 호스트에게 알림
-    public void notifyHostLinesCleared(LinesClearedMessage linesClearedMessage) {
-        if (hostMessageListener != null) {
-            hostMessageListener.onLinesClearedReceived(linesClearedMessage);
         }
     }
     
@@ -414,38 +386,18 @@ public class TetrisServer {
         }
     }
     
-    // 호스트의 입력을 클라이언트에게 전송
-    public boolean sendHostInput(MessageType inputType) {
-        if (!gameInProgress) {
-            return false;
-        }
-        
-        InputMessage inputMsg = new InputMessage(inputType, hostPlayerId);
-        broadcastMessage(inputMsg);
-        return true;
-    }
-    
-    // 호스트의 보드 상태를 클라이언트에게 전송
-    public boolean sendHostBoardUpdate(int[][] board, int score, int lines, int level) {
-        if (!gameInProgress) {
-            return false;
-        }
-        
-        BoardUpdateMessage boardMsg = new BoardUpdateMessage(hostPlayerId, board, score, lines, level);
-        broadcastMessage(boardMsg);
-        return true;
-    }
-    
-    // 호스트의 보드 상태를 클라이언트에게 전송 (상세한 블록 정보 포함)
-    public boolean sendHostBoardUpdateWithPiece(int[][] board, int pieceX, int pieceY,
-                                               int pieceType, int pieceRotation,
-                                               int score, int lines, int level) {
+    // 호스트의 보드 상태를 클라이언트에게 전송 (다음 블록, incoming blocks 포함)
+    public boolean sendHostBoardUpdate(int[][] board, int pieceX, int pieceY,
+                                      int pieceType, int pieceRotation, int nextPieceType,
+                                      java.util.Queue<int[][]> incomingBlocks,
+                                      int score, int lines, int level) {
         if (!gameInProgress) {
             return false;
         }
         
         BoardUpdateMessage boardMsg = new BoardUpdateMessage(hostPlayerId, board, pieceX, pieceY,
-                                                            pieceType, pieceRotation, score, lines, level);
+                                                            pieceType, pieceRotation, nextPieceType,
+                                                            incomingBlocks, score, lines, level);
         broadcastMessage(boardMsg);
         return true;
     }
@@ -458,17 +410,6 @@ public class TetrisServer {
         
         AttackMessage attackMsg = AttackMessage.createStandardAttack(hostPlayerId, targetPlayerId, clearedLines);
         sendMessageToPlayer(targetPlayerId, attackMsg);
-        return true;
-    }
-    
-    // 호스트의 줄 삭제 정보를 클라이언트에게 전송
-    public boolean sendHostLinesCleared(int linesCleared) {
-        if (!gameInProgress) {
-            return false;
-        }
-        
-        LinesClearedMessage linesClearedMsg = new LinesClearedMessage(hostPlayerId, linesCleared);
-        broadcastMessage(linesClearedMsg);
         return true;
     }
     
@@ -494,26 +435,6 @@ public class TetrisServer {
         // 모든 클라이언트에게 호스트 준비 알림
         ConnectionMessage readyNotification = ConnectionMessage.createPlayerReady(hostPlayerId);
         broadcastToAll(readyNotification);
-    }
-    
-    public boolean sendHostMoveLeft() {
-        return sendHostInput(MessageType.MOVE_LEFT);
-    }
-    
-    public boolean sendHostMoveRight() {
-        return sendHostInput(MessageType.MOVE_RIGHT);
-    }
-    
-    public boolean sendHostRotate() {
-        return sendHostInput(MessageType.ROTATE);
-    }
-    
-    public boolean sendHostHardDrop() {
-        return sendHostInput(MessageType.HARD_DROP);
-    }
-    
-    public boolean sendHostSoftDrop() {
-        return sendHostInput(MessageType.SOFT_DROP);
     }
     
     // 서버 중지

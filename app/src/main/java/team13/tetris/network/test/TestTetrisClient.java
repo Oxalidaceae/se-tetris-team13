@@ -42,10 +42,6 @@ public class TestTetrisClient {
             System.out.println("Player ID: " + playerId);
             System.out.println("\n Available Commands:");
             System.out.println("  'ready'     - Mark yourself as ready to start");
-            System.out.println("  'move L'    - Send move left");
-            System.out.println("  'move R'    - Send move right");
-            System.out.println("  'rotate'    - Send rotate");
-            System.out.println("  'drop'      - Send hard drop");
             System.out.println("  'pause'     - Pause game");
             System.out.println("  'resume'    - Resume game");
             System.out.println("  'quit'      - Disconnect");
@@ -80,23 +76,6 @@ public class TestTetrisClient {
                         if (client.resumeGame()) {
                             System.out.println("▶Resume request sent");
                         }
-                    } else if (input.startsWith("move ")) {
-                        String direction = input.substring(5).trim().toUpperCase();
-                        if (direction.equals("L") || direction.equals("LEFT")) {
-                            client.sendMoveLeft();
-                            System.out.println("Move left sent");
-                        } else if (direction.equals("R") || direction.equals("RIGHT")) {
-                            client.sendMoveRight();
-                            System.out.println("Move right sent");
-                        } else {
-                            System.out.println("Invalid direction. Use 'L' or 'R'");
-                        }
-                    } else if (input.equalsIgnoreCase("rotate")) {
-                        client.sendRotate();
-                        System.out.println("Rotate sent");
-                    } else if (input.equalsIgnoreCase("drop")) {
-                        client.sendHardDrop();
-                        System.out.println("Hard drop sent");
                     } else if (!input.isEmpty()) {
                         System.out.println("Unknown command: " + input);
                     }

@@ -233,13 +233,25 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 내 보드 상태 전송
     private void sendMyBoardState() {
-        // P2P에서는 단순화: 보드 상태만 전송 (lines/level은 사용하지 않음)
+        // P2P에서는 보드 상태 + 현재/다음 블록 + incoming blocks 전송
         int[][] boardState = myEngine.getBoard().snapshot();
         int score = myEngine.getScore();
+        int pieceX = myEngine.getPieceX();
+        int pieceY = myEngine.getPieceY();
+        int pieceType = myEngine.getCurrent() != null ? myEngine.getCurrent().getKind().ordinal() + 1 : -1;
+        int pieceRotation = 0; // TODO: Tetromino에 getRotation() 추가 필요
+        int nextPieceType = myEngine.getNext() != null ? myEngine.getNext().getKind().ordinal() + 1 : -1;
+        java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>(); // TODO: GameEngine에 getIncomingQueue() 추가 필요
         
         BoardUpdateMessage msg = new BoardUpdateMessage(
             myPlayerId,
             boardState,
+            pieceX,
+            pieceY,
+            pieceType,
+            pieceRotation,
+            nextPieceType,
+            incomingBlocks,
             score,
             0,  // lines - 사용하지 않음
             0   // level - 사용하지 않음
@@ -388,16 +400,6 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         Platform.runLater(() -> {
             lobbyScene.setGameMode(itemMode ? "Item Mode" : "Normal Mode");
         });
-    }
-    
-    @Override
-    public void onInputReceived(InputMessage inputMessage) {
-        // 입력 동기화는 사용하지 않음
-    }
-    
-    @Override
-    public void onLinesClearedReceived(LinesClearedMessage linesClearedMessage) {
-        // 사용하지 않음 (BoardUpdate에 포함)
     }
     
     @Override

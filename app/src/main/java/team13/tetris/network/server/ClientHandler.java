@@ -119,13 +119,6 @@ public class ClientHandler implements Runnable {
         System.out.println("Received from " + playerId + ": " + message.getType());
         
         switch (message.getType()) {
-            case MOVE_LEFT, MOVE_RIGHT, ROTATE, SOFT_DROP, HARD_DROP -> {
-                if (message instanceof InputMessage inputMsg) {
-                    server.notifyHostInput(inputMsg);
-                    server.broadcastToOthers(playerId, inputMsg);
-                }
-            }
-            
             case BOARD_UPDATE -> {
                 if (message instanceof BoardUpdateMessage boardMsg) {
                     server.notifyHostBoardUpdate(boardMsg);
@@ -168,25 +161,8 @@ public class ClientHandler implements Runnable {
             case GAME_START -> {
                 // 더 이상 사용하지 않음 (PLAYER_READY로 대체)
                 // 하지만 하위 호환성을 위해 남겨둠
-                System.out.println("🎮 " + playerId + " is ready to start game (legacy)");
+                System.out.println(playerId + " is ready to start game (legacy)");
                 server.setPlayerReady(playerId, true);
-            }
-            
-            case LINES_CLEARED -> {
-                if (message instanceof LinesClearedMessage linesClearedMsg) {
-                    server.notifyHostLinesCleared(linesClearedMsg);
-                    server.broadcastToOthers(playerId, linesClearedMsg);
-                }
-            }
-            
-            case HEARTBEAT -> {
-                if (message instanceof SystemMessage) {
-                    try {
-                        sendMessage(SystemMessage.createHeartbeat("server"));
-                    } catch (IOException e) {
-                        System.err.println("Failed to send heartbeat response: " + e.getMessage());
-                    }
-                }
             }
             
             case ERROR -> {
