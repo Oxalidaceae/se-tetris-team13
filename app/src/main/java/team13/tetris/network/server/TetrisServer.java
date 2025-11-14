@@ -8,13 +8,14 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class TetrisServer {
-    private static final int DEFAULT_PORT = 12345;
     private static final int MAX_PLAYERS = 1;  // 서버 자신(호스트) + 클라이언트 1명
+    private static final int DEFAULT_PORT = 12345;
     
-    private final int port;
     private final String hostPlayerId;  
+    private final int port;
     private ServerSocket serverSocket;
     private final Map<String, ClientHandler> connectedClients;
+    private final Map<String, PlayerInfo> players; //플레이어 상태 관리(host 포함)
     private final ExecutorService threadPool;
     private volatile boolean isRunning = false;
     
@@ -27,12 +28,40 @@ public class TetrisServer {
     private final Map<String, Boolean> playerReadyStates = new ConcurrentHashMap<>();
     
     private ServerMessageListener hostMessageListener;
+
+    // 플레이어 상태를 관리하기 위한 내부 클래스
+    private static class PlayerInfo {
+        private final String playerId;
+        private volatile boolean ready;
+
+        PlayerInfo(String playerId) {
+            this.playerId = playerId;
+            this.ready = false;
+        }
+
+        public String getPlayerId() {
+            return playerId;
+        }
+
+        public boolean isReady() {
+            return ready;
+        }
+
+        public void setReady(boolean ready) {
+            this.ready = ready;
+        }
+    }
     
     public TetrisServer(String hostPlayerId, int port) {
-        this.hostPlayerId = hostPlayerId;
+        this.hostPlayerId = hostPlayerId.trim();
         this.port = port;
         this.connectedClients = new ConcurrentHashMap<>();
+        this.players = new ConcurrentHashMap<>();
         this.threadPool = Executors.newCachedThreadPool();
+
+        // 서버 생성 시 Host를 플레이어 목록에 등록
+        PlayerInfo hostInfo = new PlayerInfo(hostPlayerId);
+        players.put(hostPlayerId, hostInfo);
     }
     
     public TetrisServer(String hostPlayerId) {
@@ -68,11 +97,9 @@ public class TetrisServer {
             try {
                 Socket clientSocket = serverSocket.accept();
                 
-                synchronized (connectedClients) {
-                    if (connectedClients.size() >= MAX_PLAYERS) {
-                        rejectConnection(clientSocket, "Server is full");
-                        continue;
-                    }
+                if (connectedClients.size() >= MAX_PLAYERS) {
+                    rejectConnection(clientSocket, "Server is full");
+                    continue;
                 }
                 
                 System.out.println("New client connected: " + clientSocket.getInetAddress());
@@ -113,9 +140,13 @@ public class TetrisServer {
         if (connectedClients.size() >= MAX_PLAYERS) {
             return false;
         }
-        
+
         connectedClients.put(playerId, handler);
-        System.out.println("Player registered: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
+        
+        players.computeIfAbsent(playerId, PlayerInfo::new);
+
+        System.out.println("Player registered: " + playerId +
+                " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
         
         // 호스트에게 클라이언트 연결 알림
         if (hostMessageListener != null) {
@@ -123,9 +154,7 @@ public class TetrisServer {
         }
         
         // 클라이언트가 접속하면 대기 상태 (양쪽이 ready해야 게임 시작)
-        if (connectedClients.size() == MAX_PLAYERS) {
-            System.out.println("Client connected! Waiting for both players to be ready...");
-        }
+        System.out.println("Client connected! Waiting for players to be ready...");
         
         return true;
     }
@@ -137,11 +166,18 @@ public class TetrisServer {
         if (removed != null) {
             System.out.println("Player disconnected: " + playerId + " (" + connectedClients.size() + "/" + MAX_PLAYERS + ")");
             
+            // ready 상태 제거
+            playerReadyStates.remove(playerId);
+            PlayerInfo info = players.get(playerId);
+            if (info != null) {
+                info.setReady(false);
+            }
+
             // 호스트에게 클라이언트 연결 해제 알림
             if (hostMessageListener != null) {
                 hostMessageListener.onClientDisconnected(playerId);
             }
-            
+
             // 게임 중이면 게임 종료
             if (gameInProgress) {
                 endGame("Player " + playerId + " disconnected");
@@ -158,18 +194,29 @@ public class TetrisServer {
         
         System.out.println("Game mode selected: " + gameMode);
     }
+
+    // 현재 활성 플레이어 ID 집합 반환 (호스트 + 접속한 클라이언트)
+    private Set<String> getActivePlayerIds() {
+        Set<String> ids = new HashSet<>();
+        ids.add(hostPlayerId);                // Host
+        ids.addAll(connectedClients.keySet()); // 현재 접속 중인 모든 클라이언트
+        return ids;
+    }
     
     // 플레이어 준비 상태를 설정 (내부 전용 - ClientHandler에서만 호출)
     void setPlayerReady(String playerId, boolean ready) {
+        playerReadyStates.put(playerId, ready);
+
+        PlayerInfo info = players.computeIfAbsent(playerId, PlayerInfo::new);
+        info.setReady(ready);
+
         if (ready) {
-            playerReadyStates.put(playerId, true);
             System.out.println("Player " + playerId + " is ready!");
         } else {
-            playerReadyStates.put(playerId, false);
             System.out.println("Player " + playerId + " is not ready!");
         }
-        
-        // 모든 플레이어가 준비되면 게임 시작
+
+        // 모든 플레이어가 준비되었는지 확인
         checkAllReady();
     }
     
@@ -180,14 +227,17 @@ public class TetrisServer {
             return;
         }
         
-        // 호스트가 준비되지 않았으면 시작 불가
-        if (!playerReadyStates.getOrDefault(hostPlayerId, false)) {
+        // 최소 플레이어 수 확인 (호스트 + 클라이언트 최소 1명 = 2명)
+        Set<String> activePlayerIds = getActivePlayerIds();
+        
+        if (activePlayerIds.size() < 2) {
             return;
         }
         
-        // 모든 접속한 클라이언트가 준비되었는지 확인
-        for (String clientId : connectedClients.keySet()) {
-            if (!playerReadyStates.getOrDefault(clientId, false)) {
+        // 현재 게임에 참여하는 Host + 클라이언트 기준으로 체크
+        for (String playerId : activePlayerIds) {
+            boolean ready = playerReadyStates.getOrDefault(playerId, false);
+            if (!ready) {
                 return;
             }
         }
@@ -221,24 +271,7 @@ public class TetrisServer {
     // 서버(호스트) 준비 상태 반환
     public boolean isServerReady() {
         return playerReadyStates.getOrDefault(hostPlayerId, false);
-    }
-    
-    // 안쓰일거 같아서 주석처리
-    // // 클라이언트 준비 상태 반환 (첫 번째 클라이언트).
-    // public boolean isClientReady() {
-    //     if (connectedClients.isEmpty()) {
-    //         return false;
-    //     }
-    //     String firstClientId = connectedClients.keySet().iterator().next();
-    //     return playerReadyStates.getOrDefault(firstClientId, false);
-    // }
-    
-    
-    // // 특정 플레이어의 준비 상태 반환
-    // public boolean isPlayerReady(String playerId) {
-    //     return playerReadyStates.getOrDefault(playerId, false);
-    // }
-    
+    }    
     
     // P2P 준비 상태 초기화
     public void resetReadyStates() {
@@ -286,6 +319,9 @@ public class TetrisServer {
         if (hostMessageListener != null) {
             hostMessageListener.onGameOver(reason);
         }
+
+        // 다음 게임을 위해 ready 상태 초기화
+        resetReadyStates();
     }
     
     // 모든 클라이언트에게 메시지 전송
@@ -316,7 +352,7 @@ public class TetrisServer {
         }
     }
     
-    // 다른 플레이어들에게 메시지 전송 (발신자 제외)
+    // 발신자를 제외한 다른 플레이어들에게 메시지 전송
     public void broadcastToOthers(String senderPlayerId, NetworkMessage message) {
         for (Map.Entry<String, ClientHandler> entry : connectedClients.entrySet()) {
             if (!entry.getKey().equals(senderPlayerId)) {
@@ -330,27 +366,47 @@ public class TetrisServer {
         }
     }
     
-    // 모든 클라이언트와 호스트에게 메시지 전송
-    public void broadcastToAll(NetworkMessage message) {
-        // 호스트에게 전송 (호스트가 TetrisClient를 사용하는 경우)
-        if (hostMessageListener != null && message instanceof ConnectionMessage connMsg) {
-            if (connMsg.getType() == MessageType.PLAYER_READY) {
-                // 호스트에게 플레이어 준비 알림
-                hostMessageListener.onPlayerReady(connMsg.getSenderId());
-            }
+    // 모든 플레이어에게 READY 이벤트 전달 (호스트 포함)
+    public void broadcastPlayerReady(String playerId) {
+        ConnectionMessage msg = ConnectionMessage.createPlayerReady(playerId);
+
+        // Host에도 전달
+        if (hostMessageListener != null) {
+            hostMessageListener.onPlayerReady(playerId);
         }
-        
-        // 모든 클라이언트에게 전송
-        for (Map.Entry<String, ClientHandler> entry : connectedClients.entrySet()) {
-            try {
-                entry.getValue().sendMessage(message);
-            } catch (IOException e) {
-                System.err.println("Failed to broadcast to player " + entry.getKey() + ": " + e.getMessage());
-                unregisterClient(entry.getKey());
-            }
-        }
+
+        // 클라이언트에게 전달
+        broadcastMessage(msg);
     }
-    
+
+    // 발신자를 제외한 모든 플레이어에게 보드 업데이트 전달
+    public void broadcastBoardUpdateToOthers(String senderId, BoardUpdateMessage msg) {
+        broadcastToOthers(senderId, msg);
+    }
+
+    // 발신자를 제외한 모든 플레이어에게 공격 전달
+    public void broadcastAttackToOthers(String senderId, AttackMessage msg) {
+        broadcastToOthers(senderId, msg);
+    }
+
+    // 발신자를 제외한 모든 플레이어에게 Pause 전달
+    public void broadcastPauseToOthers(String senderId) {
+        ConnectionMessage pause = new ConnectionMessage(MessageType.PAUSE, senderId, "Game paused by " + senderId);
+        broadcastToOthers(senderId, pause);
+    }
+
+    // 발신자를 제외한 모든 플레이어에게 Resume 전달
+    public void broadcastResumeToOthers(String senderId) {
+        ConnectionMessage resume = new ConnectionMessage(MessageType.RESUME, senderId, "Game resumed by " + senderId);
+        broadcastToOthers(senderId, resume);
+    }
+
+    // 발신자를 제외한 모든 플레이어에게 GameOver 전달
+    public void broadcastGameOverToOthers(String senderId, String reason) {
+        ConnectionMessage msg = ConnectionMessage.createGameOver(senderId, reason);
+        broadcastToOthers(senderId, msg);
+    }
+
     // 클라이언트 보드 업데이트를 호스트에게 알림
     public void notifyHostBoardUpdate(BoardUpdateMessage boardUpdate) {
         if (hostMessageListener != null) {
@@ -403,13 +459,15 @@ public class TetrisServer {
     }
     
     // 호스트의 공격을 클라이언트에게 전송
-    public boolean sendHostAttack(String targetPlayerId, int clearedLines) {
+    public boolean sendHostAttack(int clearedLines) {
         if (!gameInProgress) {
             return false;
         }
         
-        AttackMessage attackMsg = AttackMessage.createStandardAttack(hostPlayerId, targetPlayerId, clearedLines);
-        sendMessageToPlayer(targetPlayerId, attackMsg);
+        AttackMessage attackMsg = AttackMessage.createStandardAttack(hostPlayerId, clearedLines);
+        broadcastToOthers(hostPlayerId, attackMsg);
+        notifyHostAttack(attackMsg);
+
         return true;
     }
     
@@ -433,8 +491,7 @@ public class TetrisServer {
         setPlayerReady(hostPlayerId, true);
         
         // 모든 클라이언트에게 호스트 준비 알림
-        ConnectionMessage readyNotification = ConnectionMessage.createPlayerReady(hostPlayerId);
-        broadcastToAll(readyNotification);
+        broadcastPlayerReady(hostPlayerId);
     }
     
     // 서버 중지
@@ -442,7 +499,9 @@ public class TetrisServer {
         isRunning = false;
         
         // 모든 클라이언트에게 서버 종료 알림
-        if (!connectedClients.isEmpty()) {
+        if(gameInProgress) {
+            endGame("Server shutdown");
+        } else if (!connectedClients.isEmpty()) {
             ConnectionMessage serverShutdown = ConnectionMessage.createGameOver("server", "Server shutdown");
             broadcastMessage(serverShutdown);
         }

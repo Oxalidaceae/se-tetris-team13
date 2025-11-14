@@ -62,48 +62,40 @@ public class TetrisClient {
             // 연결 요청 메시지 전송
             ConnectionMessage connectionRequest = ConnectionMessage.createConnectionRequest(playerId, playerId);
             System.out.println("Sending connection request...");
-            output.writeObject(connectionRequest);
-            output.flush();
+            
+            // 직접 전송 (sendMessage를 사용하지 않음)
+            synchronized (output) {
+                output.writeObject(connectionRequest);
+                output.flush();
+            }
             System.out.println("Connection request sent!");
             
             // 연결 응답 대기
             Object response = input.readObject();
-            
-            if (response instanceof ConnectionMessage connMsg) {
-                if (connMsg.getType() == MessageType.CONNECTION_ACCEPTED) {
-                    isConnected = true;
-                    System.out.println("Connected to server successfully!");
-                    
-                    // 메시지 수신 스레드 시작
-                    messageHandler.submit(this::messageLoop);
-                    
-                    if (messageListener != null) {
-                        messageListener.onConnectionAccepted();
-                    }
-                    
-                    return true;
-                    
-                } else if (connMsg.getType() == MessageType.CONNECTION_REJECTED) {
-                    System.err.println("Connection rejected: " + connMsg.getMessage());
-                    
-                    if (messageListener != null) {
-                        messageListener.onConnectionRejected(connMsg.getMessage());
-                    }
-                    
-                    return false;
-                }
+            if (!(response instanceof ConnectionMessage msg)) {
+                notifyError("Invalid connection response");
+                return false;
             }
-            
-            System.err.println("Invalid connection response from server");
-            return false;
-            
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Failed to connect to server: " + e.getMessage());
-            
+
+            if (msg.getType() == MessageType.CONNECTION_ACCEPTED) {
+                isConnected = true;
+                System.out.println("Connected successfully!");
+                if (messageListener != null) messageListener.onConnectionAccepted();
+
+                // 메시지 수신 루프 스레드 시작
+                messageHandler.submit(this::messageLoop);
+
+                return true;
+            }
+
+            // REJECTED
+            notifyError(msg.getMessage());
             if (messageListener != null) {
-                messageListener.onError("Connection failed: " + e.getMessage());
+                messageListener.onConnectionRejected(msg.getMessage());
             }
-            
+            return false;
+        } catch (Exception e) {
+            notifyError("Connection failed: " + e.getMessage());
             return false;
         }
     }
@@ -116,26 +108,14 @@ public class TetrisClient {
                 
                 if (obj instanceof NetworkMessage message) {
                     handleReceivedMessage(message);
-                } else {
-                    System.err.println("Received non-NetworkMessage object from server");
                 }
-                
             } catch (IOException e) {
                 if (isConnected) {
-                    System.err.println("Connection lost with server: " + e.getMessage());
-                    
-                    if (messageListener != null) {
-                        messageListener.onError("Connection lost: " + e.getMessage());
-                    }
+                    notifyError("Connection lost: " + e.getMessage());
                 }
                 break;
-                
             } catch (ClassNotFoundException e) {
-                System.err.println("Unknown message class from server: " + e.getMessage());
-                
-                if (messageListener != null) {
-                    messageListener.onError("Unknown message: " + e.getMessage());
-                }
+                notifyError("Unknown object from server");
             }
         }
         
@@ -167,10 +147,7 @@ public class TetrisClient {
             
             case GAME_OVER -> {
                 gameStarted = false;
-                String reason = "";
-                if (message instanceof ConnectionMessage connMsg) {
-                    reason = connMsg.getMessage();
-                }
+                String reason = (message instanceof ConnectionMessage connMsg) ? connMsg.getMessage() : "";
                 messageListener.onGameOver(reason);
             }
             
@@ -217,8 +194,8 @@ public class TetrisClient {
     }
     
     // 서버에 메시지 전송
-    public boolean sendMessage(NetworkMessage message) {
-        if (!isConnected || socket.isClosed()) {
+    public boolean sendMessage(NetworkMessage message) {        
+        if (!isConnected || socket == null || socket.isClosed()) {
             System.err.println("Cannot send message: not connected to server");
             return false;
         }
@@ -231,14 +208,14 @@ public class TetrisClient {
             return true;
             
         } catch (IOException e) {
-            System.err.println("Failed to send message: " + e.getMessage());
-            
-            if (messageListener != null) {
-                messageListener.onError("Send failed: " + e.getMessage());
-            }
-            
+            notifyError("Send error: " + e.getMessage());
             return false;
         }
+    }
+
+    public boolean requestReady() {
+        boolean result = sendMessage(ConnectionMessage.createPlayerReady(playerId));
+        return result;
     }
     
     // 보드 상태 업데이트 전송ming blocks 포함)
@@ -262,7 +239,7 @@ public class TetrisClient {
             return false;
         }
         
-        AttackMessage attackMsg = AttackMessage.createStandardAttack(playerId, targetPlayerId, clearedLines);
+        AttackMessage attackMsg = AttackMessage.createStandardAttack(playerId, clearedLines);
         return sendMessage(attackMsg);
     }
     
@@ -279,12 +256,6 @@ public class TetrisClient {
         return sendMessage(resumeMsg);
     }
     
-    // 게임 시작 요청
-    public boolean requestGameStart() {
-        ConnectionMessage playerReadyMsg = ConnectionMessage.createPlayerReady(playerId);
-        return sendMessage(playerReadyMsg);
-    }
-    
     // 연결 해제
     public void disconnect() {
         if (isConnected) {
@@ -292,7 +263,6 @@ public class TetrisClient {
             ConnectionMessage disconnectMsg = new ConnectionMessage(MessageType.DISCONNECT, playerId, "Player disconnected");
             sendMessage(disconnectMsg);
         }
-        
         cleanup();
     }
     
@@ -301,46 +271,22 @@ public class TetrisClient {
         isConnected = false;
         gameStarted = false;
         
+        // 스트림 정리
+        try { if (input != null) input.close(); } catch (IOException ignore) {}
+        try { if (output != null) output.close(); } catch (IOException ignore) {}
+        try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException ignore) {}
+
         // 메시지 핸들러 종료
         if (messageHandler != null && !messageHandler.isShutdown()) {
             messageHandler.shutdown();
-            try {
-                if (!messageHandler.awaitTermination(2, TimeUnit.SECONDS)) {
-                    messageHandler.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                messageHandler.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
-        
-        // 스트림 정리
-        try {
-            if (input != null) {
-                input.close();
-            }
-        } catch (IOException e) {
-            // 무시
-        }
-        
-        try {
-            if (output != null) {
-                output.close();
-            }
-        } catch (IOException e) {
-            // 무시
-        }
-        
-        // 소켓 정리
-        try {
-            if (socket != null && !socket.isClosed()) {
-                socket.close();
-            }
-        } catch (IOException e) {
-            // 무시
         }
         
         System.out.println("Client cleanup completed");
+    }
+
+    private void notifyError(String msg) {
+        System.err.println(msg);
+        if (messageListener != null) messageListener.onError(msg);
     }
     
     public boolean isConnected() {

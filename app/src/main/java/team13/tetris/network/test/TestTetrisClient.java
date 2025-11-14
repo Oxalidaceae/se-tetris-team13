@@ -63,7 +63,7 @@ public class TestTetrisClient {
                         client.disconnect();
                         break;
                     } else if (input.equalsIgnoreCase("ready")) {
-                        if (client.requestGameStart()) {
+                        if (client.requestReady()) {
                             System.out.println("Ready signal sent! Waiting for other players...");
                         } else {
                             System.out.println("Failed to send ready signal");
