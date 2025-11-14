@@ -5,8 +5,7 @@ import team13.tetris.game.model.Tetromino;
 
 // 보드를 ASCII 형식으로 렌더링하는 유틸리티입니다. 테두리는 'X', 블록은 '■'로 표현합니다.
 public final class AsciiBoardRenderer {
-    private AsciiBoardRenderer() {
-    }
+    private AsciiBoardRenderer() {}
 
     public static String render(Board board, Tetromino current, int px, int py) {
         int rows = board.getHeight();
@@ -29,11 +28,7 @@ public final class AsciiBoardRenderer {
                     int sr = r - py;
                     int sc = c - px;
                     
-                    if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length) {
-                        if (shape[sr][sc] != 0){
-                            occupied = true;                            
-                        }
-                    }
+                    if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length && shape[sr][sc] != 0) occupied = true;
                 }
 
                 sb.append(occupied ? '■' : ' ');

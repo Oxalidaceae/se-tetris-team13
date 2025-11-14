@@ -200,9 +200,7 @@ public class VersusGameController {
     
     private void processInputs() {
         // 일시정지 중에는 입력 처리하지 않음
-        if (paused) {
-            return;
-        }
+        if (paused) return;
         
         long currentTime = System.currentTimeMillis();
         
@@ -260,16 +258,12 @@ public class VersusGameController {
     // 키가 처리되어야 하는지 확인 (첫 입력 후 500ms 지연, 이후 50ms 간격)
     private <T> boolean shouldProcessKey(java.util.Map<T, Long> keyPressTimeMap, T key, long currentTime) {
         Long pressTime = keyPressTimeMap.get(key);
-        if (pressTime == null) {
-            return false; // 키가 눌리지 않음
-        }
+        if (pressTime == null) return false; // 키가 눌리지 않음
         
         long elapsedTime = currentTime - pressTime;
         
         // 첫 입력은 즉시 처리되고, INITIAL_DELAY_MS 이전에는 반복하지 않음
-        if (elapsedTime < INITIAL_DELAY_MS) {
-            return false;
-        }
+        if (elapsedTime < INITIAL_DELAY_MS) return false;
         
         // INITIAL_DELAY_MS 이후에는 INPUT_DELAY_MS 간격으로 처리
         return true;
@@ -602,6 +596,7 @@ public class VersusGameController {
         // 맨 아래에 넘어온 블록 추가
         for (int i = 0; i < lines; i++) {
             int targetRow = height - lines + i;
+
             for (int x = 0; x < width; x++) {
                 board.setCell(x, targetRow, pattern[i][x]);
             }
@@ -610,9 +605,7 @@ public class VersusGameController {
 
     private void checkWinner() {
         // 타이머가 있으면 정지
-        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
-            timerExecutor.shutdown();
-        }
+        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) timerExecutor.shutdown();
         
         if (gameOver1 && !gameOver2) {
             // Player 2 승리
