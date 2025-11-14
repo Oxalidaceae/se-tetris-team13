@@ -291,9 +291,7 @@ public class VersusGameController {
     
     private void checkTimeUp() {
         // 입력 타이머 정지
-        if (inputTimer != null) {
-            inputTimer.stop();
-        }
+        if (inputTimer != null) inputTimer.stop();
         
         engine1.stopAutoDrop();
         engine2.stopAutoDrop();
@@ -330,9 +328,7 @@ public class VersusGameController {
         }
         
         // 일시정지 중에는 게임 입력 처리하지 않음
-        if (paused) {
-            return;
-        }
+        if (paused) return;
         
         // 키 상태 업데이트 및 첫 입력 시간 기록
         // Player 1 keys
