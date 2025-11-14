@@ -25,44 +25,44 @@ class KeyInputHandlerTest {
     @Test
     @DisplayName("기본 설정값으로 키 매칭 테스트")
     void testDefaultKeyMatching() {
-        // given - Settings의 기본값 사용 (LEFT, RIGHT, DOWN, Z, X, P, ESCAPE)
+        // given - Settings의 기본값 사용 (A, D, S, W, SPACE, ESCAPE)
         Settings defaultSettings = new Settings();
         defaultSettings.restoreDefaultKeys();
         KeyInputHandler handler = new KeyInputHandler(defaultSettings);
 
-        // when & then - 방향키와 Z, X, P, ESCAPE가 기본 키
-        assertTrue(handler.isLeftClicked(KeyCode.LEFT), "LEFT 키가 왼쪽 이동과 매칭되어야 함");
-        assertTrue(handler.isRightClicked(KeyCode.RIGHT), "RIGHT 키가 오른쪽 이동과 매칭되어야 함");
-        assertTrue(handler.isDropClicked(KeyCode.DOWN), "DOWN 키가 소프트 드롭과 매칭되어야 함");
-        assertTrue(handler.isRotateClicked(KeyCode.Z), "Z 키가 회전과 매칭되어야 함");
-        assertTrue(handler.isHardDropClicked(KeyCode.X), "X 키가 하드 드롭과 매칭되어야 함");
-        assertTrue(handler.isPauseClicked(KeyCode.P), "P 키가 일시정지와 매칭되어야 함");
+        // when & then - WASD와 SPACE, ESCAPE가 기본 키
+        assertTrue(handler.isLeftClicked(KeyCode.A), "A 키가 왼쪽 이동과 매칭되어야 함");
+        assertTrue(handler.isRightClicked(KeyCode.D), "D 키가 오른쪽 이동과 매칭되어야 함");
+        assertTrue(handler.isDropClicked(KeyCode.S), "S 키가 소프트 드롭과 매칭되어야 함");
+        assertTrue(handler.isRotateClicked(KeyCode.W), "W 키가 회전과 매칭되어야 함");
+        assertTrue(handler.isHardDropClicked(KeyCode.SPACE), "SPACE 키가 하드 드롭과 매칭되어야 함");
+        assertTrue(handler.isPauseClicked(KeyCode.ESCAPE), "ESCAPE 키가 일시정지와 매칭되어야 함");
 
-        // WASD는 기본 키가 아님
-        assertFalse(handler.isLeftClicked(KeyCode.A), "A 키는 기본 키가 아님");
-        assertFalse(handler.isRightClicked(KeyCode.D), "D 키는 기본 키가 아님");
-        assertFalse(handler.isDropClicked(KeyCode.S), "S 키는 기본 키가 아님");
-        assertFalse(handler.isRotateClicked(KeyCode.W), "W 키는 기본 키가 아님");
+        // 방향키는 기본 키가 아님
+        assertFalse(handler.isLeftClicked(KeyCode.LEFT), "LEFT 키는 기본 키가 아님");
+        assertFalse(handler.isRightClicked(KeyCode.RIGHT), "RIGHT 키는 기본 키가 아님");
+        assertFalse(handler.isDropClicked(KeyCode.DOWN), "DOWN 키는 기본 키가 아님");
+        assertFalse(handler.isRotateClicked(KeyCode.UP), "UP 키는 기본 키가 아님");
     }
 
     @Test
-    @DisplayName("WASD 키로 변경 후 매칭 테스트")
-    void testWASDKeyMatching() {
-        // given - WASD 설정
-        settings.setKeyLeft("A");
-        settings.setKeyRight("D");
-        settings.setKeyDown("S");
-        settings.setKeyRotate("W");
+    @DisplayName("방향키로 변경 후 매칭 테스트")
+    void testChangeToArrowKeys() {
+        // given - 방향키 설정
+        settings.setKeyLeft("LEFT");
+        settings.setKeyRight("RIGHT");
+        settings.setKeyDown("DOWN");
+        settings.setKeyRotate("UP");
 
         // when & then
-        assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "A 키가 왼쪽 이동과 매칭되어야 함");
-        assertFalse(keyInputHandler.isLeftClicked(KeyCode.D), "D 키는 왼쪽 이동과 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isLeftClicked(KeyCode.LEFT), "LEFT 키가 왼쪽 이동과 매칭되어야 함");
+        assertFalse(keyInputHandler.isLeftClicked(KeyCode.RIGHT), "RIGHT 키는 왼쪽 이동과 매칭되지 않아야 함");
 
-        assertTrue(keyInputHandler.isRightClicked(KeyCode.D), "D 키가 오른쪽 이동과 매칭되어야 함");
-        assertFalse(keyInputHandler.isRightClicked(KeyCode.A), "A 키는 오른쪽 이동과 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isRightClicked(KeyCode.RIGHT), "RIGHT 키가 오른쪽 이동과 매칭되어야 함");
+        assertFalse(keyInputHandler.isRightClicked(KeyCode.LEFT), "LEFT 키는 오른쪽 이동과 매칭되지 않아야 함");
 
-        assertTrue(keyInputHandler.isDropClicked(KeyCode.S), "S 키가 소프트 드롭과 매칭되어야 함");
-        assertTrue(keyInputHandler.isRotateClicked(KeyCode.W), "W 키가 회전과 매칭되어야 함");
+        assertTrue(keyInputHandler.isDropClicked(KeyCode.DOWN), "DOWN 키가 소프트 드롭과 매칭되어야 함");
+        assertTrue(keyInputHandler.isRotateClicked(KeyCode.UP), "UP 키가 회전과 매칭되어야 함");
     }
 
     @Test

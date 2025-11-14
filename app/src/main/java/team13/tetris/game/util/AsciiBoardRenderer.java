@@ -14,10 +14,12 @@ public final class AsciiBoardRenderer {
 
         // top border
         for (int c = 0; c < cols + 2; c++) sb.append('X');
+        
         sb.append('\n');
 
         for (int r = 0; r < rows; r++) {
             sb.append('X');
+
             for (int c = 0; c < cols; c++) {
                 boolean occupied = board.getCell(c, r) != 0;
                 // check current piece
@@ -25,18 +27,20 @@ public final class AsciiBoardRenderer {
                     int[][] shape = current.getShape();
                     int sr = r - py;
                     int sc = c - px;
-                    if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length) {
-                        if (shape[sr][sc] != 0) occupied = true;
-                    }
+                    
+                    if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length && shape[sr][sc] != 0) occupied = true;
                 }
+
                 sb.append(occupied ? '■' : ' ');
             }
+
             sb.append('X');
             sb.append('\n');
         }
 
         // bottom border
         for (int c = 0; c < cols + 2; c++) sb.append('X');
+
         sb.append('\n');
 
         return sb.toString();
@@ -49,7 +53,12 @@ public final class AsciiBoardRenderer {
         int size = 4;
         // default empty 4x4
         char[][] grid = new char[size][size];
-        for (int r = 0; r < size; r++) for (int c = 0; c < size; c++) grid[r][c] = ' ';
+
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+                grid[r][c] = ' ';
+            }
+        }
 
         if (piece != null) {
             int[][] shape = piece.getShape();
@@ -57,11 +66,13 @@ public final class AsciiBoardRenderer {
             int w = shape[0].length;
             int offR = Math.max(0, (size - h) / 2);
             int offC = Math.max(0, (size - w) / 2);
+
             for (int r = 0; r < h; r++) {
                 for (int c = 0; c < w; c++) {
                     if (shape[r][c] != 0) {
                         int rr = offR + r;
                         int cc = offC + c;
+
                         if (rr >= 0 && rr < size && cc >= 0 && cc < size) grid[rr][cc] = '■';
                     }
                 }
@@ -69,7 +80,10 @@ public final class AsciiBoardRenderer {
         }
 
         for (int r = 0; r < size; r++) {
-            for (int c = 0; c < size; c++) sb.append(grid[r][c]);
+            for (int c = 0; c < size; c++) {
+                sb.append(grid[r][c]);
+            }
+            
             sb.append('\n');
         }
 
