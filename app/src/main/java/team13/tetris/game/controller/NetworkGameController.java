@@ -1,12 +1,12 @@
 package team13.tetris.game.controller;
 
 import javafx.application.Platform;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
+import team13.tetris.game.model.Tetromino;
 import team13.tetris.network.client.TetrisClient;
 import team13.tetris.network.server.TetrisServer;
 import team13.tetris.network.listener.ClientMessageListener;
@@ -19,13 +19,8 @@ import java.io.IOException;
 import java.util.Queue;
 import java.util.LinkedList;
 
-/**
- * P2P 네트워크 게임 컨트롤러
- * - 서버(호스트) 또는 클라이언트로 동작
- * - VersusGameScene과 유사한 게임 규칙 적용
- */
 public class NetworkGameController implements ClientMessageListener, ServerMessageListener {
-    private final SceneManager sceneManager;
+    private final SceneManager manager;
     private final Settings settings;
     private final boolean isHost;
     private final String serverIP;
@@ -46,8 +41,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     // 공격 큐
     private final Queue<Integer> incomingAttacks = new LinkedList<>();
     
-    public NetworkGameController(SceneManager sceneManager, Settings settings, boolean isHost, String serverIP) {
-        this.sceneManager = sceneManager;
+    public NetworkGameController(SceneManager manager, Settings settings, boolean isHost, String serverIP) {
+        this.manager = manager;
         this.settings = settings;
         this.isHost = isHost;
         this.serverIP = serverIP;
@@ -56,7 +51,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 로비 초기화 및 네트워크 연결
     public void initializeLobby() {
-        lobbyScene = new NetworkLobbyScene(sceneManager, settings, isHost);
+        lobbyScene = new NetworkLobbyScene(manager, settings, isHost);
         
         if (isHost) {
             // 서버 시작
@@ -75,6 +70,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         } else {
             // 클라이언트로 연결
             myPlayerId = "Client";
+            connectToServer();
         }
         
         // 준비 버튼 핸들러
@@ -82,12 +78,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             handleReadyButton();
         });
         
-        // 클라이언트는 즉시 서버에 연결
-        if (!isHost) {
-            connectToServer();
-        }
-        
-        sceneManager.changeScene(lobbyScene.getScene());
+        manager.changeScene(lobbyScene.getScene());
     }
     
     
@@ -96,14 +87,14 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         client = new TetrisClient(myPlayerId, serverIP != null ? serverIP : "127.0.0.1");
         client.setMessageListener(this);
         
+        Platform.runLater(() -> {
+            lobbyScene.setStatusText("Connecting...");
+        });
+        
         new Thread(() -> {
             if (client.connect()) {
                 Platform.runLater(() -> {
                     lobbyScene.setStatusText("Connected to server!");
-                });
-            } else {
-                Platform.runLater(() -> {
-                    lobbyScene.setStatusText("Failed to connect to server");
                 });
             }
         }).start();
@@ -123,14 +114,26 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             
             // 자신의 준비 상태 전송 (PLAYER_READY 메시지)
             ConnectionMessage readyMsg = ConnectionMessage.createPlayerReady(myPlayerId);
-            server.sendMessageToPlayer(opponentPlayerId, readyMsg);
+            server.broadcastMessage(readyMsg);
         } else {
             // 클라이언트는 준비 상태만 전송
             ConnectionMessage readyMsg = ConnectionMessage.createPlayerReady(myPlayerId);
             client.sendMessage(readyMsg);
         }
+        
+        startSynchronizedGame();
     }
     
+    
+    // 동기화된 게임 시작 (서버에서만 호출)
+    private void startSynchronizedGame() {
+        if (!isHost){
+            return;
+        }
+        
+        ConnectionMessage gameStartMsg = ConnectionMessage.createGameStart(myPlayerId);
+        server.broadcastMessage(gameStartMsg);
+    }
     
     // 게임 시작
     private void startGame() {
@@ -152,14 +155,15 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             
             @Override
             public void onPieceSpawned(team13.tetris.game.model.Tetromino tetromino, int px, int py) {
-                // 필요 시 사용
                 // 공격 블록 관련 리스너??
             }
             
             @Override
             public void onLinesCleared(int linesCleared) {
-                // 속도증가??
-                // 공격전송??
+                if (linesCleared > 0) {
+                    // 공격 전송 (1줄당 1라인 공격)
+                    sendAttack(linesCleared);
+                }
             }
             
             @Override
@@ -180,7 +184,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         
         // 게임 화면 생성
         gameScene = new NetworkGameScene(
-            sceneManager, 
+            manager, 
             settings, 
             myEngine,
             isHost ? "You (Host)" : "You (Client)",
@@ -192,13 +196,57 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         
         // 화면 전환
         Platform.runLater(() -> {
-            sceneManager.changeScene(gameScene.getScene());
+            manager.changeScene(gameScene.getScene());
             gameScene.requestFocus();
             gameScene.setConnected(true);
             
             // 게임 시작
             myEngine.startNewGame();
+            
+            // 게임 루프 시작 (60 FPS로 화면 업데이트 + 보드 전송)
+            startGameLoop();
         });
+    }
+    
+    // 게임 루프 (화면 업데이트 + 네트워크 전송)
+    private java.util.Timer gameLoopTimer;
+    private void startGameLoop() {
+        if (gameLoopTimer != null) {
+            gameLoopTimer.cancel();
+        }
+        
+        gameLoopTimer = new java.util.Timer();
+        gameLoopTimer.scheduleAtFixedRate(new java.util.TimerTask() {
+            private int frameCount = 0;
+            
+            @Override
+            public void run() {
+                if (!gameStarted || myEngine == null) {
+                    return;
+                }
+                
+                Platform.runLater(() -> {
+                    // 화면 업데이트 (매 프레임)
+                    if (gameScene != null) {
+                        gameScene.updateLocalGrid();
+                    }
+                });
+                
+                // 네트워크 전송 (10 FPS - 매 6프레임마다)
+                frameCount++;
+                if (frameCount % 6 == 0) {
+                    sendMyBoardState();
+                }
+            }
+        }, 0, 16); // 약 60 FPS (16ms)
+    }
+    
+    // 게임 루프 중지
+    private void stopGameLoop() {
+        if (gameLoopTimer != null) {
+            gameLoopTimer.cancel();
+            gameLoopTimer = null;
+        }
     }
     
     
@@ -233,15 +281,35 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 내 보드 상태 전송
     private void sendMyBoardState() {
+        if (myEngine == null) return;
+        
         // P2P에서는 보드 상태 + 현재/다음 블록 + incoming blocks 전송
         int[][] boardState = myEngine.getBoard().snapshot();
         int score = myEngine.getScore();
         int pieceX = myEngine.getPieceX();
         int pieceY = myEngine.getPieceY();
-        int pieceType = myEngine.getCurrent() != null ? myEngine.getCurrent().getKind().ordinal() + 1 : -1;
-        int pieceRotation = 0; // TODO: Tetromino에 getRotation() 추가 필요
-        int nextPieceType = myEngine.getNext() != null ? myEngine.getNext().getKind().ordinal() + 1 : -1;
-        java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>(); // TODO: GameEngine에 getIncomingQueue() 추가 필요
+        
+        // 현재 블록 정보
+        Tetromino current = myEngine.getCurrent();
+        int pieceType = -1;
+        int pieceRotation = 0;
+        if (current != null && current.getKind() != null) {
+            pieceType = current.getKind().getId();
+            pieceRotation = current.getRotationIndex();
+        }
+        
+        // 다음 블록 정보
+        Tetromino next = myEngine.getNext();
+        int nextPieceType = -1;
+        if (next != null && next.getKind() != null) {
+            nextPieceType = next.getKind().getId();
+        }
+        
+        // Incoming blocks queue (공격받을 블록들)
+        java.util.Queue<int[][]> incomingBlocks;
+        synchronized (incomingAttacks) {
+            incomingBlocks = convertAttacksToBlocks(new LinkedList<>(incomingAttacks));
+        }
         
         BoardUpdateMessage msg = new BoardUpdateMessage(
             myPlayerId,
@@ -253,20 +321,42 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             nextPieceType,
             incomingBlocks,
             score,
-            0,  // lines - 사용하지 않음
+            myEngine.getTotalLinesCleared(),
             0   // level - 사용하지 않음
         );
         
         if (isHost && server != null) {
-            server.sendMessageToPlayer(opponentPlayerId, msg);
+            server.broadcastMessage(msg);
         } else if (!isHost && client != null) {
             client.sendMessage(msg);
         }
     }
     
-    /**
-     * 공격 전송
-     */
+    // 공격 숫자를 블록 패턴으로 변환
+    private Queue<int[][]> convertAttacksToBlocks(Queue<Integer> attacks) {
+        Queue<int[][]> blocks = new LinkedList<>();
+        for (Integer lines : attacks) {
+            if (lines > 0) {
+                int[][] pattern = createAttackPattern(lines);
+                blocks.add(pattern);
+            }
+        }
+        return blocks;
+    }
+    
+    // 공격 패턴 생성 (회색 블록)
+    private int[][] createAttackPattern(int lines) {
+        int[][] pattern = new int[lines][10];
+        for (int y = 0; y < lines; y++) {
+            for (int x = 0; x < 10; x++) {
+                pattern[y][x] = 1000; // 1000 = 회색 공격 블록
+            }
+        }
+        return pattern;
+    }
+    
+    
+    // 공격 전송
     private void sendAttack(int lines) {
         if (opponentPlayerId == null) return;
         
@@ -277,35 +367,33 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         );
         
         if (isHost && server != null) {
-            server.sendMessageToPlayer(opponentPlayerId, msg);
+            server.broadcastMessage(msg);
         } else if (!isHost && client != null) {
             client.sendMessage(msg);
         }
     }
     
-    /**
-     * 게임 오버 처리
-     */
+    
+    // 게임 오버 처리
     private void handleGameOver(String reason) {
         gameStarted = false;
-        myEngine.stopAutoDrop();
+        if (myEngine != null) {
+            myEngine.stopAutoDrop();
+        }
+        stopGameLoop();
         
         Platform.runLater(() -> {
             // TODO: 게임 오버 화면 표시
-            sceneManager.showMainMenu(settings);
+            manager.showMainMenu(settings);
         });
     }
     
-    // ===== ClientMessageListener 구현 =====
-    
+    // ClientMessageListener 구현 
     @Override
     public void onConnectionAccepted() {
-        Platform.runLater(() -> {
-            lobbyScene.setStatusText("Connected!");
-            if (!isHost) {
-                opponentPlayerId = "Host";
-            }
-        });
+        if (!isHost) {
+            opponentPlayerId = "Host";
+        }
     }
     
     @Override
@@ -317,20 +405,26 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     @Override
     public void onPlayerReady(String playerId) {
+        // 자기 자신의 PLAYER_READY 메시지는 무시
+        if (playerId.equals(myPlayerId)) {
+            return;
+        }
+        
         Platform.runLater(() -> {
             lobbyScene.setOpponentReady(true);
             opponentPlayerId = playerId;
             
-            // 양쪽 다 준비되면 게임 시작
-            if (lobbyScene.areBothReady()) {
-                startGame();
-            }
+            // 서버(호스트)인 경우에만 양쪽 준비 상태 확인하여 게임 시작
+            //if (isHost && lobbyScene.areBothReady()) {
+            //    // 서버가 GAME_START 메시지 전송하여 동시 시작
+            //    startSynchronizedGame();
+            //}
         });
     }
     
     @Override
     public void onGameStart() {
-        // 명시적인 GAME_START 메시지가 오면 게임 시작
+        // 서버로부터 GAME_START 메시지를 받으면 동시에 게임 시작
         Platform.runLater(this::startGame);
     }
     
@@ -345,9 +439,14 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             Platform.runLater(() -> {
                 gameScene.updateRemoteBoardState(
                     boardUpdate.getBoardState(),
+                    boardUpdate.getCurrentPieceX(),
+                    boardUpdate.getCurrentPieceY(),
+                    boardUpdate.getCurrentPieceType(),
+                    boardUpdate.getCurrentPieceRotation(),
+                    boardUpdate.getNextPieceType(),
+                    boardUpdate.getIncomingBlocks(),
                     boardUpdate.getScore(),
-                    0,  // linesCleared - BoardUpdateMessage에서 가져오지 않음
-                    0   // level - BoardUpdateMessage에서 가져오지 않음
+                    boardUpdate.getLinesCleared()
                 );
             });
         }
@@ -360,11 +459,20 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             incomingAttacks.add(lines);
         }
         
-        // 공격 라인 추가
+        // 공격 라인 추가 (즉시 적용)
         Platform.runLater(() -> {
             if (myEngine != null) {
-                for (int i = 0; i < lines; i++) {
-                    addGarbageLine();
+                synchronized (incomingAttacks) {
+                    while (!incomingAttacks.isEmpty()) {
+                        int attackLines = incomingAttacks.poll();
+                        for (int i = 0; i < attackLines; i++) {
+                            addGarbageLine();
+                        }
+                    }
+                }
+                // 화면 업데이트
+                if (gameScene != null) {
+                    gameScene.updateLocalGrid();
                 }
             }
         });

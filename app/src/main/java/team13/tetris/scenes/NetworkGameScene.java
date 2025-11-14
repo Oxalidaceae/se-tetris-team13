@@ -190,14 +190,18 @@ public class NetworkGameScene {
     /**
      * 상대 화면 업데이트 (네트워크 데이터)
      */
-    public void updateRemoteBoardState(int[][] boardState, int score, int linesCleared, int level) {
+    public void updateRemoteBoardState(int[][] boardState, int pieceX, int pieceY, 
+                                       int pieceType, int pieceRotation,
+                                       int nextPieceType, java.util.Queue<int[][]> incomingBlocks,
+                                       int score, int linesCleared) {
         Platform.runLater(() -> {
-            int h = boardState[0].length;
-            int w = boardState.length;
+            int h = boardState.length;
+            int w = boardState[0].length;
             
+            // 보드 상태 렌더링
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    int val = boardState[x][y];
+                    int val = boardState[y][x];
                     CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, opponentGrid);
                     if (cell != null) {
                         renderCell(cell, val);
@@ -205,7 +209,29 @@ public class NetworkGameScene {
                 }
             }
             
-            opponentScoreLabel.setText("Score: " + score);
+            // 현재 떨어지는 블록 렌더링
+            if (pieceType > 0) {
+                team13.tetris.game.model.Tetromino.Kind kind = team13.tetris.game.model.Tetromino.kindForId(pieceType);
+                if (kind != null) {
+                    int[][] shape = kind.getRotation(pieceRotation % 4);
+                    for (int r = 0; r < shape.length; r++) {
+                        for (int c = 0; c < shape[r].length; c++) {
+                            if (shape[r][c] != 0) {
+                                int bx = pieceX + c;
+                                int by = pieceY + r;
+                                if (bx >= 0 && bx < w && by >= 0 && by < h) {
+                                    CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, opponentGrid);
+                                    if (cell != null) {
+                                        cell.setNormalBlock(pieceType);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            opponentScoreLabel.setText("Score: " + score + " | Lines: " + linesCleared);
         });
     }
     
