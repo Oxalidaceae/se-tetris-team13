@@ -1,312 +1,565 @@
+// -------------- NetworkGameScene.java (Final Full Version) ---------------------
+
 package team13.tetris.scenes;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
+import team13.tetris.game.model.Tetromino;
+
+import java.util.*;
 
 /**
- * 네트워크 대전용 게임 화면
- * - 왼쪽: 내 화면 (GameEngine 제어)
- * - 오른쪽: 상대 화면 (네트워크로 받은 보드 상태)
+ * 네트워크 대전 게임 화면 (VersusGameScene과 동일한 디자인 유지)
+ * - Player1 = Local
+ * - Player2 = Remote
+ * - Remote는 서버에서 보드/미노 상태/점수/Incoming을 받아서 갱신
+ * - ColorBlind / 아이템 표시 / Ghost / Border 등 모두 동일
  */
 public class NetworkGameScene {
+
     private final SceneManager manager;
     private final Settings settings;
-    private final GameEngine engine;
-    
-    private final VBox root;
+    private final GameEngine localEngine;   // 실제 엔진
+
     private Scene scene;
-    
-    // 왼쪽 (내 화면)
-    private final GridPane myGrid;
-    private final Label myNameLabel;
-    private final Label myScoreLabel;
-    
-    // 오른쪽 (상대 화면)
-    private final GridPane opponentGrid;
-    private final Label opponentNameLabel;
-    private final Label opponentScoreLabel;
-    
-    // 연결 상태
-    private final Label connectionStatusLabel;
-    private boolean connected = false;
-    
-    private static final double CELL_SIZE = 24.0;
-    
-    public NetworkGameScene(SceneManager manager, Settings settings, 
-                           GameEngine engine, String myName, String opponentName) {
+
+    // Remote 상태 캐싱 (서버에서 받아오는 값)
+    private int[][] remoteBoard = null;
+    private int remotePieceX = 0;
+    private int remotePieceY = 0;
+    private int remotePieceType = 0;
+    private int remoteRotation = 0;
+    private int remoteNext = 0;
+    private Queue<int[][]> remoteIncomingQueue = new LinkedList<>();
+    private int remoteScore = 0;
+
+    // UI 루트
+    private final HBox root;
+
+    // 캐싱용 맵
+    private final Map<String, CellView> boardCacheLocal = new HashMap<>();
+    private final Map<String, CellView> boardCacheRemote = new HashMap<>();
+    private final Map<String, CellView> previewCacheLocal = new HashMap<>();
+    private final Map<String, CellView> previewCacheRemote = new HashMap<>();
+    private final Map<String, Label> incomingCacheLocal = new HashMap<>();
+    private final Map<String, Label> incomingCacheRemote = new HashMap<>();
+
+    // UI 컴포넌트
+    private final GridPane boardGridLocal;
+    private final GridPane boardGridRemote;
+
+    private final GridPane previewLocal;
+    private final GridPane previewRemote;
+
+    private final GridPane incomingLocal;
+    private final GridPane incomingRemote;
+
+    private final Label scoreLabelLocal;
+    private final Label scoreLabelRemote;
+
+    // 이름표
+    private final String localName;
+    private final String remoteName;
+
+    // Throttle
+    private volatile boolean updatePending = false;
+
+
+    public NetworkGameScene(SceneManager manager,
+                            Settings settings,
+                            GameEngine localEngine,
+                            String localName,
+                            String remoteName) {
+
         this.manager = manager;
         this.settings = settings;
-        this.engine = engine;
-        
-        // 상단: 연결 상태
-        connectionStatusLabel = new Label("Connecting...");
-        connectionStatusLabel.getStyleClass().add("connection-status");
-        connectionStatusLabel.setAlignment(Pos.CENTER);
-        connectionStatusLabel.setMaxWidth(Double.MAX_VALUE);
-        
-        // 내 화면
-        myNameLabel = new Label(myName);
-        myNameLabel.getStyleClass().add("player-name-label");
-        myScoreLabel = new Label("Score: 0");
-        myScoreLabel.getStyleClass().add("score-label");
-        
-        Board board = engine.getBoard();
-        myGrid = createBoardGrid(board.getWidth(), board.getHeight());
-        
-        VBox myPanel = new VBox(5, myNameLabel, myScoreLabel, myGrid);
-        myPanel.setAlignment(Pos.TOP_CENTER);
-        myPanel.setPadding(new Insets(10));
-        myPanel.getStyleClass().add("player-panel");
-        
-        // 상대 화면
-        opponentNameLabel = new Label(opponentName);
-        opponentNameLabel.getStyleClass().add("player-name-label");
-        opponentScoreLabel = new Label("Score: 0");
-        opponentScoreLabel.getStyleClass().add("score-label");
-        
-        opponentGrid = createBoardGrid(10, 20);  // 상대도 같은 크기
-        
-        VBox opponentPanel = new VBox(5, opponentNameLabel, opponentScoreLabel, opponentGrid);
-        opponentPanel.setAlignment(Pos.TOP_CENTER);
-        opponentPanel.setPadding(new Insets(10));
-        opponentPanel.getStyleClass().add("player-panel");
-        
-        // 화면 레이아웃
-        HBox gameArea = new HBox(20, myPanel, opponentPanel);
-        gameArea.setAlignment(Pos.CENTER);
-        HBox.setHgrow(myPanel, Priority.ALWAYS);
-        HBox.setHgrow(opponentPanel, Priority.ALWAYS);
-        
-        root = new VBox(10, connectionStatusLabel, gameArea);
-        root.setAlignment(Pos.TOP_CENTER);
-        root.getStyleClass().add("network-game-root");
-        
-        updateLocalGrid();
+        this.localEngine = localEngine;
+        this.localName = localName;
+        this.remoteName = remoteName;
+
+        root = new HBox(20);
+        root.getStyleClass().add("game-root");
+
+        // ----------------- Local Panel -----------------
+        Board boardL = localEngine.getBoard();
+        boardGridLocal = createBoardGrid(boardL, boardCacheLocal);
+        previewLocal = createPreviewGrid(previewCacheLocal);
+        incomingLocal = createIncomingGrid(incomingCacheLocal);
+
+        scoreLabelLocal = new Label(localName + "\nScore: 0");
+        scoreLabelLocal.getStyleClass().add("score-label");
+
+        VBox localBox = new VBox(12);
+        HBox localGame = new HBox(12);
+        VBox rightL = new VBox(10, previewLocal, scoreLabelLocal, new Label("Incoming:"), incomingLocal);
+        rightL.setAlignment(Pos.TOP_CENTER);
+
+        HBox.setMargin(rightL, new Insets(0, 0, 0, 40));
+        localGame.getChildren().addAll(boardGridLocal, rightL);
+        localBox.getChildren().add(localGame);
+
+
+        // ----------------- Remote Panel -----------------
+        // Remote는 서버에서 오는 보드 크기를 동일하게 사용
+        boardGridRemote = createBoardGrid(boardL, boardCacheRemote);
+        previewRemote = createPreviewGrid(previewCacheRemote);
+        incomingRemote = createIncomingGrid(incomingCacheRemote);
+
+        scoreLabelRemote = new Label(remoteName + "\nScore: 0");
+        scoreLabelRemote.getStyleClass().add("score-label");
+
+        VBox remoteBox = new VBox(12);
+        HBox remoteGame = new HBox(12);
+        VBox rightR = new VBox(10, previewRemote, scoreLabelRemote, new Label("Incoming:"), incomingRemote);
+        rightR.setAlignment(Pos.TOP_CENTER);
+
+        HBox.setMargin(rightR, new Insets(0, 0, 0, 40));
+        remoteGame.getChildren().addAll(boardGridRemote, rightR);
+        remoteBox.getChildren().add(remoteGame);
+
+        // Add both players
+        root.getChildren().addAll(localBox, remoteBox);
+
+        scene = new Scene(root);
+
+        // 초기 한번 업데이트
+        updateGrid();
     }
-    
-    /**
-     * 보드 그리드 생성
-     */
-    private GridPane createBoardGrid(int width, int height) {
-        GridPane grid = new GridPane();
-        grid.setHgap(0);
-        grid.setVgap(0);
-        grid.getStyleClass().add("board-grid");
-        
-        // 테두리 포함
-        for (int y = 0; y < height + 2; y++) {
-            for (int x = 0; x < width + 2; x++) {
-                CellView cell = new CellView(CELL_SIZE, settings);
-                
-                if (x == 0 || x == width + 1 || y == 0 || y == height + 1) {
-                    cell.setBorder();
-                } else {
-                    cell.setEmpty();
-                }
-                
-                grid.add(cell, x, y);
-            }
-        }
-        
-        return grid;
-    }
-    
-    /**
-     * Scene 생성
-     */
-    public Scene createScene() {
-        this.scene = new Scene(root, 900, 700);
-        return scene;
-    }
-    
+
     public Scene getScene() {
-        if (scene == null) {
-            createScene();
-        }
         return scene;
     }
-    
+
     public void requestFocus() {
         Platform.runLater(() -> {
-            if (scene != null) scene.getRoot().requestFocus();
+            if (scene != null)
+                scene.getRoot().requestFocus();
         });
     }
-    
-    /**
-     * 연결 상태 설정
-     */
-    public void setConnected(boolean connected) {
-        this.connected = connected;
-        Platform.runLater(() -> {
-            if (connected) {
-                connectionStatusLabel.setText("Connected!");
-                connectionStatusLabel.setStyle("-fx-text-fill: green;");
-            } else {
-                connectionStatusLabel.setText("Disconnected");
-                connectionStatusLabel.setStyle("-fx-text-fill: red;");
-            }
-        });
+
+
+    // =========================================================================
+    //                      Remote 상태 갱신 (서버 → 클라이언트)
+    // =========================================================================
+
+    public void updateRemoteBoardState(
+            int[][] board,
+            int pieceX,
+            int pieceY,
+            int pieceType,
+            int rotation,
+            int nextPiece,
+            Queue<int[][]> incoming,
+            int score,
+            int lines
+    ) {
+        this.remoteBoard = board;
+        this.remotePieceX = pieceX;
+        this.remotePieceY = pieceY;
+        this.remotePieceType = pieceType;
+        this.remoteRotation = rotation;
+        this.remoteNext = nextPiece;
+        this.remoteIncomingQueue = (incoming != null) ? new LinkedList<>(incoming) : new LinkedList<>();
+        this.remoteScore = score;
+
+        updateGrid();
     }
     
-    /**
-     * 내 화면 업데이트 (GameEngine에서)
-     */
     public void updateLocalGrid() {
-        if (engine == null) return;
-        
-        Board board = engine.getBoard();
+        updateGrid();
+    }
+    
+    public void setConnected(boolean connected) {
+        // 연결 상태 표시 (필요시 UI 업데이트)
+    }
+
+
+    // =========================================================================
+    //                      Main UI 업데이트 (Local + Remote)
+    // =========================================================================
+    public void updateGrid() {
+        if (updatePending) return;
+        updatePending = true;
+
+        Platform.runLater(() -> {
+            updateLocalUI();
+            updateRemoteUI();
+            updatePending = false;
+        });
+    }
+
+
+    // =========================================================================
+    //                       Local Player UI Update
+    // =========================================================================
+    private void updateLocalUI() {
+        Board board = localEngine.getBoard();
+        Map<String, CellView> cache = boardCacheLocal;
+
         int w = board.getWidth();
         int h = board.getHeight();
-        
-        Platform.runLater(() -> {
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    int val = board.getCell(x, y);
-                    CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, myGrid);
-                    if (cell != null) {
-                        renderCell(cell, val);
-                    }
-                }
+
+        // 1) 보드 셀 그리기
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int v = board.getCell(x, y);
+                CellView cell = cache.get((y + 1) + "," + (x + 1));
+                if (cell == null) continue;
+
+                applyCellValue(cell, v);
             }
-            
-            myScoreLabel.setText("Score: " + engine.getScore());
-        });
+        }
+
+        // 2) 현재 떨어지는 미노 표시
+        Tetromino cur = localEngine.getCurrent();
+        if (cur != null)
+            drawFallingPiece(cache, cur, localEngine.getPieceX(), localEngine.getPieceY(), w, h);
+
+        // 3) 고스트 미노 표시
+        drawGhostPiece(cache, localEngine, w, h);
+
+        // 4) Next 업데이트
+        drawNext(previewCacheLocal, localEngine.getNext());
+
+        // 5) 점수
+        scoreLabelLocal.setText(localName + "\nScore:\n" + localEngine.getScore());
+
+        // 6) Incoming - GameEngine에 getIncomingQueue()가 없으므로 빈 큐 사용
+        updateIncoming(incomingCacheLocal, new LinkedList<>());
     }
-    
-    /**
-     * 상대 화면 업데이트 (네트워크 데이터)
-     */
-    public void updateRemoteBoardState(int[][] boardState, int pieceX, int pieceY, 
-                                       int pieceType, int pieceRotation,
-                                       int nextPieceType, java.util.Queue<int[][]> incomingBlocks,
-                                       int score, int linesCleared) {
-        Platform.runLater(() -> {
-            int h = boardState.length;
-            int w = boardState[0].length;
-            
-            // 보드 상태 렌더링
-            for (int y = 0; y < h; y++) {
-                for (int x = 0; x < w; x++) {
-                    int val = boardState[y][x];
-                    CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, opponentGrid);
-                    if (cell != null) {
-                        renderCell(cell, val);
-                    }
-                }
+
+
+    // =========================================================================
+    //                       Remote Player UI Update
+    // =========================================================================
+    private void updateRemoteUI() {
+        if (remoteBoard == null) return;
+
+        int[][] board = remoteBoard;
+        Map<String, CellView> cache = boardCacheRemote;
+
+        int h = board.length;
+        int w = board[0].length;
+
+        // 1) 원본 보드 그리기
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int v = board[y][x];
+                CellView cell = cache.get((y + 1) + "," + (x + 1));
+                if (cell == null) continue;
+
+                applyCellValue(cell, v);
             }
+        }
+
+        // 2) 떨어지는 미노 (서버에서 받은 데이터로 렌더)
+        if (remotePieceType > 0) {
+            Tetromino.Kind kind = Tetromino.kindForId(remotePieceType);
+            if (kind == null) return;
             
-            // 현재 떨어지는 블록 렌더링
-            if (pieceType > 0) {
-                team13.tetris.game.model.Tetromino.Kind kind = team13.tetris.game.model.Tetromino.kindForId(pieceType);
-                if (kind != null) {
-                    int[][] shape = kind.getRotation(pieceRotation % 4);
-                    for (int r = 0; r < shape.length; r++) {
-                        for (int c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c] != 0) {
-                                int bx = pieceX + c;
-                                int by = pieceY + r;
-                                if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                                    CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, opponentGrid);
-                                    if (cell != null) {
-                                        cell.setNormalBlock(pieceType);
-                                    }
-                                }
-                            }
+            Tetromino t = Tetromino.of(kind);
+            // 회전 적용 (remoteRotation 횟수만큼)
+            for (int i = 0; i < remoteRotation; i++) {
+                t = t.rotateClockwise();
+            }
+            int[][] shape = t.getShape();
+
+            for (int r = 0; r < shape.length; r++) {
+                for (int c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c] != 0) {
+
+                        int bx = remotePieceX + c;
+                        int by = remotePieceY + r;
+
+                        if (bx >= 0 && bx < w && by >= 0 && by < h) {
+                            CellView cell = cache.get((by + 1) + "," + (bx + 1));
+                            if (cell != null)
+                                cell.setBlock("O", t.getBlockStyleClass(), t.getTextStyleClass());
                         }
                     }
                 }
             }
-            
-            opponentScoreLabel.setText("Score: " + score + " | Lines: " + linesCleared);
-        });
-    }
-    
-    /**
-     * 셀 렌더링
-     */
-    private void renderCell(CellView cell, int val) {
-        if (val == 0) {
-            cell.setEmpty();
-        } else if (val < 0) {
-            // 플래시 효과
-            cell.setFlash();
-        } else if (val >= 1000) {
-            // 공격 블록 (회색)
-            cell.setAttackBlock();
-        } else if (val >= 100) {
-            // 아이템 블록
-            int itemType = val / 100;
-            int baseValue = val % 100;
-            cell.setItemBlock(itemType, baseValue);
-        } else {
-            // 일반 블록 (1-7)
-            cell.setNormalBlock(val);
         }
-    }
-    
-    /**
-     * GridPane에서 특정 행/열의 노드 가져오기
-     */
-    private Node getNodeByRowColumnIndex(int row, int column, GridPane gridPane) {
-        for (Node node : gridPane.getChildren()) {
-            Integer r = GridPane.getRowIndex(node);
-            Integer c = GridPane.getColumnIndex(node);
-            if (r == null) r = 0;
-            if (c == null) c = 0;
-            if (r == row && c == column) {
-                return node;
+
+        // 3) Next 표시
+        Tetromino next = null;
+        if (remoteNext > 0) {
+            Tetromino.Kind kind = Tetromino.kindForId(remoteNext);
+            if (kind != null) {
+                next = Tetromino.of(kind);
             }
         }
-        return null;
+
+        drawNext(previewCacheRemote, next);
+
+        // 4) 점수
+        scoreLabelRemote.setText(remoteName + "\nScore:\n" + remoteScore);
+
+        // 5) Incoming
+        updateIncoming(incomingCacheRemote, remoteIncomingQueue);
     }
-    
-    /**
-     * CellView: 테트리스 셀 표시용 컴포넌트
-     */
+
+
+    // =========================================================================
+    //                   공통 그리기 로직 (Local/Remote 공용)
+    // =========================================================================
+
+    private void applyCellValue(CellView cell, int v) {
+        if (v == 0) {
+            cell.setEmpty();
+        } else if (v == 1000) {
+            cell.setBlock(" ", "block-gray", "tetris-gray-text");
+        } else if (v >= 1 && v <= 7) {
+            Tetromino.Kind k = Tetromino.kindForId(v);
+            cell.setBlock("O", k.getBlockStyleClass(), k.getTextStyleClass());
+        } else if (v < 0) {
+            cell.setBlock("O", "block-flash", "tetris-flash-text");
+        }
+    }
+
+    private void drawFallingPiece(Map<String, CellView> cache,
+                                  Tetromino cur, int px, int py, int w, int h) {
+        int[][] shape = cur.getShape();
+        String blockClass = cur.getBlockStyleClass();
+        String textClass = cur.getTextStyleClass();
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != 0) {
+                    int bx = px + c;
+                    int by = py + r;
+
+                    if (bx >= 0 && bx < w && by >= 0 && by < h) {
+                        CellView cell = cache.get((by + 1) + "," + (bx + 1));
+                        if (cell != null)
+                            cell.setBlock("O", blockClass, textClass);
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawGhostPiece(Map<String, CellView> cache,
+                                GameEngine engine, int w, int h) {
+
+        Tetromino cur = engine.getCurrent();
+        if (cur == null) return;
+
+        int ghostY = engine.getGhostY();
+        if (ghostY < 0) return;
+
+        int[][] shape = cur.getShape();
+        int px = engine.getPieceX();
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != 0) {
+                    int bx = px + c;
+                    int by = ghostY + r;
+
+                    if (bx >= 0 && bx < w && by >= 0 && by < h) {
+                        CellView cell = cache.get((by + 1) + "," + (bx + 1));
+                        if (cell != null)
+                            cell.setBlock("O", "block-ghost", "tetris-ghost-text");
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawNext(Map<String, CellView> cache, Tetromino next) {
+        // 4x4 클리어
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                CellView cell = cache.get(r + "," + c);
+                if (cell != null) cell.setEmpty();
+            }
+        }
+        if (next == null) return;
+
+        int[][] shape = next.getShape();
+        int minR = 4, maxR = -1;
+        int minC = 4, maxC = -1;
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != 0) {
+                    minR = Math.min(minR, r);
+                    maxR = Math.max(maxR, r);
+                    minC = Math.min(minC, c);
+                    maxC = Math.max(maxC, c);
+                }
+            }
+        }
+
+        int h = maxR - minR + 1;
+        int w = maxC - minC + 1;
+
+        int offR = (4 - h) / 2;
+        int offC = (4 - w) / 2;
+
+        for (int r = 0; r < shape.length; r++) {
+            for (int c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] != 0) {
+                    int rr = r - minR + offR;
+                    int cc = c - minC + offC;
+
+                    CellView cell = cache.get(rr + "," + cc);
+                    if (cell != null)
+                        cell.setBlock("O",
+                                next.getBlockStyleClass(),
+                                next.getTextStyleClass());
+                }
+            }
+        }
+    }
+
+    private void updateIncoming(Map<String, Label> cache, Queue<int[][]> queue) {
+        // 초기화
+        for (int r = 0; r < 10; r++) {
+            for (int c = 0; c < 10; c++) {
+                Label cell = cache.get(r + "," + c);
+                if (cell != null) {
+                    cell.setText(" ");
+                    cell.setStyle("-fx-background-color: transparent; -fx-border-color: #333; -fx-border-width: 0.3;");
+                }
+            }
+        }
+
+        if (queue == null || queue.isEmpty()) return;
+
+        int row = 9;
+
+        List<int[][]> patterns = new ArrayList<>(queue);
+        for (int i = patterns.size() - 1; i >= 0; i--) {
+
+            int[][] pat = patterns.get(i);
+
+            for (int r = pat.length - 1; r >= 0 && row >= 0; r--) {
+                for (int c = 0; c < 10; c++) {
+                    if (pat[r][c] != 0) {
+                        Label cell = cache.get(row + "," + c);
+                        if (cell != null) {
+                            cell.setText("■");
+                            cell.setStyle("-fx-background-color: gray; -fx-text-fill: white; -fx-border-color: #333; -fx-border-width: 0.3; -fx-font-size: 8px;");
+                        }
+                    }
+                }
+                row--;
+            }
+            if (row < 0) break;
+        }
+    }
+
+
+    // =========================================================================
+    //                           Board / Preview / Incoming Grid 생성
+    // =========================================================================
+
+    private GridPane createBoardGrid(Board board, Map<String, CellView> cache) {
+        int w = board.getWidth();
+        int h = board.getHeight();
+
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("board-grid");
+
+        for (int gy = 0; gy < h + 2; gy++) {
+            for (int gx = 0; gx < w + 2; gx++) {
+                CellView cell = new CellView(28, settings);
+
+                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1)
+                    cell.setBorder();
+
+                grid.add(cell, gx, gy);
+                cache.put(gy + "," + gx, cell);
+            }
+        }
+        return grid;
+    }
+
+    private GridPane createPreviewGrid(Map<String, CellView> cache) {
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("preview-grid");
+
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                CellView cell = new CellView(22, settings);
+                grid.add(cell, c, r);
+                cache.put(r + "," + c, cell);
+            }
+        }
+        return grid;
+    }
+
+    private GridPane createIncomingGrid(Map<String, Label> cache) {
+        GridPane grid = new GridPane();
+        grid.setStyle("-fx-border-color: gray; -fx-background-color: #1a1a1a;");
+
+        double cellSize = ("LARGE".equals(settings.getWindowSize()) ? 22 :
+                "MEDIUM".equals(settings.getWindowSize()) ? 17 : 13);
+
+        for (int r = 0; r < 10; r++) {
+            for (int c = 0; c < 10; c++) {
+                Label cell = new Label(" ");
+                cell.setAlignment(Pos.CENTER);
+                cell.setPrefSize(cellSize, cellSize);
+                cell.setStyle("-fx-border-color: #333; -fx-border-width: 0.3;");
+                grid.add(cell, c, r);
+                cache.put(r + "," + c, cell);
+            }
+        }
+        return grid;
+    }
+
+
+    // =========================================================================
+    //                          CellView 내부 클래스
+    // =========================================================================
+
     private static final class CellView extends StackPane {
+
         private final Rectangle rect;
         private final Canvas patternCanvas;
         private final Label label;
         private final Settings settings;
+
         private String currentPattern = null;
 
-        private CellView(double size, Settings settings) {
+        public CellView(double size, Settings settings) {
             this.settings = settings;
+
             setMinSize(size, size);
             setPrefSize(size, size);
             setMaxSize(size, size);
+
             setAlignment(Pos.CENTER);
-            getStyleClass().add("cell");
 
             rect = new Rectangle(size, size);
             rect.getStyleClass().add("cell-rect");
-            rect.setStrokeWidth(0);
             rect.widthProperty().bind(widthProperty());
             rect.heightProperty().bind(heightProperty());
 
             patternCanvas = new Canvas(size, size);
             patternCanvas.widthProperty().bind(widthProperty());
             patternCanvas.heightProperty().bind(heightProperty());
-            patternCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-            patternCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
+            patternCanvas.widthProperty().addListener((a,b,c) -> redrawPattern());
+            patternCanvas.heightProperty().addListener((a,b,c) -> redrawPattern());
 
             label = new Label(" ");
             label.setAlignment(Pos.CENTER);
-            label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             label.getStyleClass().add("cell-text");
 
             getChildren().addAll(rect, patternCanvas, label);
@@ -314,191 +567,119 @@ public class NetworkGameScene {
             setEmpty();
         }
 
+        private void clearDynamicStyles() {
+            rect.getStyleClass().removeIf(x ->
+                    x.startsWith("block-") || x.startsWith("item-") ||
+                            x.equals("cell-empty") || x.equals("cell-border")
+            );
+            label.getStyleClass().removeIf(x ->
+                    x.startsWith("tetris-") || x.startsWith("item-") ||
+                            x.equals("cell-empty") || x.equals("cell-border")
+            );
+        }
+
+        public void setEmpty() {
+            clearDynamicStyles();
+            currentPattern = null;
+            clearCanvas();
+
+            if (!rect.getStyleClass().contains("cell-empty"))
+                rect.getStyleClass().add("cell-empty");
+
+            if (!label.getStyleClass().contains("cell-empty"))
+                label.getStyleClass().add("cell-empty");
+
+            label.setText(" ");
+        }
+
+        public void setBorder() {
+            clearDynamicStyles();
+            currentPattern = null;
+            clearCanvas();
+
+            rect.getStyleClass().add("cell-border");
+            label.getStyleClass().add("cell-border");
+
+            label.setText("X");
+        }
+
+        public void setBlock(String symbol, String blockClass, String textClass) {
+            clearDynamicStyles();
+
+            if (blockClass != null && !blockClass.isBlank())
+                rect.getStyleClass().add(blockClass);
+
+            if (textClass != null && !textClass.isBlank())
+                label.getStyleClass().add(textClass);
+
+            boolean isItem = symbol.matches("[CLWGS]");
+            boolean isGhost = blockClass.equals("block-ghost");
+
+            if ((settings.isColorBlindMode() && !isItem) || isGhost)
+                label.setText(" ");
+            else
+                label.setText(symbol);
+
+            if (settings.isColorBlindMode())
+                applyPattern(blockClass);
+            else {
+                currentPattern = null;
+                clearCanvas();
+            }
+        }
+
+        private void applyPattern(String blockClass) {
+
+            switch (blockClass) {
+                case "block-I": currentPattern = "diagR"; break;
+                case "block-T": currentPattern = "diagL"; break;
+                case "block-S": currentPattern = "hori"; break;
+                case "block-Z": currentPattern = "diagRwide"; break;
+                case "block-J": currentPattern = "vert"; break;
+                case "block-L": currentPattern = "diagLwide"; break;
+                default: currentPattern = null;
+            }
+            redrawPattern();
+        }
+
         private void redrawPattern() {
-            if (currentPattern == null || currentPattern.equals("none")) {
+            if (currentPattern == null) {
                 clearCanvas();
                 return;
             }
-
             double w = patternCanvas.getWidth();
             double h = patternCanvas.getHeight();
             GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, w, h);
-            gc.setStroke(Color.rgb(0, 0, 0, 0.7));
+            gc.clearRect(0,0,w,h);
+            gc.setStroke(Color.rgb(0,0,0,0.7));
             gc.setLineWidth(1);
 
             switch (currentPattern) {
-                case "horizontal":
-                    for (double y = 0; y < h; y += 5) {
-                        gc.strokeLine(0, y, w, y);
-                    }
+                case "hori":
+                    for (double y=0; y<h; y+=5) gc.strokeLine(0,y,w,y);
                     break;
-                case "vertical":
-                    for (double x = 0; x < w; x += 5) {
-                        gc.strokeLine(x, 0, x, h);
-                    }
+                case "vert":
+                    for (double x=0; x<w; x+=5) gc.strokeLine(x,0,x,h);
                     break;
-                case "diagonal-right":
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
+                case "diagR":
+                    for (double o=-h; o<w+h; o+=5) gc.strokeLine(o,h,o+h,0);
                     break;
-                case "diagonal-left":
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
+                case "diagL":
+                    for (double o=-h; o<w+h; o+=5) gc.strokeLine(o,0,o+h,h);
                     break;
-                case "diagonal-right-wide":
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
+                case "diagRwide":
+                    for (double o=-h; o<w+h; o+=7) gc.strokeLine(o,h,o+h,0);
                     break;
-                case "diagonal-left-wide":
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
+                case "diagLwide":
+                    for (double o=-h; o<w+h; o+=7) gc.strokeLine(o,0,o+h,h);
                     break;
             }
         }
 
         private void clearCanvas() {
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, patternCanvas.getWidth(), patternCanvas.getHeight());
-        }
-
-        private void clearDynamicStyles() {
-            ObservableList<String> rectClasses = rect.getStyleClass();
-            rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || 
-                                       name.equals("cell-empty") || name.equals("cell-border") ||
-                                       name.equals("attack-block") || name.equals("flash-block"));
-
-            ObservableList<String> labelClasses = label.getStyleClass();
-            labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || 
-                                        name.equals("cell-empty") || name.equals("cell-border") ||
-                                        name.equals("attack-text") || name.equals("flash-text"));
-        }
-
-        void setEmpty() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-empty")) rect.getStyleClass().add("cell-empty");
-            if (!label.getStyleClass().contains("cell-empty")) label.getStyleClass().add("cell-empty");
-            label.setText(" ");
-        }
-
-        void setBorder() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
-            if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
-            label.setText("X");
-        }
-
-        void setFlash() {
-            clearDynamicStyles();
-            if (!rect.getStyleClass().contains("flash-block")) rect.getStyleClass().add("flash-block");
-            if (!label.getStyleClass().contains("flash-text")) label.getStyleClass().add("flash-text");
-            label.setText("*");
-        }
-
-        void setAttackBlock() {
-            clearDynamicStyles();
-            if (!rect.getStyleClass().contains("attack-block")) rect.getStyleClass().add("attack-block");
-            if (!label.getStyleClass().contains("attack-text")) label.getStyleClass().add("attack-text");
-            label.setText("▓");
-        }
-
-        void setNormalBlock(int val) {
-            clearDynamicStyles();
-            String blockClass = blockClassForValue(val);
-            if (blockClass != null && !rect.getStyleClass().contains(blockClass)) {
-                rect.getStyleClass().add(blockClass);
-            }
-            
-            // 색맹 모드에서 패턴 적용
-            if (settings.isColorBlindMode() && blockClass != null) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-            
-            label.setText(" ");
-        }
-
-        void setItemBlock(int itemType, int baseValue) {
-            clearDynamicStyles();
-            String blockClass = blockClassForValue(baseValue);
-            if (blockClass != null && !rect.getStyleClass().contains(blockClass)) {
-                rect.getStyleClass().add(blockClass);
-            }
-            
-            // 아이템 표시
-            String symbol = "";
-            switch (itemType) {
-                case 1: symbol = "C"; break;  // COPY
-                case 2: symbol = "L"; break;  // LINE_CLEAR
-                case 3: symbol = "W"; break;  // WEIGHT
-                case 4: symbol = "G"; break;  // GRAVITY
-                case 5: symbol = "S"; break;  // SPLIT
-            }
-            
-            if (!label.getStyleClass().contains("item-text")) {
-                label.getStyleClass().add("item-text");
-            }
-            label.setText(symbol);
-            
-            // 색맹 모드에서 패턴 적용
-            if (settings.isColorBlindMode() && blockClass != null) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-        }
-
-        private String blockClassForValue(int val) {
-            switch (val) {
-                case 1: return "block-I";
-                case 2: return "block-O";
-                case 3: return "block-T";
-                case 4: return "block-S";
-                case 5: return "block-Z";
-                case 6: return "block-J";
-                case 7: return "block-L";
-                default: return null;
-            }
-        }
-
-        private void applyPattern(String blockClass) {
-            switch (blockClass) {
-                case "block-I":
-                    currentPattern = "diagonal-right";
-                    break;
-                case "block-O":
-                    currentPattern = "none";
-                    break;
-                case "block-T":
-                    currentPattern = "diagonal-left";
-                    break;
-                case "block-S":
-                    currentPattern = "horizontal";
-                    break;
-                case "block-Z":
-                    currentPattern = "diagonal-right-wide";
-                    break;
-                case "block-J":
-                    currentPattern = "vertical";
-                    break;
-                case "block-L":
-                    currentPattern = "diagonal-left-wide";
-                    break;
-                default:
-                    currentPattern = null;
-            }
-            redrawPattern();
+            patternCanvas.getGraphicsContext2D()
+                    .clearRect(0,0,
+                            patternCanvas.getWidth(), patternCanvas.getHeight());
         }
     }
 }

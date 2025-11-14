@@ -18,15 +18,23 @@ public class NetworkLobbyScene {
     private final SceneManager manager;
     private final Settings settings;
     private final boolean isHost;
+
     private Scene scene;
+    private final VBox root;
     
     private Label statusLabel;
+
+    private Label myReadyLabel;
+    private Label opponentReadyLabel;
+
+    // private final Label myNameLabel;
+    // private final Label opponentNameLabel;
+
+    private Button readyButton;
+
     private Label gameModeLabel;
     private RadioButton normalModeButton;
     private RadioButton itemModeButton;
-    private Button readyButton;
-    private Label myReadyLabel;
-    private Label opponentReadyLabel;
     
     private boolean myReady = false;
     private boolean opponentReady = false;
@@ -36,7 +44,7 @@ public class NetworkLobbyScene {
         this.settings = settings;
         this.isHost = isHost;
         
-        VBox root = new VBox(20);
+        root = new VBox(20);
         root.setAlignment(Pos.CENTER);
         root.getStyleClass().add("menu-root");
         root.setPadding(new Insets(40));
