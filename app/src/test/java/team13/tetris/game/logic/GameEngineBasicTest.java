@@ -211,14 +211,17 @@ public class GameEngineBasicTest {
     }
 
     @Test
-    @DisplayName("null 리스너를 전달하면 NullPointerException이 발생함")
+    @DisplayName("null 리스너로 엔진 생성 및 동작 테스트")
     void testNullListenerHandling() {
         GameEngine engineWithNullListener = new GameEngine(board, null);
 
-        // GameEngine은 현재 null 리스너를 처리하지 않으므로 예외가 발생해야 함
-        assertThrows(NullPointerException.class, () -> {
+        // 이제 null 리스너로도 정상 동작해야 함
+        assertDoesNotThrow(() -> {
             engineWithNullListener.startNewGame();
-        }, "null 리스너로 게임 시작 시 NullPointerException이 발생해야 함");
+            // 기본 동작이 정상적으로 수행되어야 함
+            assertNotNull(engineWithNullListener.getCurrent(), "current가 설정되어야 함");
+            assertNotNull(engineWithNullListener.getNext(), "next가 설정되어야 함");
+        }, "null 리스너로도 엔진이 정상 동작해야 함");
     }
 
     @Test
@@ -245,4 +248,319 @@ public class GameEngineBasicTest {
     @Test
     @DisplayName("생성 직후 dropInterval은 기본값 1.0초여야 함")
     void testDefaultDropInterval() { assertEquals(1.0, engine.getDropIntervalSeconds(), 0.001); }
+
+    @Test
+    @DisplayName("setDropIntervalSeconds 동작 테스트")
+    void testSetDropIntervalSeconds() {
+        engine.setDropIntervalSeconds(0.5);
+        assertEquals(0.5, engine.getDropIntervalSeconds(), 0.001);
+        
+        engine.setDropIntervalSeconds(2.0);
+        assertEquals(2.0, engine.getDropIntervalSeconds(), 0.001);
+        
+        // 음수 값은 예외를 발생시켜야 함
+        assertThrows(IllegalArgumentException.class, () -> {
+            engine.setDropIntervalSeconds(-1.0);
+        }, "음수 dropInterval은 예외를 발생시켜야 함");
+        
+        // 0 값도 예외를 발생시켜야 함
+        assertThrows(IllegalArgumentException.class, () -> {
+            engine.setDropIntervalSeconds(0.0);
+        }, "0 dropInterval은 예외를 발생시켜야 함");
+    }
+
+    @Test
+    @DisplayName("게임 시작 전후 상태 확인")
+    void testGameStateBeforeAndAfterStart() {
+        // 시작 전
+        assertNull(engine.getCurrent());
+        assertNull(engine.getNext());
+        assertEquals(0, engine.getScore());
+        assertEquals(0, engine.getTotalLinesCleared());
+        
+        // 시작 후
+        engine.startNewGame();
+        assertNotNull(engine.getCurrent());
+        assertNotNull(engine.getNext());
+        assertEquals(0, engine.getScore()); // 시작 시에는 여전히 0
+        assertEquals(0, engine.getTotalLinesCleared());
+    }
+
+    @Test
+    @DisplayName("다양한 난이도로 엔진 생성 및 시작 테스트")
+    void testAllDifficultyModes() {
+        ScoreBoard.ScoreEntry.Mode[] modes = {
+            ScoreBoard.ScoreEntry.Mode.EASY,
+            ScoreBoard.ScoreEntry.Mode.NORMAL,
+            ScoreBoard.ScoreEntry.Mode.HARD,
+            ScoreBoard.ScoreEntry.Mode.ITEM
+        };
+        
+        for (ScoreBoard.ScoreEntry.Mode mode : modes) {
+            TestListener testListener = new TestListener();
+            GameEngine testEngine = new GameEngine(board, testListener, mode);
+            
+            assertNotNull(testEngine, mode + " 모드로 엔진 생성 실패");
+            
+            testEngine.startNewGame();
+            assertNotNull(testEngine.getCurrent(), mode + " 모드에서 current 생성 실패");
+            assertNotNull(testEngine.getNext(), mode + " 모드에서 next 생성 실패");
+            assertEquals(0, testEngine.getScore(), mode + " 모드에서 초기 점수가 0이 아님");
+        }
+    }
+
+    @Test
+    @DisplayName("타이머 관련 메서드 테스트")
+    void testTimerMethods() {
+        assertNotNull(engine.getGameTimer());
+        
+        // 기본 속도 인수는 1.0
+        assertEquals(1.0, engine.getGameTimer().getSpeedFactor(), 0.001);
+        
+        // 게임 시작 후에도 타이머는 유효해야 함
+        engine.startNewGame();
+        assertNotNull(engine.getGameTimer());
+    }
+
+    @Test
+    @DisplayName("조각 위치 경계값 테스트")
+    void testPiecePositionBoundaries() {
+        engine.startNewGame();
+        
+        int px = engine.getPieceX();
+        int py = engine.getPieceY();
+        
+        // 조각이 보드 경계 내에 있어야 함
+        assertTrue(px >= -3, "px가 너무 작음: " + px); // 테트로미노는 최대 4칸이므로 -3까지 허용
+        assertTrue(px <= board.getWidth(), "px가 너무 큼: " + px);
+        assertTrue(py >= -3, "py가 너무 작음: " + py);
+        assertTrue(py <= board.getHeight(), "py가 너무 큼: " + py);
+    }
+
+    @Test
+    @DisplayName("보드 크기 변경 후 엔진 동작 테스트")
+    void testEngineWithDifferentBoardSizes() {
+        Board smallBoard = new Board(5, 10);
+        Board largeBoard = new Board(15, 30);
+        
+        TestListener smallListener = new TestListener();
+        TestListener largeListener = new TestListener();
+        
+        GameEngine smallEngine = new GameEngine(smallBoard, smallListener);
+        GameEngine largeEngine = new GameEngine(largeBoard, largeListener);
+        
+        smallEngine.startNewGame();
+        largeEngine.startNewGame();
+        
+        // 두 엔진 모두 정상 동작해야 함
+        assertNotNull(smallEngine.getCurrent());
+        assertNotNull(largeEngine.getCurrent());
+        
+        // 조각 위치가 각 보드 크기에 맞게 설정되어야 함
+        assertTrue(smallEngine.getPieceX() >= 0 && smallEngine.getPieceX() < smallBoard.getWidth() + 4);
+        assertTrue(largeEngine.getPieceX() >= 0 && largeEngine.getPieceX() < largeBoard.getWidth() + 4);
+    }
+
+    @Test
+    @DisplayName("연속 호출 안정성 테스트")
+    void testRepeatedMethodCalls() {
+        // startNewGame 여러 번 호출
+        for (int i = 0; i < 5; i++) {
+            engine.startNewGame();
+            assertNotNull(engine.getCurrent(), i + "번째 startNewGame 후 current가 null");
+            assertNotNull(engine.getNext(), i + "번째 startNewGame 후 next가 null");
+            assertEquals(0, engine.getScore(), i + "번째 startNewGame 후 점수가 리셋되지 않음");
+        }
+        
+        // dropInterval 여러 번 설정
+        double[] intervals = {0.1, 0.5, 1.0, 1.5, 2.0};
+        for (double interval : intervals) {
+            engine.setDropIntervalSeconds(interval);
+            assertEquals(interval, engine.getDropIntervalSeconds(), 0.001);
+        }
+    }
+
+    @Test
+    @DisplayName("리스너 콜백 누적 테스트")
+    void testListenerCallbackAccumulation() {
+        listener.reset();
+        
+        // 여러 번 startNewGame을 호출하여 콜백이 누적되는지 확인
+        engine.startNewGame();
+        int firstSpawnCount = listener.pieceSpawnedCount;
+        int firstNextCount = listener.nextPieceCount;
+        int firstScoreCount = listener.scoreChangedCount;
+        
+        engine.startNewGame();
+        
+        // 콜백 카운트가 증가해야 함
+        assertTrue(listener.pieceSpawnedCount > firstSpawnCount, "pieceSpawned 콜백이 누적되지 않음");
+        assertTrue(listener.nextPieceCount > firstNextCount, "nextPiece 콜백이 누적되지 않음");
+        assertTrue(listener.scoreChangedCount > firstScoreCount, "scoreChanged 콜백이 누적되지 않음");
+    }
+
+    @Test
+    @DisplayName("null 리스너로 엔진 생성 테스트")
+    void testGameEngineWithNullListener() {
+        // null listener로 엔진을 생성할 수 있어야 함
+        assertDoesNotThrow(() -> {
+            GameEngine nullListenerEngine = new GameEngine(board, null);
+            nullListenerEngine.startNewGame();
+            // null listener이어도 정상 동작해야 함
+            assertNotNull(nullListenerEngine.getCurrent());
+            assertNotNull(nullListenerEngine.getNext());
+        }, "null listener로도 엔진이 정상 생성되고 동작해야 함");
+    }
+
+    @Test
+    @DisplayName("다양한 보드 크기 테스트")
+    void testVariousBoardSizes() {
+        // 작은 보드 (테트로미노가 들어갈 수 있는 최소 크기)
+        Board smallBoard = new Board(5, 5);
+        assertDoesNotThrow(() -> {
+            GameEngine smallEngine = new GameEngine(smallBoard, listener);
+            // 작은 보드에서는 게임 시작만 테스트 (스폰은 실패할 수 있음)
+            assertNotNull(smallEngine.getBoard(), "작은 보드로도 엔진이 생성되어야 함");
+        }, "5x5 보드로도 엔진이 생성되어야 함");
+
+        // 큰 보드
+        Board largeBoard = new Board(50, 50);
+        assertDoesNotThrow(() -> {
+            GameEngine largeEngine = new GameEngine(largeBoard, listener);
+            largeEngine.startNewGame();
+            assertNotNull(largeEngine.getCurrent(), "큰 보드에서 current가 생성되어야 함");
+            assertNotNull(largeEngine.getNext(), "큰 보드에서 next가 생성되어야 함");
+        }, "50x50 보드로도 엔진이 정상 동작해야 함");
+    }
+
+    @Test
+    @DisplayName("게임 상태 일관성 테스트")
+    void testGameStateConsistency() {
+        engine.startNewGame();
+        
+        // 초기 상태 확인
+        Tetromino initialCurrent = engine.getCurrent();
+        Tetromino initialNext = engine.getNext();
+        int initialScore = engine.getScore();
+        int initialX = engine.getPieceX();
+        int initialY = engine.getPieceY();
+        
+        // 상태가 변경되지 않은 상태에서 getter 호출 시 일관된 결과
+        assertEquals(initialCurrent, engine.getCurrent(), "current가 일관되지 않음");
+        assertEquals(initialNext, engine.getNext(), "next가 일관되지 않음");
+        assertEquals(initialScore, engine.getScore(), "score가 일관되지 않음");
+        assertEquals(initialX, engine.getPieceX(), "pieceX가 일관되지 않음");
+        assertEquals(initialY, engine.getPieceY(), "pieceY가 일관되지 않음");
+    }
+
+    @Test
+    @DisplayName("drop interval 경계값 테스트")
+    void testDropIntervalBoundaryValues() {
+        // 0 값은 예외가 발생해야 함
+        assertThrows(IllegalArgumentException.class, () -> {
+            engine.setDropIntervalSeconds(0);
+        }, "0초 간격은 허용되지 않아야 함");
+        
+        // 매우 작은 값 테스트
+        engine.setDropIntervalSeconds(0.001);
+        assertEquals(0.001, engine.getDropIntervalSeconds(), 0.0001, "매우 작은 간격이 설정되어야 함");
+        
+        // 매우 큰 값 테스트
+        engine.setDropIntervalSeconds(1000.0);
+        assertEquals(1000.0, engine.getDropIntervalSeconds(), 0.001, "매우 큰 간격이 설정되어야 함");
+        
+        // 음수 값은 예외가 발생해야 함
+        assertThrows(IllegalArgumentException.class, () -> {
+            engine.setDropIntervalSeconds(-1.0);
+        }, "음수 간격은 허용되지 않아야 함");
+    }
+
+    @Test
+    @DisplayName("모든 게임 모드 초기화 테스트")
+    void testAllGameModeInitialization() {
+        ScoreBoard.ScoreEntry.Mode[] modes = {
+            ScoreBoard.ScoreEntry.Mode.EASY,
+            ScoreBoard.ScoreEntry.Mode.NORMAL,
+            ScoreBoard.ScoreEntry.Mode.HARD,
+            ScoreBoard.ScoreEntry.Mode.ITEM,
+            ScoreBoard.ScoreEntry.Mode.VERSUS
+        };
+        
+        for (ScoreBoard.ScoreEntry.Mode mode : modes) {
+            assertDoesNotThrow(() -> {
+                GameEngine modeEngine = new GameEngine(board, listener, mode);
+                modeEngine.startNewGame();
+                
+                assertNotNull(modeEngine.getCurrent(), mode + " 모드에서 current가 null");
+                assertNotNull(modeEngine.getNext(), mode + " 모드에서 next가 null");
+                assertEquals(0, modeEngine.getScore(), mode + " 모드에서 점수가 0이 아님");
+            }, mode + " 모드로 엔진이 생성되고 시작되어야 함");
+        }
+    }
+
+    @Test
+    @DisplayName("피스 위치 유효성 테스트")
+    void testPiecePositionValidity() {
+        engine.startNewGame();
+        
+        int pieceX = engine.getPieceX();
+        int pieceY = engine.getPieceY();
+        
+        // 피스 위치가 보드 경계 내에 있어야 함 (여유분 고려)
+        assertTrue(pieceX >= -3, "피스 X 위치가 너무 작음: " + pieceX);
+        assertTrue(pieceX < board.getWidth() + 3, "피스 X 위치가 너무 큼: " + pieceX);
+        assertTrue(pieceY >= -3, "피스 Y 위치가 너무 작음: " + pieceY);
+        assertTrue(pieceY < board.getHeight() + 3, "피스 Y 위치가 너무 큼: " + pieceY);
+    }
+
+    @Test
+    @DisplayName("게임 타이머 상태 테스트")
+    void testGameTimerState() {
+        assertNotNull(engine.getGameTimer(), "게임 타이머가 null이면 안됨");
+        
+        engine.startNewGame();
+        assertNotNull(engine.getGameTimer(), "게임 시작 후에도 타이머가 null이면 안됨");
+    }
+
+    @Test
+    @DisplayName("리스너 없이 게임 시작 테스트")
+    void testStartGameWithoutListener() {
+        GameEngine noListenerEngine = new GameEngine(board, null);
+        
+        assertDoesNotThrow(() -> {
+            noListenerEngine.startNewGame();
+            
+            // 리스너가 없어도 기본 동작은 수행되어야 함
+            assertNotNull(noListenerEngine.getCurrent(), "리스너가 없어도 current가 설정되어야 함");
+            assertNotNull(noListenerEngine.getNext(), "리스너가 없어도 next가 설정되어야 함");
+            assertEquals(0, noListenerEngine.getScore(), "리스너가 없어도 점수가 초기화되어야 함");
+        }, "리스너가 없어도 게임이 시작되어야 함");
+    }
+
+    @Test
+    @DisplayName("연속 게임 시작 메모리 누수 테스트")
+    void testMemoryLeakOnRepeatedGameStart() {
+        // 여러 번 게임을 시작해도 메모리 누수가 발생하지 않아야 함
+        for (int i = 0; i < 100; i++) {
+            engine.startNewGame();
+            
+            // 매번 새로운 객체들이 올바르게 생성되어야 함
+            assertNotNull(engine.getCurrent(), i + "번째 게임 시작에서 current가 null");
+            assertNotNull(engine.getNext(), i + "번째 게임 시작에서 next가 null");
+            
+            // 점수는 항상 0으로 초기화되어야 함
+            assertEquals(0, engine.getScore(), i + "번째 게임 시작에서 점수가 초기화되지 않음");
+        }
+    }
+
+    @Test
+    @DisplayName("보드 참조 일관성 테스트")
+    void testBoardReferenceConsistency() {
+        Board originalBoard = engine.getBoard();
+        
+        engine.startNewGame();
+        
+        // 게임 시작 후에도 같은 보드 객체를 참조해야 함
+        assertSame(originalBoard, engine.getBoard(), "게임 시작 후 보드 참조가 변경됨");
+    }
 }

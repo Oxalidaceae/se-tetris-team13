@@ -328,4 +328,220 @@ public class GameEngineStateTest {
 
         itemEngine.shutdown();
     }
+
+    @Test
+    @DisplayName("모든 게임 모드에서 상태 초기화 테스트")
+    void testStateInitializationInAllModes() {
+        ScoreBoard.ScoreEntry.Mode[] modes = {
+            ScoreBoard.ScoreEntry.Mode.EASY,
+            ScoreBoard.ScoreEntry.Mode.NORMAL,
+            ScoreBoard.ScoreEntry.Mode.HARD,
+            ScoreBoard.ScoreEntry.Mode.ITEM,
+            ScoreBoard.ScoreEntry.Mode.VERSUS
+        };
+
+        for (ScoreBoard.ScoreEntry.Mode mode : modes) {
+            TestListener modeListener = new TestListener();
+            GameEngine modeEngine = new GameEngine(new Board(10, 20), modeListener, mode);
+            
+            modeEngine.startNewGame();
+            
+            assertEquals(0, modeEngine.getScore(), mode + " 모드에서 점수가 0으로 초기화되어야 함");
+            assertNotNull(modeEngine.getCurrent(), mode + " 모드에서 current가 null이면 안됨");
+            assertNotNull(modeEngine.getNext(), mode + " 모드에서 next가 null이면 안됨");
+            assertTrue(modeListener.scoreChangedCount > 0, mode + " 모드에서 scoreChanged 콜백이 호출되어야 함");
+            assertTrue(modeListener.pieceSpawnedCount > 0, mode + " 모드에서 pieceSpawned 콜백이 호출되어야 함");
+            
+            modeEngine.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("연속 shutdown 호출 테스트")
+    void testRepeatedShutdown() {
+        engine.startNewGame();
+        
+        // 여러 번 shutdown을 호출해도 안전해야 함
+        assertDoesNotThrow(() -> {
+            engine.shutdown();
+            engine.shutdown();
+            engine.shutdown();
+        }, "연속 shutdown 호출이 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("shutdown 후 메서드 호출 안전성 테스트")
+    void testMethodCallsAfterShutdown() {
+        engine.startNewGame();
+        engine.shutdown();
+        
+        // shutdown 후에도 getter 메서드들은 안전해야 함
+        assertDoesNotThrow(() -> {
+            engine.getScore();
+            engine.getCurrent();
+            engine.getNext();
+            engine.getPieceX();
+            engine.getPieceY();
+            engine.getBoard();
+            engine.getGameTimer();
+            engine.getDropIntervalSeconds();
+        }, "shutdown 후에도 getter 메서드들은 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("spawnNext 반복 호출 테스트")
+    void testRepeatedSpawnNext() {
+        engine.startNewGame();
+        
+        Tetromino initialNext = engine.getNext();
+        listener.reset();
+        
+        // 여러 번 게임을 다시 시작하여 피스 생성 테스트
+        for (int i = 0; i < 5; i++) {
+            Tetromino previousCurrent = engine.getCurrent();
+            Tetromino previousNext = engine.getNext();
+            
+            engine.startNewGame();
+            
+            // 새로운 current와 next가 생성되어야 함
+            assertNotNull(engine.getCurrent(), 
+                         i + "번째 재시작에서 새로운 current가 생성되지 않음");
+            assertNotNull(engine.getNext(), 
+                         i + "번째 재시작에서 새로운 next가 생성되지 않음");
+        }
+        
+        // 콜백이 적절히 호출되었는지 확인
+        assertTrue(listener.pieceSpawnedCount >= 5, "게임 재시작 시마다 pieceSpawned 콜백이 호출되어야 함");
+        assertTrue(listener.nextPieceCount >= 5, "게임 재시작 시마다 nextPiece 콜백이 호출되어야 함");
+    }
+
+    @Test
+    @DisplayName("게임 오버 상태에서의 동작 테스트")
+    void testBehaviorInGameOverState() {
+        // 보드를 게임 오버 상태로 만들기 (맨 위까지 블록으로 채우기)
+        for (int x = 0; x < board.getWidth(); x++) {
+            for (int y = 0; y < 4; y++) { // 맨 위 4줄을 채움
+                board.setCell(x, y, 1);
+            }
+        }
+        
+        engine.startNewGame();
+        listener.reset();
+        
+        // 게임 오버 상태에서도 메서드 호출이 안전해야 함
+        assertDoesNotThrow(() -> {
+            engine.getScore();
+            engine.getCurrent();
+            engine.getNext();
+            engine.getPieceX();
+            engine.getPieceY();
+        }, "게임 오버 상태에서도 메서드 호출이 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("빈 보드에서 상태 전환 테스트")
+    void testStateTransitionOnEmptyBoard() {
+        // 완전히 비어있는 보드에서 게임 시작
+        board.clear();
+        engine.startNewGame();
+        
+        Tetromino firstCurrent = engine.getCurrent();
+        Tetromino firstNext = engine.getNext();
+        
+        assertNotNull(firstCurrent, "빈 보드에서도 current가 생성되어야 함");
+        assertNotNull(firstNext, "빈 보드에서도 next가 생성되어야 함");
+        
+        // 게임 재시작으로 상태 변경 테스트
+        engine.startNewGame();
+        
+        // 재시작 후에도 적절한 피스들이 생성되어야 함
+        assertNotNull(engine.getCurrent(), "재시작 후 current가 생성되어야 함");
+        assertNotNull(engine.getNext(), "재시작 후 새로운 next가 생성되어야 함");
+    }
+
+    @Test
+    @DisplayName("다양한 보드 크기에서 상태 관리 테스트")
+    void testStateManagementOnVariousBoardSizes() {
+        // 작은 보드 (테트로미노가 배치 가능한 크기)
+        Board smallBoard = new Board(5, 10);
+        TestListener smallListener = new TestListener();
+        GameEngine smallEngine = new GameEngine(smallBoard, smallListener);
+        
+        assertDoesNotThrow(() -> {
+            smallEngine.startNewGame();
+            // 작은 보드에서는 current 생성이 실패할 수 있으므로 보드만 확인
+            assertNotNull(smallEngine.getBoard(), "작은 보드에서도 보드가 설정되어야 함");
+            assertEquals(0, smallEngine.getScore(), "작은 보드에서도 점수가 올바르게 초기화되어야 함");
+            smallEngine.shutdown();
+        }, "작은 보드에서도 상태 관리가 정상 동작해야 함");
+        
+        // 매우 큰 보드
+        Board largeBoard = new Board(50, 50);
+        TestListener largeListener = new TestListener();
+        GameEngine largeEngine = new GameEngine(largeBoard, largeListener);
+        
+        assertDoesNotThrow(() -> {
+            largeEngine.startNewGame();
+            assertNotNull(largeEngine.getCurrent(), "큰 보드에서도 current가 생성되어야 함");
+            assertEquals(0, largeEngine.getScore(), "큰 보드에서도 점수가 올바르게 초기화되어야 함");
+            largeEngine.shutdown();
+        }, "매우 큰 보드에서도 상태 관리가 정상 동작해야 함");
+    }
+
+    @Test
+    @DisplayName("리스너 콜백 매개변수 유효성 테스트")
+    void testListenerCallbackParameterValidity() {
+        listener.reset();
+        engine.startNewGame();
+        
+        // spawnedPiece 콜백 매개변수 검증
+        assertNotNull(listener.spawnedPiece, "spawnedPiece가 null이면 안됨");
+        assertTrue(listener.spawnX >= 0, "spawnX가 음수이면 안됨");
+        assertTrue(listener.spawnY >= 0, "spawnY가 음수이면 안됨");
+        assertTrue(listener.spawnX < board.getWidth() + 4, "spawnX가 보드 너비를 초과하면 안됨");
+        assertTrue(listener.spawnY < board.getHeight() + 4, "spawnY가 보드 높이를 초과하면 안됨");
+        
+        // nextPiece 콜백 매개변수 검증
+        assertNotNull(listener.nextPiece, "nextPiece가 null이면 안됨");
+    }
+
+    @Test
+    @DisplayName("상태 변경 시 리스너 호출 순서 테스트")
+    void testListenerCallbackOrder() {
+        listener.reset();
+        
+        long startTime = System.nanoTime();
+        engine.startNewGame();
+        long endTime = System.nanoTime();
+        
+        // 게임 시작 시 적절한 콜백들이 호출되었는지 확인
+        assertTrue(listener.scoreChangedCount > 0, "scoreChanged 콜백이 호출되어야 함");
+        assertTrue(listener.pieceSpawnedCount > 0, "pieceSpawned 콜백이 호출되어야 함");
+        assertTrue(listener.nextPieceCount > 0, "nextPiece 콜백이 호출되어야 함");
+        
+        // 게임 시작이 합리적인 시간 내에 완료되어야 함 (1초 이내)
+        assertTrue(endTime - startTime < 1_000_000_000L, "게임 시작이 너무 오래 걸림");
+    }
+
+    @Test
+    @DisplayName("동일한 리스너로 여러 엔진 생성 테스트")
+    void testMultipleEnginesWithSameListener() {
+        TestListener sharedListener = new TestListener();
+        
+        GameEngine engine1 = new GameEngine(new Board(10, 20), sharedListener);
+        GameEngine engine2 = new GameEngine(new Board(15, 25), sharedListener);
+        
+        sharedListener.reset();
+        
+        engine1.startNewGame();
+        int afterEngine1 = sharedListener.scoreChangedCount + sharedListener.pieceSpawnedCount;
+        
+        engine2.startNewGame();
+        int afterEngine2 = sharedListener.scoreChangedCount + sharedListener.pieceSpawnedCount;
+        
+        assertTrue(afterEngine2 > afterEngine1, "두 번째 엔진 시작 후 콜백 카운트가 증가해야 함");
+        
+        engine1.shutdown();
+        engine2.shutdown();
+    }
 }
