@@ -248,7 +248,7 @@ public class TetrisServer {
     }
     
     // 현재 서버의 IP 주소 반환
-    public String getServerIP() {
+    public static String getServerIP() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         } catch (Exception e) {

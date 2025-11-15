@@ -6,112 +6,126 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.input.KeyCode;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
+import team13.tetris.network.server.TetrisServer;
 
-// 서버 또는 클라이언트 접속 선택
 public class HostOrJoinScene {
+    @SuppressWarnings("unused")
     private final SceneManager manager;
+    @SuppressWarnings("unused")
     private final Settings settings;
     private Scene scene;
-    
+    private String selectedRole = "host"; // "host" or "client"
+
     public HostOrJoinScene(SceneManager manager, Settings settings) {
         this.manager = manager;
         this.settings = settings;
-        
+
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
         root.getStyleClass().add("menu-root");
         root.setPadding(new Insets(40));
-        
+
         Label titleLabel = new Label("P2P Multiplayer");
         titleLabel.getStyleClass().add("label-title");
-        titleLabel.setStyle("-fx-font-size: 36px;");
-        
-        // 역할 선택
+
         Label roleLabel = new Label("Select Role:");
         roleLabel.getStyleClass().add("label");
-        roleLabel.setStyle("-fx-font-size: 20px;");
-        
-        ToggleGroup roleGroup = new ToggleGroup();
-        
-        RadioButton serverButton = new RadioButton("Host Server");
-        serverButton.setToggleGroup(roleGroup);
-        serverButton.setSelected(true);
-        serverButton.getStyleClass().add("radio-button");
-        serverButton.setStyle("-fx-font-size: 18px;");
-        
-        RadioButton clientButton = new RadioButton("Join as Client");
-        clientButton.setToggleGroup(roleGroup);
-        clientButton.getStyleClass().add("radio-button");
-        clientButton.setStyle("-fx-font-size: 18px;");
-        
-        // IP 주소 입력 (클라이언트용)
-        Label ipLabel = new Label("Server IP Address:");
-        ipLabel.getStyleClass().add("label");
-        ipLabel.setVisible(false);
-        
+
+        Button hostButton = new Button("Host Server");
+        hostButton.getStyleClass().addAll("button", "selected");
+
+        Button joinButton = new Button("Join as Client");
+        joinButton.getStyleClass().add("button");
+
+        // Label to display host's IP
+        Label ipDisplayLabel = new Label("Your IP address: " + TetrisServer.getServerIP() + "\n\nPlease let the client know this address.");
+        ipDisplayLabel.getStyleClass().add("label");
+
+        // Controls for joining a server
+        Label ipInputLabel = new Label("Server IP Address:");
+        ipInputLabel.getStyleClass().add("label");
+        ipInputLabel.setVisible(false);
+
         TextField ipTextField = new TextField("127.0.0.1");
         ipTextField.getStyleClass().add("text-field");
         ipTextField.setMaxWidth(300);
         ipTextField.setVisible(false);
-        
-        // 클라이언트 선택 시 IP 입력 표시
-        clientButton.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
-            ipLabel.setVisible(isNowSelected);
-            ipTextField.setVisible(isNowSelected);
+
+        // Event Handlers
+        hostButton.setOnAction(e -> {
+            selectedRole = "host";
+            hostButton.getStyleClass().add("selected");
+            joinButton.getStyleClass().remove("selected");
+            
+            ipInputLabel.setVisible(false);
+            ipTextField.setVisible(false);
+            ipDisplayLabel.setVisible(true);
         });
-        
-        // 버튼들
+
+        joinButton.setOnAction(e -> {
+            selectedRole = "client";
+            joinButton.getStyleClass().add("selected");
+            hostButton.getStyleClass().remove("selected");
+
+            ipDisplayLabel.setVisible(false);
+            ipInputLabel.setVisible(true);
+            ipTextField.setVisible(true);
+            Platform.runLater(ipTextField::requestFocus);
+        });
+
         Button continueButton = new Button("Continue");
-        continueButton.getStyleClass().add("menu-button");
-        continueButton.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
-        
+        continueButton.getStyleClass().add("button");
+
         Button backButton = new Button("Back");
-        backButton.getStyleClass().add("menu-button");
-        backButton.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
-        
+        backButton.getStyleClass().add("button");
+
+        ipTextField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.UP) {
+                joinButton.requestFocus();
+                event.consume();
+            } else if (event.getCode() == KeyCode.DOWN) {
+                continueButton.requestFocus();
+                event.consume();
+            }
+        });
+
         continueButton.setOnAction(e -> {
-            if (serverButton.isSelected()) {
-                // 서버 호스트로 시작
+            if ("host".equals(selectedRole)) {
                 manager.showNetworkLobby(settings, true, null);
             } else {
-                // 클라이언트로 접속
                 String serverIP = ipTextField.getText().trim();
-                if (serverIP.isEmpty()) {
-                    serverIP = "127.0.0.1";
-                }
+                if (serverIP.isEmpty()) serverIP = "127.0.0.1";
                 manager.showNetworkLobby(settings, false, serverIP);
             }
         });
-        
+
         backButton.setOnAction(e -> manager.showMultiModeSelection(settings));
-        
+
         HBox buttonBox = new HBox(20, continueButton, backButton);
         buttonBox.setAlignment(Pos.CENTER);
-        
+
         root.getChildren().addAll(
             titleLabel,
-            new Label(), // 간격
+            new Label(),
             roleLabel,
-            serverButton,
-            clientButton,
-            new Label(), // 간격
-            ipLabel,
-            ipTextField,
-            new Label(), // 간격
+            hostButton,
+            joinButton,
+            new Label(),
+            ipDisplayLabel, // IP for host
+            ipInputLabel,   // Label for client
+            ipTextField,    // Input for client
+            new Label(),
             buttonBox
         );
-        
+
         scene = new Scene(root);
     }
-    
-    public Scene getScene() {
-        return scene;
-    }
+
+    public Scene getScene() { return scene; }
 }
