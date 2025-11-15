@@ -6,14 +6,10 @@ public class AttackMessage extends NetworkMessage {
     
     private final int attackLines;              // 공격할 줄 수
     private final int sourceLines;              // 원인이 된 삭제 줄 수 
-    private final String targetPlayerId;        // 공격 대상 플레이어 ID
     
-    public AttackMessage(String attackerPlayerId, String targetPlayerId, int sourceLines, int attackLines) {
+    public AttackMessage(String attackerPlayerId, int sourceLines, int attackLines) {
         super(MessageType.ATTACK_SENT, attackerPlayerId);
         
-        if (targetPlayerId == null || targetPlayerId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Target player ID cannot be null or empty");
-        }
         if (sourceLines < 1 || sourceLines > 10) {
             throw new IllegalArgumentException("Source lines must be between 1 and 10");
         }
@@ -24,12 +20,11 @@ public class AttackMessage extends NetworkMessage {
             throw new IllegalArgumentException("Attack lines cannot exceed 10");
         }
         
-        this.targetPlayerId = targetPlayerId;
         this.sourceLines = sourceLines;
         this.attackLines = attackLines;
     }
     
-    public static AttackMessage createStandardAttack(String attackerPlayerId, String targetPlayerId, int clearedLines) {
+    public static AttackMessage createStandardAttack(String attackerPlayerId, int clearedLines) {
         int attackLines = switch (clearedLines) {
             case 1 -> 0;  
             case 2 -> 2;  
@@ -44,7 +39,7 @@ public class AttackMessage extends NetworkMessage {
             default -> 0;
         };
         
-        return new AttackMessage(attackerPlayerId, targetPlayerId, clearedLines, attackLines);
+        return new AttackMessage(attackerPlayerId, clearedLines, attackLines);
     }
     
     public int getAttackLines() {
@@ -53,10 +48,6 @@ public class AttackMessage extends NetworkMessage {
     
     public int getSourceLines() {
         return sourceLines;
-    }
-    
-    public String getTargetPlayerId() {
-        return targetPlayerId;
     }
     
     public String getAttackerPlayerId() {
@@ -71,7 +62,6 @@ public class AttackMessage extends NetworkMessage {
     public String toString() {
         return "AttackMessage{" +
                "attacker='" + getSenderId() + '\'' +
-               ", target='" + targetPlayerId + '\'' +
                ", sourceLines=" + sourceLines +
                ", attackLines=" + attackLines +
                ", timestamp=" + getTimestamp() +

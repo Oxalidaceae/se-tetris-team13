@@ -1,23 +1,16 @@
 package team13.tetris.network.protocol;
 
-// 시스템 메시지 (연결 상태 확인, 에러 등)
+// 시스템 메시지 (에러 등)
 public class SystemMessage extends NetworkMessage {
     private static final long serialVersionUID = 1L;
     
-    private final String message;           // 메시지 내용 (에러 메시지 등)
+    private final String message;           // 메시지 내용
     private final SystemLevel level;        // 메시지 레벨
     
     public enum SystemLevel {
         INFO,       // 정보성 메시지
         WARNING,    // 경고
         ERROR       // 에러
-    }
-    
-    // HEARTBEAT용 생성자 (메시지 없음)
-    public SystemMessage(String senderId) {
-        super(MessageType.HEARTBEAT, senderId);
-        this.message = "";
-        this.level = SystemLevel.INFO;
     }
     
     // ERROR용 생성자 (메시지 포함)
@@ -30,11 +23,6 @@ public class SystemMessage extends NetworkMessage {
         
         this.message = errorMessage;
         this.level = level != null ? level : SystemLevel.ERROR;
-    }
-    
-    // HEARTBEAT 메시지 생성
-    public static SystemMessage createHeartbeat(String senderId) {
-        return new SystemMessage(senderId);
     }
     
     // ERROR 메시지 생성
@@ -60,32 +48,19 @@ public class SystemMessage extends NetworkMessage {
         return level;
     }
     
-    public boolean isHeartbeat() {
-        return getType() == MessageType.HEARTBEAT;
-    }
-    
     public boolean isError() {
         return getType() == MessageType.ERROR;
     }
     
     @Override
     public String toString() {
-        if (isHeartbeat()) {
-            return "SystemMessage{" +
-                   "type=HEARTBEAT" +
-                   ", sender='" + getSenderId() + '\'' +
-                   ", timestamp=" + getTimestamp() +
-                   ", elapsedTime=" + getElapsedTime() + "ms" +
-                   '}';
-        } else {
-            return "SystemMessage{" +
-                   "type=" + getType() +
-                   ", sender='" + getSenderId() + '\'' +
-                   ", level=" + level +
-                   ", message='" + message + '\'' +
-                   ", timestamp=" + getTimestamp() +
-                   ", elapsedTime=" + getElapsedTime() + "ms" +
-                   '}';
-        }
+        return "SystemMessage{" +
+               "type=" + getType() +
+               ", sender='" + getSenderId() + '\'' +
+               ", level=" + level +
+               ", message='" + message + '\'' +
+               ", timestamp=" + getTimestamp() +
+               ", elapsedTime=" + getElapsedTime() + "ms" +
+               '}';
     }
 }

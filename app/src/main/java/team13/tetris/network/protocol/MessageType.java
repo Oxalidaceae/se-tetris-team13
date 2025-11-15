@@ -14,16 +14,8 @@ public enum MessageType {
     PLAYER_READY,         // 플레이어가 준비 완료
     GAME_START,           // 게임 시작 신호 (모든 플레이어 준비 완료)
     
-    // 플레이어 입력 이벤트
-    MOVE_LEFT,            // 왼쪽 이동
-    MOVE_RIGHT,           // 오른쪽 이동
-    ROTATE,               // 회전
-    SOFT_DROP,            // 소프트 드롭 
-    HARD_DROP,            // 하드 드롭 
-    
     // 게임 상태 동기화
-    BOARD_UPDATE,         // 보드 상태 업데이트
-    LINES_CLEARED,        // 줄 삭제 정보
+    BOARD_UPDATE,         // 보드 상태 업데이트 (다음 블록 포함)
     
     // 공격/방어 시스템
     ATTACK_SENT,          // 공격 라인 전송
@@ -34,6 +26,5 @@ public enum MessageType {
     GAME_OVER,            // 게임 오버
     
     // 시스템 메시지
-    HEARTBEAT,            // 연결 상태 확인 (핑)
     ERROR                 // 오류 메시지
 }
