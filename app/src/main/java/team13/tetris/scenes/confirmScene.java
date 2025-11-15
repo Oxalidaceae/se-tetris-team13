@@ -9,7 +9,10 @@ import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
 public class confirmScene {
+    // 사용하지 않는 필드이지만 향후 확장을 위해 보존
+    @SuppressWarnings("unused")
     private final SceneManager manager;
+    @SuppressWarnings("unused")
     private final Settings settings;
     private final String title;
     private final Runnable onConfirm;

@@ -13,33 +13,23 @@ public class Board {
         this.cells = new int[height][width];
     }
 
-    public int getWidth() {
-        return width;
-    }
+    public int getWidth() { return width; }
 
-    public int getHeight() {
-        return height;
-    }
+    public int getHeight() { return height; }
 
     public int getCell(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) return -1;
-        synchronized (lock) {
-            return cells[y][x];
-        }
+        synchronized (lock) { return cells[y][x]; }
     }
 
     public boolean isOccupied(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) return true;
-        synchronized (lock) {
-            return cells[y][x] != 0;
-        }
+        synchronized (lock) { return cells[y][x] != 0; }
     }
 
     public void setCell(int x, int y, int value) {
         if (x < 0 || x >= width || y < 0 || y >= height) return;
-        synchronized (lock) {
-            cells[y][x] = value;
-        }
+        synchronized (lock) { cells[y][x] = value; }
     }
 
     public void clear() {
@@ -84,7 +74,8 @@ public class Board {
                         if (x >= 0 && x < width && y >= 0 && y < height) {
                             int itemValue;
                             // COPY와 LINE_CLEAR는 특정 블록만 아이템 블록으로 설정
-                            if ((itemType.equals("COPY") || itemType.equals("LINE_CLEAR")) && blockCount == itemBlockIndex) {
+                            if ((itemType.equals("COPY") || 
+                            itemType.equals("LINE_CLEAR")) && blockCount == itemBlockIndex) {
                                 switch (itemType) {
                                     case "COPY":
                                         itemValue = 100 + value; // COPY: 100번대
@@ -96,7 +87,8 @@ public class Board {
                                         itemValue = 100 + value; // 기본값
                                         break;
                                 }
-                            } else if (itemType.equals("WEIGHT") || itemType.equals("GRAVITY") || itemType.equals("SPLIT")) {
+                            } else if (itemType.equals("WEIGHT") || 
+                            itemType.equals("GRAVITY") || itemType.equals("SPLIT")) {
                                 // WEIGHT, GRAVITY, SPLIT은 모든 블록이 아이템 블록
                                 switch (itemType) {
                                     case "WEIGHT":
@@ -125,11 +117,11 @@ public class Board {
         }
     }
     
-    // 특정 위치(px, py)에 shape를 놓을 수 있는지 검사합니다.
+    // 특정 위치(px, py)에 shape를 놓을 수 있는지 검사
     // 검사 조건:
-    // - shape의 각 블록 셀(1)이 보드 범위를 벗어나지 않아야 합니다.
-    // - 해당 위치에 이미 다른 블록이 있지 않아야 합니다.
-    // 위 조건을 모두 만족하면 true, 아니면 false를 반환합니다.
+    // - shape의 각 블록 셀(1)이 보드 범위를 벗어나지 않아야 함
+    // - 해당 위치에 이미 다른 블록이 있지 않아야 함
+    // 위 조건을 모두 만족하면 true, 아니면 false를 반환함
     public boolean fits(int[][] shape, int px, int py) {
         synchronized (lock) {
             for (int r = 0; r < shape.length; r++) {
@@ -146,7 +138,7 @@ public class Board {
         }
     }
 
-    // 현재 보드에서 가득 찬 모든 행의 인덱스를 찾아 반환합니다.
+    // 현재 보드에서 가득 찬 모든 행의 인덱스를 찾아 반환
     public java.util.List<Integer> getFullLineIndices() {
         synchronized (lock) {
             java.util.List<Integer> fullLines = new java.util.ArrayList<>();
@@ -164,7 +156,7 @@ public class Board {
         }
     }
 
-    // 지정된 행 전체를 주어진 값으로 채웁니다.
+    // 지정된 행 전체를 주어진 값으로 채움
     public void fillLineWith(int row, int value) {
         synchronized (lock) {
             if (row < 0 || row >= height) return;
@@ -172,18 +164,16 @@ public class Board {
         }
     }
 
-    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
+    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거
     // 제거된 행 위에 있는 모든 행을 한 칸씩 아래로 내리고,
-    // 맨 위 행은 0으로 채웁니다.
-    // @return 제거된 행의 개수
-    public int clearFullLines() {
-        return clearFullLines(null);
-    }
+    // 맨 위 행은 0으로 채움
+    // return 값: 제거된 행의 개수
+    public int clearFullLines() { return clearFullLines(null); }
     
-    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거합니다.
-    // 아이템 블록(100번대 값)이 있는 행이 제거될 때 콜백을 호출합니다.
-    // @param itemCallback 아이템 블록이 제거될 때 호출되는 콜백
-    // @return 제거된 행의 개수
+    // 가득 찬(모든 열이 블록으로 채워진) 행을 찾아 제거
+    // 아이템 블록(100번대 값)이 있는 행이 제거될 때 콜백을 호출
+    // 파라미터: itemCallback 아이템 블록이 제거될 때 호출되는 콜백
+    // return 값: 제거된 행의 개수
     public int clearFullLines(Runnable itemCallback) {
         synchronized (lock) {
             int cleared = 0;
@@ -193,7 +183,7 @@ public class Board {
                 boolean hasItemBlock = false;
                 
                 // 범위 체크
-                if (r < 0 || r >= height)continue;
+                if (r < 0 || r >= height) continue;
                 
                 // 행을 먼저 복사해서 안전하게 처리
                 int[] currentRow = new int[width];
@@ -235,17 +225,15 @@ public class Board {
         }
     }
 
-    // {@link #clearFullLines()}를 호출하여 가득 찬 행을 제거하고,
-    // 제거된 행 수를 그대로 반환하는 편의 메서드입니다.
-    public int clearLinesAndReturnCount() {
-        return clearFullLines();
-    }
+    // {@link #clearFullLines()}를 호출하여 가득 찬 행을 제거,
+    // 제거된 행 수를 그대로 반환하는 편의 메서드
+    public int clearLinesAndReturnCount() { return clearFullLines(); }
 
-    // 현재 보드 상태를 2차원 정수 배열로 복사하여 반환합니다.
+    // 현재 보드 상태를 2차원 정수 배열로 복사하여 반환
     // 반환되는 배열은 내부 배열(cells)의 방어적 복사본이므로,
-    // 호출자가 반환값을 수정하더라도 내부 상태에는 영향이 없습니다.
-    // 이 메서드는 내부 락을 사용해 복사 시점의 일관된 스냅샷을 제공합니다.
-    // @return 보드 상태의 복사본 (rows x cols)
+    // 호출자가 반환값을 수정하더라도 내부 상태에는 영향이 없음
+    // 이 메서드는 내부 락을 사용해 복사 시점의 일관된 스냅샷을 제공
+    // return 값: 보드 상태의 복사본 (rows x cols)
     public int[][] snapshot() {
         int[][] snap = new int[height][width];
         synchronized (lock) {
@@ -255,8 +243,8 @@ public class Board {
         return snap;
     }
     
-    // 중력 효과를 적용하여 떠있는 블록들을 아래로 떨어뜨립니다.
-    // 무게추로 블록이 파괴된 후 호출됩니다.
+    // 중력 효과를 적용하여 떠있는 블록들을 아래로 떨어뜨림
+    // 무게추로 블록이 파괴된 후 호출됨
     public void applyGravity() {
         synchronized (lock) {
             for (int col = 0; col < width; col++) {
