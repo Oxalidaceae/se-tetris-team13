@@ -99,4 +99,25 @@ public abstract class BaseGameScene {
         if (preview) cell.getStyleClass().add("preview-cell");
         return cell;
     }
+    
+    // 고스트 블록 렌더링 - 공통 메서드
+    protected void renderGhostBlock(int[][] shape, int px, int py, int ghostY, int w, int h, GridPane boardGrid) {
+        if (ghostY != -1 && ghostY != py) {
+            for (int r = 0; r < shape.length; r++) {
+                for (int c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c] != 0) {
+                        int bx = px + c;
+                        int by = ghostY + r;
+                        if (bx >= 0 && bx < w && by >= 0 && by < h) {
+                            CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
+                            if (cell != null) {
+                                // 고스트 블록은 반투명하게 표시
+                                cell.setBlock("", "block-ghost", "tetris-ghost-text");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -138,30 +138,7 @@ public class GameScene extends BaseGameScene {
                 }
                 
                 // 고스트 블록 그리기 (현재 블록보다 먼저 그려서 뒤에 표시됨)
-                if (ghostY != -1 && ghostY != py) {
-                    for (int r = 0; r < shape.length; r++) {
-                        for (int c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c] == 0) {
-                                continue;
-                            }
-
-                            int x = px + c;
-                            int y = ghostY + r;
-
-                            if (x < 0 || x >= w || y < 0 || y >= h) {
-                                continue;
-                            }
-
-                            CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
-                            if (cell == null) {
-                                continue;
-                            }
-
-                            // 고스트 블록은 반투명하게 표시
-                            fillCell(cell, FILLED_SYMBOL, "block-ghost", "tetris-ghost-text");
-                        }
-                    }
-                }
+                renderGhostBlock(shape, px, py, ghostY, w, h, boardGrid);
                 
                 int blockIndex = 0;
 
