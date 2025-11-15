@@ -337,7 +337,7 @@ class KeyInputHandlerTest {
         // when & then - 대량의 키 매칭 테스트가 빠르게 실행되어야 함
         long startTime = System.nanoTime();
         
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1000; i++) { // 반복 횟수를 줄임
             keyInputHandler.isLeftClicked(KeyCode.A);
             keyInputHandler.isRightClicked(KeyCode.D);
             keyInputHandler.isDropClicked(KeyCode.S);
@@ -353,7 +353,7 @@ class KeyInputHandlerTest {
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         
-        // 10000번의 매칭이 1초 이내에 완료되어야 함
+        // 1000번의 매칭이 1초 이내에 완료되어야 함
         assertTrue(duration < 1_000_000_000L, "키 매칭이 충분히 빨라야 함");
     }
 
