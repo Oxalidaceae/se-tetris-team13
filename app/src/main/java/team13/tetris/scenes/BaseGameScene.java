@@ -6,9 +6,7 @@ import team13.tetris.config.Settings;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-/**
- * GameScene과 VersusGameScene의 공통 기능을 제공하는 추상 베이스 클래스
- */
+// GameScene과 VersusGameScene의 공통 기능을 제공하는 추상 베이스 클래스
 public abstract class BaseGameScene {
     protected static final double BOARD_CELL_SIZE = 28.0;
     protected static final double PREVIEW_CELL_SIZE = 22.0;
@@ -16,13 +14,9 @@ public abstract class BaseGameScene {
     
     protected final Settings settings;
 
-    protected BaseGameScene(Settings settings) {
-        this.settings = settings;
-    }
+    protected BaseGameScene(Settings settings) { this.settings = settings; }
 
-    /**
-     * 보드 그리드 생성
-     */
+    // 보드 그리드 생성
     protected GridPane createBoardGrid(Board board) {
         int w = board.getWidth();
         int h = board.getHeight();
@@ -49,9 +43,7 @@ public abstract class BaseGameScene {
         return grid;
     }
 
-    /**
-     * 프리뷰 그리드 생성 (4x4)
-     */
+    // 프리뷰 그리드 생성 (4x4)
     protected GridPane createPreviewGrid() {
         GridPane grid = new GridPane();
         grid.setHgap(0);
@@ -69,9 +61,7 @@ public abstract class BaseGameScene {
         return grid;
     }
 
-    /**
-     * GridPane에서 특정 위치의 노드 가져오기
-     */
+    // GridPane에서 특정 위치의 노드 가져오기
     protected Node getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
         for (Node node : gridPane.getChildren()) {
             Integer rowIndex = GridPane.getRowIndex(node);
@@ -85,37 +75,25 @@ public abstract class BaseGameScene {
         return null;
     }
 
-    /**
-     * 셀을 비움
-     */
-    protected void applyCellEmpty(CellView cell) {
-        if (cell != null) cell.setEmpty();
-    }
+    // 셀을 비움
+    protected void applyCellEmpty(CellView cell) { if (cell != null) cell.setEmpty(); }
 
-    /**
-     * 셀에 블록 채우기
-     */
+    // 셀에 블록 채우기
     protected void fillCell(CellView cell, String symbol, String blockClass, String textClass) {
         if (cell != null) cell.setBlock(symbol, blockClass, textClass);
     }
 
-    /**
-     * Tetromino Kind에 해당하는 블록 스타일 클래스 반환
-     */
+    // Tetromino Kind에 해당하는 블록 스타일 클래스 반환
     protected String blockClassForKind(Tetromino.Kind kind) {
         return (kind != null) ? kind.getBlockStyleClass() : "block";
     }
 
-    /**
-     * Tetromino Kind에 해당하는 텍스트 스타일 클래스 반환
-     */
+    // Tetromino Kind에 해당하는 텍스트 스타일 클래스 반환
     protected String textClassForKind(Tetromino.Kind kind) {
         return (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
     }
 
-    /**
-     * CellView 생성 (서브클래스에서 커스터마이징 가능)
-     */
+    // CellView 생성 (서브클래스에서 커스터마이징 가능)
     protected CellView makeCellView(double size, boolean preview) {
         CellView cell = new CellView(size, settings);
         if (preview) cell.getStyleClass().add("preview-cell");

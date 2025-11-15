@@ -45,7 +45,6 @@ public class GameEngine {
 
     // 무게추 충돌 상태 추적
     private boolean weightCollisionDetected = false; // 무게추가 충돌을 감지했는지 여부
-    private boolean isHardDrop = false; // 하드드롭 여부를 나타내는 플래그
     
     // 마지막으로 고정된 블록의 위치 정보 (대전 모드용)
     private java.util.Set<Integer> lastLockedColumns = new java.util.HashSet<>();
@@ -166,30 +165,6 @@ public class GameEngine {
                 return Tetromino.of(Tetromino.Kind.I);
         }
     }
-
-    // 이전 코드 - 삭제 예정
-    // // 미노 복사 아이템을 생성합니다.
-    // // 기본 미노와 같은 형태이지만 랜덤한 블록 하나가 'C' 표시됩니다.
-    // private Tetromino createItemPiece(Tetromino.Kind itemKind, Tetromino.Kind targetKind) {
-    //     if (itemKind == Tetromino.Kind.COPY) {
-    //         // 복사 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
-    //         int copyBlockIndex = (int) (Math.random() * 4);
-    //         Tetromino result = new Tetromino(targetKind, 0, copyBlockIndex);
-    //         return result;
-    //     } else if (itemKind == Tetromino.Kind.WEIGHT) {
-    //         // 무게추 아이템: copyBlockIndex는 사용하지 않음
-    //         return new Tetromino(itemKind, 0, 0);
-    //     } else if (itemKind == Tetromino.Kind.GRAVITY) {
-    //         // 중력 아이템: copyBlockIndex는 사용하지 않음
-    //         return new Tetromino(itemKind, 0, 0);
-    //     } else if (itemKind == Tetromino.Kind.SPLIT) {
-    //         // 분할 아이템: copyBlockIndex는 사용하지 않음
-    //         return new Tetromino(itemKind, 0, 0);
-    //     } else {
-    //         // 다른 아이템들 (향후 구현)
-    //         return new Tetromino(itemKind, 0, 0);
-    //     }
-    // }
 
     // 미노 복사 아이템을 생성
     // 기본 미노와 같은 형태이지만 랜덤한 블록 하나가 'C' 표시
@@ -853,9 +828,6 @@ public class GameEngine {
     public void hardDrop() {
         if (current == null) return;
 
-        // 하드드롭 플래그 설정
-        isHardDrop = true;
-
         int startY = py; // 시작 위치 기록
 
         // 무게추 아이템의 경우 특별 처리
@@ -888,9 +860,6 @@ public class GameEngine {
         recordLastLockedColumns();
 
         handleLockedPiece();
-
-        // 하드드롭 플래그 해제
-        isHardDrop = false;
     }
 
     // Handles animation + scoring after the falling piece is fixed to the board.

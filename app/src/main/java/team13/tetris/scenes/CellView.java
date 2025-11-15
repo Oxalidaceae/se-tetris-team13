@@ -10,10 +10,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import team13.tetris.config.Settings;
 
-/**
- * 테트리스 게임 셀을 표시하는 UI 컴포넌트
- * Rectangle, Canvas(패턴용), Label(텍스트용)로 구성됨
- */
+// 테트리스 게임 셀을 표시하는 UI 컴포넌트
+// Rectangle, Canvas(패턴용), Label(텍스트용)로 구성됨
 public class CellView extends StackPane {
     private final Rectangle rect;
     private final Canvas patternCanvas;
@@ -66,34 +64,28 @@ public class CellView extends StackPane {
 
         switch (currentPattern) {
             case "horizontal": // S - 수평 줄무늬
-                for (double y = 0; y < h; y += 5) {
+                for (double y = 0; y < h; y += 5)
                     gc.strokeLine(0, y, w, y);
-                }
                 break;
             case "vertical": // J - 수직 줄무늬
-                for (double x = 0; x < w; x += 5) {
+                for (double x = 0; x < w; x += 5)
                     gc.strokeLine(x, 0, x, h);
-                }
                 break;
             case "diagonal-right": // I - 빗살무늬 ↗
-                for (double offset = -h; offset < w + h; offset += 5) {
+                for (double offset = -h; offset < w + h; offset += 5)
                     gc.strokeLine(offset, h, offset + h, 0);
-                }
                 break;
             case "diagonal-left": // T - 빗살무늬 ↖
-                for (double offset = -h; offset < w + h; offset += 5) {
+                for (double offset = -h; offset < w + h; offset += 5)
                     gc.strokeLine(offset, 0, offset + h, h);
-                }
                 break;
             case "diagonal-right-wide": // Z - 빗살무늬 ↗ (넓은 간격)
-                for (double offset = -h; offset < w + h; offset += 7) {
+                for (double offset = -h; offset < w + h; offset += 7)
                     gc.strokeLine(offset, h, offset + h, 0);
-                }
                 break;
             case "diagonal-left-wide": // L - 빗살무늬 ↖ (넓은 간격)
-                for (double offset = -h; offset < w + h; offset += 7) {
+                for (double offset = -h; offset < w + h; offset += 7)
                     gc.strokeLine(offset, 0, offset + h, h);
-                }
                 break;
         }
     }
@@ -106,11 +98,11 @@ public class CellView extends StackPane {
     private void clearDynamicStyles() {
         ObservableList<String> rectClasses = rect.getStyleClass();
         rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || 
-                                     name.equals("cell-empty") || name.equals("cell-border"));
+                         name.equals("cell-empty") || name.equals("cell-border"));
 
         ObservableList<String> labelClasses = label.getStyleClass();
         labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || 
-                                      name.equals("cell-empty") || name.equals("cell-border"));
+                          name.equals("cell-empty") || name.equals("cell-border"));
     }
 
     public void setEmpty() {
@@ -133,16 +125,14 @@ public class CellView extends StackPane {
 
     public void setBlock(String symbol, String blockClass, String textClass) {
         clearDynamicStyles();
-        if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass)) {
+        if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass))
             rect.getStyleClass().add(blockClass);
-        }
-        if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass)) {
+        if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass))
             label.getStyleClass().add(textClass);
-        }
         
         // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
         boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
-                                                  symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
+              symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
         boolean isGhostBlock = "block-ghost".equals(blockClass);
         
         if ((settings.isColorBlindMode() && !isItemBlock) || isGhostBlock) {

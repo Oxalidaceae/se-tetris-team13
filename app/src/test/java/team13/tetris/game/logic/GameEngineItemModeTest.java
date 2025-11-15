@@ -106,7 +106,6 @@ public class GameEngineItemModeTest {
     @DisplayName("COPY 아이템: 특정 미노를 복사할 수 있어야 함")
     void testCopyItemCreation() {
         // COPY 아이템 미노 직접 생성 (I 블록 복사, 3개 파라미터 생성자 사용)
-        // Tetromino copyItem = new Tetromino(Tetromino.Kind.I, 0, 2);
         Tetromino copyItem = Tetromino.item(
             Tetromino.Kind.I,
             0,
@@ -124,7 +123,6 @@ public class GameEngineItemModeTest {
     @DisplayName("COPY 아이템: copyBlockIndex가 올바르게 설정되어야 함")
     void testCopyItemBlockIndex() {
         for (int i = 0; i < 4; i++) {
-            // Tetromino copyItem = new Tetromino(Tetromino.Kind.T, 0, i);
             Tetromino copyItem = Tetromino.item(
                 Tetromino.Kind.T,
                 0,
@@ -139,7 +137,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템: 생성 가능해야 함")
     void testWeightItemCreation() {
-        // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
         Tetromino weightItem = Tetromino.item(
             Tetromino.Kind.WEIGHT,
             0,
@@ -155,7 +152,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템: 회전 불가능해야 함")
     void testWeightItemCannotRotate() {
-        // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
         Tetromino weightItem = Tetromino.item(
             Tetromino.Kind.WEIGHT,
             0,
@@ -170,7 +166,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템: 생성 가능해야 함")
     void testGravityItemCreation() {
-        // Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
         Tetromino gravityItem = Tetromino.item(
                 Tetromino.Kind.GRAVITY,
                 0,
@@ -186,7 +181,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템: 회전 불가능해야 함")
     void testGravityItemCannotRotate() {
-        // Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
         Tetromino gravityItem = Tetromino.item(
                 Tetromino.Kind.GRAVITY,
                 0,
@@ -201,7 +195,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템: 생성 가능해야 함")
     void testSplitItemCreation() {
-        // Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
         Tetromino splitItem = Tetromino.item(
             Tetromino.Kind.SPLIT,
             0,
@@ -217,7 +210,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템: 회전 불가능해야 함")
     void testSplitItemCannotRotate() {
-        // Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
         Tetromino splitItem = Tetromino.item(
             Tetromino.Kind.SPLIT,
             0,
@@ -232,7 +224,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템: 생성 가능해야 함")
     void testLineClearItemCreation() {
-        // Tetromino lineClearItem = new Tetromino(Tetromino.Kind.T, 0, 1, Tetromino.ItemType.LINE_CLEAR);
         Tetromino lineClearItem = Tetromino.lineClearItem(
             Tetromino.Kind.T,
             0,
@@ -248,7 +239,6 @@ public class GameEngineItemModeTest {
     @DisplayName("LINE_CLEAR 아이템: lineClearBlockIndex가 올바르게 설정되어야 함")
     void testLineClearItemBlockIndex() {
         for (int i = 0; i < 4; i++) {
-            // Tetromino lineClearItem = new Tetromino(Tetromino.Kind.S, 0, i, Tetromino.ItemType.LINE_CLEAR);
             Tetromino lineClearItem = Tetromino.lineClearItem(
                 Tetromino.Kind.S,
                 0,
@@ -263,7 +253,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("COPY 아이템 블록: 100-199 범위여야 함")
     void testCopyItemBlockValueRange() {
-        // Tetromino copyItem = new Tetromino(Tetromino.Kind.I, 0, 0, Tetromino.ItemType.COPY);
         Tetromino copyItem = Tetromino.item(
             Tetromino.Kind.I,
             0,
@@ -292,7 +281,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템 블록: 200-299 범위여야 함")
     void testLineClearItemBlockValueRange() {
-        // Tetromino lineClearItem = new Tetromino(Tetromino.Kind.T, 0, 0, Tetromino.ItemType.LINE_CLEAR);
         Tetromino lineClearItem = Tetromino.lineClearItem(
             Tetromino.Kind.T,
             0,
@@ -319,7 +307,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템 블록: 300-399 범위여야 함")
     void testWeightItemBlockValueRange() {
-        // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
         Tetromino weightItem = Tetromino.item(
             Tetromino.Kind.WEIGHT,
             0,
@@ -347,7 +334,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템 블록: 400-499 범위여야 함")
     void testGravityItemBlockValueRange() {
-        // Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
         Tetromino gravityItem = Tetromino.item(
                 Tetromino.Kind.GRAVITY,
                 0,
@@ -375,7 +361,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템 블록: 500-599 범위여야 함")
     void testSplitItemBlockValueRange() {
-        // Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
         Tetromino splitItem = Tetromino.item(
             Tetromino.Kind.SPLIT,
             0,
@@ -411,7 +396,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("COPY 아이템은 아이템 피스여야 함")
     void testCopyIsItemPiece() {
-        // Tetromino copyItem = new Tetromino(Tetromino.Kind.T, 0, 0, Tetromino.ItemType.COPY);
         Tetromino copyItem = Tetromino.item(
             Tetromino.Kind.T,
             0,
@@ -425,7 +409,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템은 아이템 피스여야 함")
     void testLineClearIsItemPiece() {
-        // Tetromino lineClearItem = new Tetromino(Tetromino.Kind.S, 0, 0, Tetromino.ItemType.LINE_CLEAR);
         Tetromino lineClearItem = Tetromino.lineClearItem(
             Tetromino.Kind.S,
             0,
@@ -438,7 +421,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템은 Kind로 판별 가능해야 함")
     void testWeightItemKind() {
-        // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
         Tetromino weightItem = Tetromino.item(
             Tetromino.Kind.WEIGHT,
             0,
@@ -452,7 +434,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템은 Kind로 판별 가능해야 함")
     void testGravityItemKind() {
-        // Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
         Tetromino gravityItem = Tetromino.item(
             Tetromino.Kind.GRAVITY,
             0,
@@ -466,7 +447,6 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템은 Kind로 판별 가능해야 함")
     void testSplitItemKind() {
-        // Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
         Tetromino splitItem = Tetromino.item(
             Tetromino.Kind.SPLIT,
             0,

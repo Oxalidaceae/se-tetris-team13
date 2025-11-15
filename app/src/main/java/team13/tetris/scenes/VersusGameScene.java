@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VersusGameScene extends BaseGameScene {
+    // 향후 확장을 위해 보존
+    @SuppressWarnings("unused")
     private final SceneManager manager;
     private GameEngine engine1; // Player 1
     private GameEngine engine2; // Player 2
