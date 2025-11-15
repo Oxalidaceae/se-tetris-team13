@@ -200,48 +200,6 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         gameScene.updateLocalGrid();
     }
     
-    // // 게임 루프 (화면 업데이트 + 네트워크 전송)
-    // private java.util.Timer gameLoopTimer;
-    // private void startGameLoop() {
-    //     if (gameLoopTimer != null) {
-    //         gameLoopTimer.cancel();
-    //     }
-        
-    //     gameLoopTimer = new java.util.Timer();
-    //     gameLoopTimer.scheduleAtFixedRate(new java.util.TimerTask() {
-    //         private int frameCount = 0;
-            
-    //         @Override
-    //         public void run() {
-    //             if (!gameStarted || myEngine == null) {
-    //                 return;
-    //             }
-                
-    //             Platform.runLater(() -> {
-    //                 // 화면 업데이트 (매 프레임)
-    //                 if (gameScene != null) {
-    //                     gameScene.updateLocalGrid();
-    //                 }
-    //             });
-                
-    //             // 네트워크 전송 (10 FPS - 매 6프레임마다)
-    //             frameCount++;
-    //             if (frameCount % 6 == 0) {
-    //                 sendMyBoardState();
-    //             }
-    //         }
-    //     }, 0, 16); // 약 60 FPS (16ms)
-    // }
-    
-    // // 게임 루프 중지
-    // private void stopGameLoop() {
-    //     if (gameLoopTimer != null) {
-    //         gameLoopTimer.cancel();
-    //         gameLoopTimer = null;
-    //     }
-    // }
-    
-    
     // 키 입력 처리
     private void handleKeyPress(KeyEvent event) {
         if (!gameStarted || myEngine == null) return;
@@ -342,46 +300,6 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             client.sendAttack(opponentPlayerId != null ? opponentPlayerId : "Opponent", clearedLines);
         }
     }
-    
-    // // 공격 숫자를 블록 패턴으로 변환
-    // private Queue<int[][]> convertAttacksToBlocks(Queue<Integer> attacks) {
-    //     Queue<int[][]> blocks = new LinkedList<>();
-    //     for (Integer lines : attacks) {
-    //         if (lines > 0) {
-    //             int[][] pattern = createAttackPattern(lines);
-    //             blocks.add(pattern);
-    //         }
-    //     }
-    //     return blocks;
-    // }
-    
-    // // 공격 패턴 생성 (회색 블록)
-    // private int[][] createAttackPattern(int lines) {
-    //     int[][] pattern = new int[lines][10];
-    //     for (int y = 0; y < lines; y++) {
-    //         for (int x = 0; x < 10; x++) {
-    //             pattern[y][x] = 1000; // 1000 = 회색 공격 블록
-    //         }
-    //     }
-    //     return pattern;
-    // }
-    
-    
-    // // 공격 전송
-    // private void sendAttack(int lines) {
-    //     if (opponentPlayerId == null) return;
-        
-    //     AttackMessage msg = AttackMessage.createStandardAttack(
-    //         myPlayerId, 
-    //         lines
-    //     );
-        
-    //     if (isHost && server != null) {
-    //         server.broadcastMessage(msg);
-    //     } else if (!isHost && client != null) {
-    //         client.sendMessage(msg);
-    //     }
-    // }
 
     // 일시정지/재개 (네트워크 동기화)
     private void togglePause() {
