@@ -96,12 +96,12 @@ public class SettingsRepositoryTest {
 
         // then - 기본값으로 생성되어야 함
         assertNotNull(settings, "Settings should not be null");
-        assertEquals("LEFT", settings.getKeyLeft(), "Should return default left key");
-        assertEquals("RIGHT", settings.getKeyRight(), "Should return default right key");
-        assertEquals("DOWN", settings.getKeyDown(), "Should return default down key");
-        assertEquals("Z", settings.getKeyRotate(), "Should return default rotate key");
-        assertEquals("X", settings.getKeyDrop(), "Should return default drop key");
-        assertEquals("P", settings.getPause(), "Should return default pause key");
+        assertEquals("A", settings.getKeyLeft(), "Should return default left key");
+        assertEquals("D", settings.getKeyRight(), "Should return default right key");
+        assertEquals("S", settings.getKeyDown(), "Should return default down key");
+        assertEquals("W", settings.getKeyRotate(), "Should return default rotate key");
+        assertEquals("SPACE", settings.getKeyDrop(), "Should return default drop key");
+        assertEquals("ESCAPE", settings.getPause(), "Should return default pause key");
         assertEquals("MEDIUM", settings.getWindowSize(), "Should return default window size");
         assertFalse(settings.isColorBlindMode(), "Should return default color blind mode");
     }
@@ -193,12 +193,12 @@ public class SettingsRepositoryTest {
         Settings loadedSettings = SettingsRepository.load();
 
         // then - 기본값이 그대로 유지되는지 확인
-        assertEquals("LEFT", loadedSettings.getKeyLeft());
-        assertEquals("RIGHT", loadedSettings.getKeyRight());
-        assertEquals("DOWN", loadedSettings.getKeyDown());
-        assertEquals("Z", loadedSettings.getKeyRotate());
-        assertEquals("X", loadedSettings.getKeyDrop());
-        assertEquals("P", loadedSettings.getPause());
+        assertEquals("A", loadedSettings.getKeyLeft());
+        assertEquals("D", loadedSettings.getKeyRight());
+        assertEquals("S", loadedSettings.getKeyDown());
+        assertEquals("W", loadedSettings.getKeyRotate());
+        assertEquals("SPACE", loadedSettings.getKeyDrop());
+        assertEquals("ESCAPE", loadedSettings.getPause());
         assertEquals("MEDIUM", loadedSettings.getWindowSize());
         assertFalse(loadedSettings.isColorBlindMode());
     }
@@ -216,7 +216,7 @@ public class SettingsRepositoryTest {
 
         // then - 기본값으로 반환되어야 함
         assertNotNull(settings, "Should return default settings for corrupted file");
-        assertEquals("LEFT", settings.getKeyLeft(), "Should have default values");
+        assertEquals("A", settings.getKeyLeft(), "Should have default values");
     }
 
     @Test
@@ -292,7 +292,7 @@ public class SettingsRepositoryTest {
     void testFileCreationAndReload() {
         // 파일이 없는 상태에서 로드
         Settings settings1 = SettingsRepository.load();
-        assertEquals("LEFT", settings1.getKeyLeft(), "Should have default value");
+        assertEquals("A", settings1.getKeyLeft(), "Should have default value");
 
         // 설정 변경 후 저장
         settings1.setKeyLeft("A");

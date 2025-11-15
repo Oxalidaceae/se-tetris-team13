@@ -86,9 +86,7 @@ public class VersusGameController {
         startInputTimer();
         
         // 타이머 모드인 경우 타이머 시작
-        if (timerMode) {
-            startTimer();
-        }
+        if (timerMode) startTimer();
     }
     
     private void pause() {
@@ -96,18 +94,14 @@ public class VersusGameController {
             paused = true;
             
             // 입력 타이머 정지
-            if (inputTimer != null) {
-                inputTimer.pause();
-            }
+            if (inputTimer != null) inputTimer.pause();
             
             // 게임 엔진 정지
             engine1.stopAutoDrop();
             engine2.stopAutoDrop();
             
             // 타이머 모드인 경우 타이머 일시정지
-            if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
-                timerExecutor.shutdown();
-            }
+            if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) timerExecutor.shutdown();
             
             showPauseWindow();
         }
@@ -118,18 +112,14 @@ public class VersusGameController {
             paused = false;
             
             // 입력 타이머 재개
-            if (inputTimer != null) {
-                inputTimer.play();
-            }
+            if (inputTimer != null) inputTimer.play();
             
             // 게임 엔진 재개
             engine1.startAutoDrop();
             engine2.startAutoDrop();
             
             // 타이머 모드인 경우 타이머 재시작
-            if (timerMode) {
-                startTimer();
-            }
+            if (timerMode) startTimer();
         }
     }
     
@@ -163,9 +153,9 @@ public class VersusGameController {
                     applySelection(resumeLabel, quit, selected[0]);
                 } else if (ev.getCode() == KeyCode.ENTER) {
                     dialog.close();
-                    if (selected[0] == 0) {
-                        resume();
-                    } 
+
+                    if (selected[0] == 0) resume();
+
                     //else {
                     //    // Quit 선택 시 ExitScene으로 이동
                     //    sceneManager.showExitScene(settings, () -> {
@@ -210,67 +200,57 @@ public class VersusGameController {
     
     private void processInputs() {
         // 일시정지 중에는 입력 처리하지 않음
-        if (paused) {
-            return;
-        }
+        if (paused) return;
         
         long currentTime = System.currentTimeMillis();
         
         // Player 1 입력 처리
         if (!gameOver1) {
-            if (player1PressedKeys.contains(settings.getKeyLeft())) {
-                if (shouldProcessKey(player1KeyPressTime, settings.getKeyLeft(), currentTime)) {
-                    engine1.moveLeft();
-                }
+            if (player1PressedKeys.contains(settings.getKeyLeft()) && shouldProcessKey(player1KeyPressTime, settings.getKeyLeft(), currentTime)) {
+                engine1.moveLeft();
             }
-            if (player1PressedKeys.contains(settings.getKeyRight())) {
-                if (shouldProcessKey(player1KeyPressTime, settings.getKeyRight(), currentTime)) {
-                    engine1.moveRight();
-                }
+            if (player1PressedKeys.contains(settings.getKeyRight()) && shouldProcessKey(player1KeyPressTime, settings.getKeyRight(), currentTime)) {
+                engine1.moveRight();
             }
-            if (player1PressedKeys.contains(settings.getKeyDown())) {
-                if (shouldProcessKey(player1KeyPressTime, settings.getKeyDown(), currentTime)) {
-                    engine1.softDrop();
-                }
+            if (player1PressedKeys.contains(settings.getKeyDown()) && shouldProcessKey(player1KeyPressTime, settings.getKeyDown(), currentTime)) {
+                engine1.softDrop();
             }
-            if (player1PressedKeys.contains(settings.getKeyRotate())) {
-                if (shouldProcessKey(player1KeyPressTime, settings.getKeyRotate(), currentTime)) {
-                    engine1.rotateCW();
-                }
+            if (player1PressedKeys.contains(settings.getKeyRotate()) && shouldProcessKey(player1KeyPressTime, settings.getKeyRotate(), currentTime)) {
+                engine1.rotateCW();
             }
-            if (player1PressedKeys.contains(settings.getKeyDrop())) {
-                if (shouldProcessKey(player1KeyPressTime, settings.getKeyDrop(), currentTime)) {
-                    engine1.hardDrop();
-                }
+            if (player1PressedKeys.contains(settings.getKeyDrop()) && shouldProcessKey(player1KeyPressTime, settings.getKeyDrop(), currentTime)) {
+                engine1.hardDrop();
             }
         }
         
         // Player 2 입력 처리
         if (!gameOver2) {
-            if (player2PressedKeys.contains(KeyCode.A)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.A, currentTime)) {
+            // Player 2 키들을 KeyCode로 변환하여 확인
+            try {
+                KeyCode leftKey2 = KeyCode.valueOf(settings.getKeyLeftP2());
+                KeyCode rightKey2 = KeyCode.valueOf(settings.getKeyRightP2());
+                KeyCode downKey2 = KeyCode.valueOf(settings.getKeyDownP2());
+                KeyCode rotateKey2 = KeyCode.valueOf(settings.getKeyRotateP2());
+                KeyCode dropKey2 = KeyCode.valueOf(settings.getKeyDropP2());
+                
+                if (player2PressedKeys.contains(leftKey2) && shouldProcessKey(player2KeyPressTime, leftKey2, currentTime)) {
                     engine2.moveLeft();
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.D)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.D, currentTime)) {
+                if (player2PressedKeys.contains(rightKey2) && shouldProcessKey(player2KeyPressTime, rightKey2, currentTime)) {
                     engine2.moveRight();
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.S)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.S, currentTime)) {
+                if (player2PressedKeys.contains(downKey2) && shouldProcessKey(player2KeyPressTime, downKey2, currentTime)) {
                     engine2.softDrop();
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.Q)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.Q, currentTime)) {
+                if (player2PressedKeys.contains(rotateKey2) && shouldProcessKey(player2KeyPressTime, rotateKey2, currentTime)) {
                     engine2.rotateCW();
                 }
-            }
-            if (player2PressedKeys.contains(KeyCode.W)) {
-                if (shouldProcessKey(player2KeyPressTime, KeyCode.W, currentTime)) {
+                if (player2PressedKeys.contains(dropKey2) && shouldProcessKey(player2KeyPressTime, dropKey2, currentTime)) {
                     engine2.hardDrop();
                 }
+            } catch (IllegalArgumentException e) {
+                // 유효하지 않은 KeyCode인 경우 무시
+                System.err.println("Invalid Player 2 key configuration: " + e.getMessage());
             }
         }
     }
@@ -278,16 +258,12 @@ public class VersusGameController {
     // 키가 처리되어야 하는지 확인 (첫 입력 후 500ms 지연, 이후 50ms 간격)
     private <T> boolean shouldProcessKey(java.util.Map<T, Long> keyPressTimeMap, T key, long currentTime) {
         Long pressTime = keyPressTimeMap.get(key);
-        if (pressTime == null) {
-            return false; // 키가 눌리지 않음
-        }
+        if (pressTime == null) return false; // 키가 눌리지 않음
         
         long elapsedTime = currentTime - pressTime;
         
         // 첫 입력은 즉시 처리되고, INITIAL_DELAY_MS 이전에는 반복하지 않음
-        if (elapsedTime < INITIAL_DELAY_MS) {
-            return false;
-        }
+        if (elapsedTime < INITIAL_DELAY_MS) return false;
         
         // INITIAL_DELAY_MS 이후에는 INPUT_DELAY_MS 간격으로 처리
         return true;
@@ -309,9 +285,7 @@ public class VersusGameController {
     
     private void checkTimeUp() {
         // 입력 타이머 정지
-        if (inputTimer != null) {
-            inputTimer.stop();
-        }
+        if (inputTimer != null) inputTimer.stop();
         
         engine1.stopAutoDrop();
         engine2.stopAutoDrop();
@@ -342,17 +316,13 @@ public class VersusGameController {
         long currentTime = System.currentTimeMillis();
         
         // ESC or Pause key to pause
-        if (code == KeyCode.ESCAPE || keyString.equals(settings.getPause())) {
-            if (!paused && !gameOver1 && !gameOver2) {
-                pause();
-            }
+        if ((code == KeyCode.ESCAPE || keyString.equals(settings.getPause())) && !paused && !gameOver1 && !gameOver2) {
+            pause();
             return;
         }
         
         // 일시정지 중에는 게임 입력 처리하지 않음
-        if (paused) {
-            return;
-        }
+        if (paused) return;
         
         // 키 상태 업데이트 및 첫 입력 시간 기록
         // Player 1 keys
@@ -385,8 +355,11 @@ public class VersusGameController {
         }
         
         // Player 2 keys
-        if (code == KeyCode.A || code == KeyCode.D || code == KeyCode.S || 
-            code == KeyCode.Q || code == KeyCode.W) {
+        if (keyString.equals(settings.getKeyLeftP2()) ||
+            keyString.equals(settings.getKeyRightP2()) ||
+            keyString.equals(settings.getKeyDownP2()) ||
+            keyString.equals(settings.getKeyRotateP2()) ||
+            keyString.equals(settings.getKeyDropP2())) {
             
             // 첫 입력인 경우 즉시 처리하고 시간 기록
             if (!player2PressedKeys.contains(code)) {
@@ -395,15 +368,15 @@ public class VersusGameController {
                 
                 // 첫 입력은 즉시 실행
                 if (!gameOver2) {
-                    if (code == KeyCode.A) {
+                    if (keyString.equals(settings.getKeyLeftP2())) {
                         engine2.moveLeft();
-                    } else if (code == KeyCode.D) {
+                    } else if (keyString.equals(settings.getKeyRightP2())) {
                         engine2.moveRight();
-                    } else if (code == KeyCode.S) {
+                    } else if (keyString.equals(settings.getKeyDownP2())) {
                         engine2.softDrop();
-                    } else if (code == KeyCode.Q) {
+                    } else if (keyString.equals(settings.getKeyRotateP2())) {
                         engine2.rotateCW();
-                    } else if (code == KeyCode.W) {
+                    } else if (keyString.equals(settings.getKeyDropP2())) {
                         engine2.hardDrop();
                     }
                 }
@@ -623,6 +596,7 @@ public class VersusGameController {
         // 맨 아래에 넘어온 블록 추가
         for (int i = 0; i < lines; i++) {
             int targetRow = height - lines + i;
+
             for (int x = 0; x < width; x++) {
                 board.setCell(x, targetRow, pattern[i][x]);
             }
@@ -631,9 +605,7 @@ public class VersusGameController {
 
     private void checkWinner() {
         // 타이머가 있으면 정지
-        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
-            timerExecutor.shutdown();
-        }
+        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) timerExecutor.shutdown();
         
         if (gameOver1 && !gameOver2) {
             // Player 2 승리

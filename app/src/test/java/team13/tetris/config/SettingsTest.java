@@ -65,9 +65,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("왼쪽 이동 키 기본값이 LEFT인지 확인")
+    @DisplayName("왼쪽 이동 키 기본값이 A인지 확인")
     void testKeyLeftDefaultValue() {
-        assertEquals("LEFT", settings.getKeyLeft(), "Left key should be LEFT by default");
+        assertEquals("A", settings.getKeyLeft(), "Left key should be A by default");
     }
 
     @Test
@@ -78,9 +78,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("오른쪽 이동 키 기본값이 RIGHT인지 확인")
+    @DisplayName("오른쪽 이동 키 기본값이 D인지 확인")
     void testKeyRightDefaultValue() {
-        assertEquals("RIGHT", settings.getKeyRight(), "Right key should be RIGHT by default");
+        assertEquals("D", settings.getKeyRight(), "Right key should be D by default");
     }
 
     @Test
@@ -91,9 +91,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("아래 이동 키 기본값이 DOWN인지 확인")
+    @DisplayName("아래 이동 키 기본값이 S인지 확인")
     void testKeyDownDefaultValue() {
-        assertEquals("DOWN", settings.getKeyDown(), "Down key should be DOWN by default");
+        assertEquals("S", settings.getKeyDown(), "Down key should be S by default");
     }
 
     @Test
@@ -104,9 +104,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("회전 키 기본값이 Z인지 확인")
+    @DisplayName("회전 키 기본값이 W인지 확인")
     void testKeyRotateDefaultValue() {
-        assertEquals("Z", settings.getKeyRotate(), "Rotate key should be Z by default");
+        assertEquals("W", settings.getKeyRotate(), "Rotate key should be W by default");
     }
 
     @Test
@@ -117,9 +117,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("하드 드롭 키 기본값이 X인지 확인")
+    @DisplayName("하드 드롭 키 기본값이 SPACE인지 확인")
     void testKeyDropDefaultValue() {
-        assertEquals("X", settings.getKeyDrop(), "Drop key should be X by default");
+        assertEquals("SPACE", settings.getKeyDrop(), "Drop key should be SPACE by default");
     }
 
     @Test
@@ -130,9 +130,9 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("일시정지 키 기본값이 P인지 확인")
+    @DisplayName("일시정지 키 기본값이 ESCAPE인지 확인")
     void testPauseDefaultValue() {
-        assertEquals("P", settings.getPause(), "Pause key should be P by default");
+        assertEquals("ESCAPE", settings.getPause(), "Pause key should be ESCAPE by default");
     }
 
     @Test
@@ -143,56 +143,56 @@ public class SettingsTest {
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - LEFT")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - A")
     void testIsKeyAlreadyUsedLeft() {
-        assertTrue(settings.isKeyAlreadyUsed("LEFT"), "LEFT key should be already used");
-        assertTrue(settings.isKeyAlreadyUsed("left"), "left key should be already used (case insensitive)");
+        assertTrue(settings.isKeyAlreadyUsed("A"), "A key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("a"), "a key should be already used (case insensitive)");
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - RIGHT")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - D")
     void testIsKeyAlreadyUsedRight() {
-        assertTrue(settings.isKeyAlreadyUsed("RIGHT"), "RIGHT key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("D"), "D key should be already used");
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - DOWN")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - S")
     void testIsKeyAlreadyUsedDown() {
-        assertTrue(settings.isKeyAlreadyUsed("DOWN"), "DOWN key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("S"), "S key should be already used");
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - Z")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - W")
     void testIsKeyAlreadyUsedZ() {
-        assertTrue(settings.isKeyAlreadyUsed("Z"), "Z key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("W"), "W key should be already used");
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - X")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - SPACE")
     void testIsKeyAlreadyUsedX() {
-        assertTrue(settings.isKeyAlreadyUsed("X"), "X key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("SPACE"), "SPACE key should be already used");
     }
 
     @Test
-    @DisplayName("기본 키가 이미 사용 중인지 확인 - P")
+    @DisplayName("기본 키가 이미 사용 중인지 확인 - ESCAPE")
     void testIsKeyAlreadyUsedP() {
-        assertTrue(settings.isKeyAlreadyUsed("P"), "P key should be already used");
+        assertTrue(settings.isKeyAlreadyUsed("ESCAPE"), "ESCAPE key should be already used");
     }
 
     @Test
     @DisplayName("사용되지 않은 키는 false를 반환하는지 확인")
     void testIsKeyAlreadyUsedUnused() {
-        assertFalse(settings.isKeyAlreadyUsed("A"), "A key should not be already used");
         assertFalse(settings.isKeyAlreadyUsed("B"), "B key should not be already used");
+        assertFalse(settings.isKeyAlreadyUsed("C"), "C key should not be already used");
         assertFalse(settings.isKeyAlreadyUsed("F1"), "F1 key should not be already used");
     }
 
     @Test
     @DisplayName("사용자 정의 키가 이미 사용 중인지 확인")
     void testIsKeyAlreadyUsedCustomKey() {
-        settings.setKeyLeft("A");
-        assertTrue(settings.isKeyAlreadyUsed("A"), "A key should be already used after setting as left key");
-        assertFalse(settings.isKeyAlreadyUsed("LEFT"), "LEFT key should not be used anymore after changing");
+        settings.setKeyLeft("LEFT");
+        assertTrue(settings.isKeyAlreadyUsed("LEFT"), "LEFT key should be already used after setting as left key");
+        assertFalse(settings.isKeyAlreadyUsed("A"), "A key should not be used anymore after changing");
     }
 
     @Test
@@ -222,12 +222,12 @@ public class SettingsTest {
         settings.restoreDefaultKeys();
 
         // 기본값으로 복원되었는지 확인
-        assertEquals("LEFT", settings.getKeyLeft(), "Left key should be restored to LEFT");
-        assertEquals("RIGHT", settings.getKeyRight(), "Right key should be restored to RIGHT");
-        assertEquals("DOWN", settings.getKeyDown(), "Down key should be restored to DOWN");
-        assertEquals("Z", settings.getKeyRotate(), "Rotate key should be restored to Z");
-        assertEquals("X", settings.getKeyDrop(), "Drop key should be restored to X");
-        assertEquals("P", settings.getPause(), "Pause key should be restored to P");
+        assertEquals("A", settings.getKeyLeft(), "Left key should be restored to A");
+        assertEquals("D", settings.getKeyRight(), "Right key should be restored to D");
+        assertEquals("S", settings.getKeyDown(), "Down key should be restored to S");
+        assertEquals("W", settings.getKeyRotate(), "Rotate key should be restored to W");
+        assertEquals("SPACE", settings.getKeyDrop(), "Drop key should be restored to SPACE");
+        assertEquals("ESCAPE", settings.getPause(), "Pause key should be restored to ESCAPE");
     }
 
     @Test
@@ -263,12 +263,12 @@ public class SettingsTest {
 
         assertFalse(newSettings.isColorBlindMode(), "Color blind mode default");
         assertEquals("MEDIUM", newSettings.getWindowSize(), "Window size default");
-        assertEquals("LEFT", newSettings.getKeyLeft(), "Left key default");
-        assertEquals("RIGHT", newSettings.getKeyRight(), "Right key default");
-        assertEquals("DOWN", newSettings.getKeyDown(), "Down key default");
-        assertEquals("Z", newSettings.getKeyRotate(), "Rotate key default");
-        assertEquals("X", newSettings.getKeyDrop(), "Drop key default");
-        assertEquals("P", newSettings.getPause(), "Pause key default");
+        assertEquals("A", newSettings.getKeyLeft(), "Left key default");
+        assertEquals("D", newSettings.getKeyRight(), "Right key default");
+        assertEquals("S", newSettings.getKeyDown(), "Down key default");
+        assertEquals("W", newSettings.getKeyRotate(), "Rotate key default");
+        assertEquals("SPACE", newSettings.getKeyDrop(), "Drop key default");
+        assertEquals("ESCAPE", newSettings.getPause(), "Pause key default");
     }
 
     @Test

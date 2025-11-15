@@ -24,9 +24,8 @@ public class Timer {
     public void increaseSpeed(double multiplier) {
         if (speedFactor < MAX_SPEED_FACTOR) {
             speedFactor += SPEED_INCREMENT * multiplier;
-            if (speedFactor > MAX_SPEED_FACTOR) {
-                speedFactor = MAX_SPEED_FACTOR;
-            }
+            
+            if (speedFactor > MAX_SPEED_FACTOR) speedFactor = MAX_SPEED_FACTOR;
         }
     }
     
@@ -48,14 +47,13 @@ public class Timer {
     }
     
     public void setSpeedFactor(double speedFactor) {
-        if (speedFactor > 0 && speedFactor <= MAX_SPEED_FACTOR) {
-            this.speedFactor = speedFactor;
-        }
+        if (speedFactor > 0 && speedFactor <= MAX_SPEED_FACTOR) this.speedFactor = speedFactor;
     }
     
     public String getFormattedTime() {
         int minutes = (int) (elapsedTime / 60);
         int seconds = (int) (elapsedTime % 60);
+        
         return String.format("%02d:%02d", minutes, seconds);
     }
     

@@ -1,20 +1,13 @@
 package team13.tetris.scenes;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
@@ -22,9 +15,8 @@ import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-public class GameScene {
+public class GameScene extends BaseGameScene {
     private final SceneManager manager;
-    private final Settings settings;
     private GameEngine engine;
     private final ScoreBoard.ScoreEntry.Mode difficulty;
     private final HBox root;
@@ -33,17 +25,14 @@ public class GameScene {
     private final GridPane previewGrid;
     private final Label scoreLabel;
     private final Label itemModeLabel;
-    private static final double BOARD_CELL_SIZE = 28.0;
-    private static final double PREVIEW_CELL_SIZE = 22.0;
-    private static final String FILLED_SYMBOL = "";
 
     public GameScene(
             SceneManager manager,
             Settings settings,
             GameEngine engine,
             ScoreBoard.ScoreEntry.Mode difficulty) {
+        super(settings);
         this.manager = manager;
-        this.settings = settings;
         this.engine = engine;
         this.difficulty = difficulty;
 
@@ -51,38 +40,8 @@ public class GameScene {
         root.getStyleClass().add("game-root");
 
         Board board = engine.getBoard();
-        int w = board.getWidth();
-        int h = board.getHeight();
-        boardGrid = new GridPane();
-        boardGrid.setHgap(0);
-        boardGrid.setVgap(0);
-        boardGrid.getStyleClass().add("board-grid");
-
-        for (int gy = 0; gy < h + 2; gy++) {
-            for (int gx = 0; gx < w + 2; gx++) {
-                CellView cell = makeCellView(BOARD_CELL_SIZE, false);
-
-                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
-                    cell.setBorder();
-                } else {
-                    cell.setEmpty();
-                }
-
-                boardGrid.add(cell, gx, gy);
-            }
-        }
-        previewGrid = new GridPane();
-        previewGrid.setHgap(0);
-        previewGrid.setVgap(0);
-        previewGrid.getStyleClass().add("preview-grid");
-
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
-                CellView cell = makeCellView(PREVIEW_CELL_SIZE, true);
-                cell.setEmpty();
-                previewGrid.add(cell, c, r);
-            }
-        }
+        boardGrid = createBoardGrid(board);
+        previewGrid = createPreviewGrid();
 
         scoreLabel = new Label("Score:\n0");
         scoreLabel.getStyleClass().add("score-label");
@@ -96,12 +55,6 @@ public class GameScene {
         HBox.setHgrow(boardGrid, Priority.ALWAYS);
         root.getChildren().addAll(boardGrid, right);
         updateGrid();
-    }
-
-    private CellView makeCellView(double size, boolean preview) {
-        CellView cell = new CellView(size, settings);
-        if (preview) cell.getStyleClass().add("preview-cell");
-        return cell;
     }
 
     public Scene createScene() {
@@ -185,30 +138,7 @@ public class GameScene {
                 }
                 
                 // 고스트 블록 그리기 (현재 블록보다 먼저 그려서 뒤에 표시됨)
-                if (ghostY != -1 && ghostY != py) {
-                    for (int r = 0; r < shape.length; r++) {
-                        for (int c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c] == 0) {
-                                continue;
-                            }
-
-                            int x = px + c;
-                            int y = ghostY + r;
-
-                            if (x < 0 || x >= w || y < 0 || y >= h) {
-                                continue;
-                            }
-
-                            CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
-                            if (cell == null) {
-                                continue;
-                            }
-
-                            // 고스트 블록은 반투명하게 표시
-                            fillCell(cell, FILLED_SYMBOL, "block-ghost", "tetris-ghost-text");
-                        }
-                    }
-                }
+                renderGhostBlock(shape, px, py, ghostY, w, h, boardGrid);
                 
                 int blockIndex = 0;
 
@@ -339,209 +269,7 @@ public class GameScene {
         });
     }
 
-    private Node getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
-        for (Node node : gridPane.getChildren()) {
-            Integer rowIndex = GridPane.getRowIndex(node);
-            Integer colIndex = GridPane.getColumnIndex(node);
-            int r = rowIndex == null ? 0 : rowIndex;
-            int c = colIndex == null ? 0 : colIndex;
-
-            if (r == row && c == column) return node;
-        }
-
-        return null;
-    }
-
     public void showGameOver() {
         if (manager != null) manager.showGameOver(settings, engine.getScore(), difficulty);
-    }
-
-    private void applyCellEmpty(CellView cell) {
-        if (cell != null) cell.setEmpty();
-    }
-
-    private void fillCell(CellView cell, String symbol, String blockClass, String textClass) {
-        if (cell != null) cell.setBlock(symbol, blockClass, textClass);
-    }
-
-    private String blockClassForKind(Tetromino.Kind kind) {
-        return (kind != null) ? kind.getBlockStyleClass() : "block";
-    }
-
-    private String textClassForKind(Tetromino.Kind kind) {
-        return (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
-    }
-
-    private static final class CellView extends StackPane {
-        private final Rectangle rect;
-        private final Canvas patternCanvas;
-        private final Label label;
-        private final Settings settings;
-
-        private CellView(double size, Settings settings) {
-            this.settings = settings;
-            setMinSize(size, size);
-            setPrefSize(size, size);
-            setMaxSize(size, size);
-            setAlignment(Pos.CENTER);
-            getStyleClass().add("cell");
-
-            rect = new Rectangle(size, size);
-            rect.getStyleClass().add("cell-rect");
-            rect.setStrokeWidth(0);
-            rect.widthProperty().bind(widthProperty());
-            rect.heightProperty().bind(heightProperty());
-
-            patternCanvas = new Canvas(size, size);
-            patternCanvas.widthProperty().bind(widthProperty());
-            patternCanvas.heightProperty().bind(heightProperty());
-            patternCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-            patternCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-
-            label = new Label(" ");
-            label.setAlignment(Pos.CENTER);
-            label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            label.getStyleClass().add("cell-text");
-
-            getChildren().addAll(rect, patternCanvas, label);
-
-            setEmpty();
-        }
-
-        private String currentPattern = null;
-
-        private void redrawPattern() {
-            if (currentPattern == null || currentPattern.equals("none")) {
-                clearCanvas();
-                return;
-            }
-
-            double w = patternCanvas.getWidth();
-            double h = patternCanvas.getHeight();
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, w, h);
-            gc.setStroke(Color.rgb(0, 0, 0, 0.7));
-            gc.setLineWidth(1);
-
-            switch (currentPattern) {
-                case "horizontal": // S - 수평 줄무늬
-                    for (double y = 0; y < h; y += 5) {
-                        gc.strokeLine(0, y, w, y);
-                    }
-                    break;
-                case "vertical": // J - 수직 줄무늬
-                    for (double x = 0; x < w; x += 5) {
-                        gc.strokeLine(x, 0, x, h);
-                    }
-                    break;
-                case "diagonal-right": // I - 빗살무늬 ↗
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left": // T - 빗살무늬 ↖
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-                case "diagonal-right-wide": // Z - 빗살무늬 ↗ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left-wide": // L - 빗살무늬 ↖ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-            }
-        }
-
-        private void clearCanvas() {
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, patternCanvas.getWidth(), patternCanvas.getHeight());
-        }
-
-        private void clearDynamicStyles() {
-            ObservableList<String> rectClasses = rect.getStyleClass();
-            rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-
-            ObservableList<String> labelClasses = label.getStyleClass();
-            labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-        }
-
-        private void setEmpty() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-empty")) rect.getStyleClass().add("cell-empty");
-            if (!label.getStyleClass().contains("cell-empty")) label.getStyleClass().add("cell-empty");
-            label.setText(" ");
-        }
-
-        private void setBlock(String symbol, String blockClass, String textClass) {
-            clearDynamicStyles();
-            if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass)) {
-                rect.getStyleClass().add(blockClass);
-            }
-            if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass)) {
-                label.getStyleClass().add(textClass);
-            }
-            
-            // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
-            boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
-                                                      symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
-            if (settings.isColorBlindMode() && !isItemBlock) {
-                label.setText(" "); // 일반 블록은 글자 숨김
-            } else {
-                label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
-            }
-            
-            // 색맹 모드에서 패턴 적용
-            if (blockClass != null && settings.isColorBlindMode()) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-        }
-
-        private void applyPattern(String blockClass) {
-            switch (blockClass) {
-                case "block-I":
-                    currentPattern = "diagonal-right";
-                    break;
-                case "block-O":
-                    currentPattern = "none";
-                    break;
-                case "block-T":
-                    currentPattern = "diagonal-left";
-                    break;
-                case "block-S":
-                    currentPattern = "horizontal";
-                    break;
-                case "block-Z":
-                    currentPattern = "diagonal-right-wide";
-                    break;
-                case "block-J":
-                    currentPattern = "vertical";
-                    break;
-                case "block-L":
-                    currentPattern = "diagonal-left-wide";
-                    break;
-                default:
-                    currentPattern = null;
-            }
-            redrawPattern();
-        }
-
-        private void setBorder() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
-            if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
-            label.setText("X");
-        }
     }
 }
