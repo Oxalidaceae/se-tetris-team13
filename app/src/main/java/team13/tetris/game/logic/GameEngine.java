@@ -201,7 +201,6 @@ public class GameEngine {
         return Tetromino.item(targetKind, 0, Tetromino.ItemType.COPY, 0);
     }
 
-
     // 10줄이 삭제될 때마다 호출되어 다음 미노를 아이템 미노로 설정합니다.
     // 현재 구현된 5가지 아이템 중 하나를 20% 확률로 선택합니다.
     private void generateItemPiece() {
@@ -229,16 +228,6 @@ public class GameEngine {
             nextItemPiece = createLineClearItemPiece(targetKind);
         }
     }
-
-    // 예전 코드 - 삭제 예정
-    // // LINE_CLEAR 아이템 미노를 생성합니다.
-    // // COPY 아이템의 코드를 복사해서 만든 독립적인 구현입니다.
-    // private Tetromino createLineClearItemPiece(Tetromino.Kind targetKind) {
-    //     // 라인클리어 아이템: 대상 미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
-    //     int lineClearBlockIndex = (int) (Math.random() * 4);
-    //     Tetromino result = new Tetromino(targetKind, 0, lineClearBlockIndex, Tetromino.ItemType.LINE_CLEAR);
-    //     return result;
-    // }
 
     // LINE_CLEAR 아이템 미노를 생성
     // COPY 아이템의 코드를 복사해서 만든 독립적인 구현
