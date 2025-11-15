@@ -34,11 +34,6 @@ public class TestClientMessageListener implements ClientMessageListener {
     }
     
     @Override
-    public void onInputReceived(InputMessage inputMessage) {
-        System.out.println("Opponent input: " + inputMessage.getInputType());
-    }
-    
-    @Override
     public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
         System.out.println("Opponent board updated - Score: " + boardUpdate.getScore());
     }
@@ -46,11 +41,6 @@ public class TestClientMessageListener implements ClientMessageListener {
     @Override
     public void onAttackReceived(AttackMessage attackMessage) {
         System.out.println("Attack received: " + attackMessage.getAttackLines() + " lines!");
-    }
-    
-    @Override
-    public void onLinesClearedReceived(LinesClearedMessage linesClearedMessage) {
-        System.out.println("Opponent cleared " + linesClearedMessage.getLinesCleared() + " lines!");
     }
     
     @Override

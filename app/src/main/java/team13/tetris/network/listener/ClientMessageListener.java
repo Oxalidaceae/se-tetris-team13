@@ -21,17 +21,11 @@ public interface ClientMessageListener {
     // 게임이 종료되었을 때 호출
     void onGameOver(String reason);
     
-    // 상대방의 입력을 받았을 때 호출
-    void onInputReceived(InputMessage inputMessage);
-    
     // 상대방의 보드 상태 업데이트를 받았을 때 호출
     void onBoardUpdate(BoardUpdateMessage boardUpdate);
     
     // 공격을 받았을 때 호출
     void onAttackReceived(AttackMessage attackMessage);
-    
-    // 상대방이 줄을 삭제했을 때 호출
-    void onLinesClearedReceived(LinesClearedMessage linesClearedMessage);
     
     // 게임이 일시정지되었을 때 호출
     void onGamePaused();

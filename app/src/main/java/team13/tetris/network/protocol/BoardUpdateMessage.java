@@ -1,7 +1,9 @@
 package team13.tetris.network.protocol;
 
+import java.util.Queue;
+import java.util.LinkedList;
 
-// 게임 보드 상태를 전송하는 메시지
+// 게임 보드 상태를 전송하는 메시지 (다음 블록, incoming blocks 포함)
 public class BoardUpdateMessage extends NetworkMessage {
     private static final long serialVersionUID = 1L;
     
@@ -10,29 +12,16 @@ public class BoardUpdateMessage extends NetworkMessage {
     private final int currentPieceY;            // 현재 블록 Y 좌표
     private final int currentPieceType;         // 현재 블록 타입 (T, I, O, S, Z, J, L)
     private final int currentPieceRotation;     // 현재 블록 회전 상태 (0, 1, 2, 3)
+    private final int nextPieceType;            // 다음 블록 타입
+    private final Queue<int[][]> incomingBlocks; // 공격받을 블록 미리보기
     private final int score;                    // 현재 점수
     private final int linesCleared;             // 삭제한 줄 수
     private final int level;                    // 현재 레벨
     
-    // 간단한 게임 상태만 포함하는 생성자 (게임 상태 동기화용)
-    public BoardUpdateMessage(String playerId, int[][] board, int score, int lines, int level) {
-        super(MessageType.BOARD_UPDATE, playerId);
-        
-        this.boardState = deepCopyBoard(board);
-        
-        // 블록 정보는 기본값으로 설정 (상태 동기화에서는 필요 없음)
-        this.currentPieceX = -1;
-        this.currentPieceY = -1;
-        this.currentPieceType = -1;
-        this.currentPieceRotation = 0;
-        this.score = score;
-        this.linesCleared = lines;
-        this.level = level;
-    }
-
-    // 상세한 블록 정보를 포함하는 생성자 (실시간 블록 움직임용)
+    // 전체 정보를 포함하는 생성자
     public BoardUpdateMessage(String playerId, int[][] board, int pieceX, int pieceY, 
-                            int pieceType, int pieceRotation, int score, int lines, int level) {
+                            int pieceType, int pieceRotation, int nextPieceType,
+                            Queue<int[][]> incomingBlocks, int score, int lines, int level) {
         super(MessageType.BOARD_UPDATE, playerId);
         
         this.boardState = deepCopyBoard(board);
@@ -40,6 +29,8 @@ public class BoardUpdateMessage extends NetworkMessage {
         this.currentPieceY = pieceY;
         this.currentPieceType = pieceType;
         this.currentPieceRotation = pieceRotation;
+        this.nextPieceType = nextPieceType;
+        this.incomingBlocks = incomingBlocks != null ? new LinkedList<>(incomingBlocks) : new LinkedList<>();
         this.score = score;
         this.linesCleared = lines;
         this.level = level;
@@ -81,6 +72,14 @@ public class BoardUpdateMessage extends NetworkMessage {
         return currentPieceRotation;
     }
     
+    public int getNextPieceType() {
+        return nextPieceType;
+    }
+    
+    public Queue<int[][]> getIncomingBlocks() {
+        return new LinkedList<>(incomingBlocks);
+    }
+    
     public int getScore() {
         return score;
     }
@@ -104,6 +103,8 @@ public class BoardUpdateMessage extends NetworkMessage {
                ", currentPiece=(" + currentPieceX + "," + currentPieceY + ")" +
                ", pieceType=" + currentPieceType +
                ", rotation=" + currentPieceRotation +
+               ", nextPieceType=" + nextPieceType +
+               ", incomingBlocksCount=" + incomingBlocks.size() +
                ", score=" + score +
                ", linesCleared=" + linesCleared +
                ", level=" + level +

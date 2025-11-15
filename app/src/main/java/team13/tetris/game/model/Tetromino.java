@@ -264,6 +264,11 @@ public class Tetromino {
     
     public ItemType getItemType() { return itemType; }
     
+    // 현재 회전 인덱스 반환 (네트워크 전송용)
+    public int getRotationIndex() {
+        return rotation;
+    }
+    
     public boolean canRotate() { return canRotate; }
 
     public boolean isLocked() { return isLocked; }

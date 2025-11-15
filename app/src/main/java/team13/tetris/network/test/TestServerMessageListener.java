@@ -34,23 +34,13 @@ public class TestServerMessageListener implements ServerMessageListener {
     }
     
     @Override
-    public void onInputReceived(InputMessage inputMessage) {
-        System.out.println("Client input: " + inputMessage.getInputType());
-    }
-    
-    @Override
     public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
         System.out.println("Client board updated - Score: " + boardUpdate.getScore());
     }
     
     @Override
     public void onAttackReceived(AttackMessage attackMessage) {
-        System.out.println("Attack received from client: " + attackMessage.getAttackLines() + " lines!");
-    }
-    
-    @Override
-    public void onLinesClearedReceived(LinesClearedMessage linesClearedMessage) {
-        System.out.println("Client cleared " + linesClearedMessage.getLinesCleared() + " lines!");
+        System.out.println("Attack received: " + attackMessage.getAttackLines() + " lines!");
     }
     
     @Override

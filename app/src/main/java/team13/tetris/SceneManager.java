@@ -5,6 +5,7 @@ import team13.tetris.config.SettingsRepository;
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.CompositeGameStateListener;
 import team13.tetris.game.controller.GameSceneController;
+import team13.tetris.game.controller.NetworkGameController;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
@@ -14,6 +15,7 @@ import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
 import team13.tetris.scenes.MainMenuScene;
+import team13.tetris.scenes.HostOrJoinScene;
 import team13.tetris.scenes.ScoreboardScene;
 import team13.tetris.scenes.SettingsScene;
 import javafx.scene.Node;
@@ -80,8 +82,13 @@ public class SceneManager {
         changeScene(new team13.tetris.scenes.LocalMultiModeSelectionScene(this, settings).getScene());
     }
 
-    public void showP2PModeSelection(Settings settings) {
-        changeScene(new team13.tetris.scenes.P2PModeSelectionScene(this, settings).getScene());
+    public void showHostOrJoin(Settings settings) {
+        changeScene(new HostOrJoinScene(this, settings).getScene());
+    }
+
+    public void showNetworkLobby(Settings settings, boolean isHost, String serverIP) {
+        NetworkGameController controller = new NetworkGameController(this, settings, isHost, serverIP);
+        controller.initializeLobby();
     }
 
     public void showNotImplemented() {
