@@ -45,18 +45,18 @@ public class GameEngine {
 
     // 무게추 충돌 상태 추적
     private boolean weightCollisionDetected = false; // 무게추가 충돌을 감지했는지 여부
-    
+
     // 마지막으로 고정된 블록의 위치 정보 (공격 모드용)
     private java.util.Set<Integer> lastLockedColumns = new java.util.HashSet<>();
     private java.util.Set<Integer> tempLockedColumnsForEvent = null; // onLinesCleared 이벤트용 임시 저장
-    
+
     // 마지막으로 고정된 블록의 정확한 위치들(x, y 좌표)
     private java.util.List<int[]> lastLockedCells = new java.util.ArrayList<>();
     private java.util.List<int[]> tempLockedCellsForEvent = null; // onLinesCleared 이벤트용 임시 저장
-    
+
     private int[][] boardSnapshotBeforeClear = null; // 라인 클리어 전 보드 상태 저장
     private java.util.List<Integer> clearedLineIndices = null; // 클리어된 라인 인덱스 저장
-    
+
     // 라인클리어가 특발성 아이템에 의해 발생했는지 추적 (공격 모드 공격 패턴용)
     private boolean lastClearWasByGravityOrSplit = false;
 
@@ -175,44 +175,41 @@ public class GameEngine {
     private Tetromino createItemPiece(Tetromino.Kind itemKind, Tetromino.Kind targetKind) {
         // COPY 아이템은 targetKind 테트로미노에서 copyBlockIndex 랜덤 선택
         if (itemKind == Tetromino.Kind.COPY) {
-            int copyBlockIndex = (int) (Math.random() * 4);  // 4개의 블록 중 하나
+            int copyBlockIndex = (int) (Math.random() * 4); // 4개의 블록 중 하나
             return Tetromino.item(targetKind, 0, Tetromino.ItemType.COPY, copyBlockIndex);
         }
 
         // WEIGHT 아이템
         if (itemKind == Tetromino.Kind.WEIGHT) {
             return Tetromino.item(
-                Tetromino.Kind.WEIGHT,
-                0,
-                Tetromino.ItemType.WEIGHT,
-                0 // 인덱스는 사용 안함
+                    Tetromino.Kind.WEIGHT,
+                    0,
+                    Tetromino.ItemType.WEIGHT,
+                    0 // 인덱스는 사용 안함
             );
         }
 
         // GRAVITY 아이템
         if (itemKind == Tetromino.Kind.GRAVITY) {
             return Tetromino.item(
-                Tetromino.Kind.GRAVITY,
-                0,
-                Tetromino.ItemType.GRAVITY,
-                0
-            );
+                    Tetromino.Kind.GRAVITY,
+                    0,
+                    Tetromino.ItemType.GRAVITY,
+                    0);
         }
 
         // SPLIT 아이템
         if (itemKind == Tetromino.Kind.SPLIT) {
             return Tetromino.item(
-                Tetromino.Kind.SPLIT,
-                0,
-                Tetromino.ItemType.SPLIT,
-                0
-            );
+                    Tetromino.Kind.SPLIT,
+                    0,
+                    Tetromino.ItemType.SPLIT,
+                    0);
         }
 
-        // fallback: COPY?� ?�일 처리
+        // fallback: COPY와 동일 처리
         return Tetromino.item(targetKind, 0, Tetromino.ItemType.COPY, 0);
     }
-
 
     // 10줄이 청소될 때마다 다음 테트로미노를 아이템 테트로미노로 설정합니다
     // 현재 구현은 5가지 아이템 중 하나를 20% 확률로 선택합니다
@@ -258,10 +255,11 @@ public class GameEngine {
     // // LINE_CLEAR 아이템 테트로미노를 생성합니다
     // // COPY 아이템의 코드를 복사해서 만든 독립적인 구현입니다
     // private Tetromino createLineClearItemPiece(Tetromino.Kind targetKind) {
-    //     // 라인클리어 아이템 대상 테트로미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
-    //     int lineClearBlockIndex = (int) (Math.random() * 4);
-    //     Tetromino result = new Tetromino(targetKind, 0, lineClearBlockIndex, Tetromino.ItemType.LINE_CLEAR);
-    //     return result;
+    // // 라인클리어 아이템 대상 테트로미노의 블록 개수 확인 (4개의 블록 중 랜덤 선택)
+    // int lineClearBlockIndex = (int) (Math.random() * 4);
+    // Tetromino result = new Tetromino(targetKind, 0, lineClearBlockIndex,
+    // Tetromino.ItemType.LINE_CLEAR);
+    // return result;
     // }
 
     // LINE_CLEAR 아이템 테트로미노를 생성
@@ -271,20 +269,21 @@ public class GameEngine {
         int lineClearBlockIndex = (int) (Math.random() * 4);
 
         return Tetromino.lineClearItem(
-            targetKind,           // LINE_CLEAR??copy가 ?�닌 "?��?미노 모양" 기반
-            0,           // 초기 ?�전�?
-            lineClearBlockIndex   // L 마크 블록 ?�치
+                targetKind, // LINE_CLEAR는 copy가 아닌 "타겟 미노 모양" 기반
+                0, // 초기 회전값
+                lineClearBlockIndex // L 마크 블록 위치
         );
     }
-    
-    // ?�이??미노???�수 ?�과�?처리?�니??
-    // COPY: ?�정 미노 ?�?�으�??�음 미노�?복사?�니??
-    // WEIGHT: 무게�??�과�?착�? 지???�래??블록?�을 ?�괴?�니??
-    // GRAVITY: ?�체 보드??중력???�용?�여 �?공간??메웁?�다.
-    // SPLIT: 3개의 ?�로 분할?�어 각각 ?�립?�으�??�어집니??
-    
+
+    // 아이템 미노의 특수 효과를 처리합니다.
+    // COPY: 특정 미노 타입으로 다음 미노를 복사합니다.
+    // WEIGHT: 무게추 효과로 착지 지점 아래의 블록들을 파괴합니다.
+    // GRAVITY: 전체 보드에 중력을 적용하여 빈 공간을 메웁니다.
+    // SPLIT: 3개의 열로 분할되어 각각 독립적으로 떨어집니다.
+
     private void processItemEffect(Tetromino.ItemType itemType, Tetromino.Kind targetKind) {
-        if (!itemModeEnabled) return;
+        if (!itemModeEnabled)
+            return;
 
         if (itemType == Tetromino.ItemType.COPY) {
             // 복사 효과: 지정된 테트로미노와 같은 종류의 다음 테트로미노 생성
@@ -297,7 +296,7 @@ public class GameEngine {
                 px = (board.getWidth() - current.getWidth()) / 2;
                 py = 0;
 
-                // COPY ?�과?�서??게임?�버 체크
+                // COPY 효과에서도 게임오버 체크
                 if (!board.fits(current.getShape(), px, py)) {
                     current = null;
                     javafx.application.Platform.runLater(() -> {
@@ -311,7 +310,7 @@ public class GameEngine {
                     return;
                 }
 
-                // 리스?�에�??�림
+                // 리스너에게 알림
                 if (listener != null) {
                     if (listener != null) {
                         listener.onPieceSpawned(current, px, py);
@@ -325,24 +324,24 @@ public class GameEngine {
                 }
             }
         } else if (itemType == Tetromino.ItemType.GRAVITY) {
-            // 중력 ?�과: ?�체 보드??중력???�용?�여 �?공간??메�?
+            // 중력 효과: 전체 보드에 중력을 적용하여 빈 공간을 메움
             processGravityEffect();
         } else if (itemType == Tetromino.ItemType.SPLIT) {
-            // 분할 ?�과: 3개의 ?�로 분할?�어 각각 ?�립?�으�??�어�?
+            // 분할 효과: 3개의 열로 분할되어 각각 독립적으로 떨어짐
             processSplitEffect();
         } else if (itemType == Tetromino.ItemType.LINE_CLEAR) {
-            // ?�인 ?�리???�과: ?�당 블록???�는 �??�체�?즉시 ?�거
+            // 라인 클리어 효과: 해당 블록이 있는 줄 전체를 즉시 제거
             processLineClearEffect();
         }
     }
 
-    
-    // 무게�?바로 ?�래 ??줄을 ?�괴?�니??
-    
-    private void destroyLineDirectlyBelow() {
-        if (current == null || !current.isItemPiece() || current.getKind() != Tetromino.Kind.WEIGHT) return;
+    // 무게추 바로 아래 한 줄을 파괴합니다.
 
-        // 무게추�? 차�??�는 모든 ?�과 가???�래�??�을 찾기
+    private void destroyLineDirectlyBelow() {
+        if (current == null || !current.isItemPiece() || current.getKind() != Tetromino.Kind.WEIGHT)
+            return;
+
+        // 무게추가 차지하는 모든 열과 가장 아래쪽 행을 찾기
         int[][] shape = current.getShape();
         int bottomRow = -1;
         java.util.Set<Integer> occupiedColumns = new java.util.HashSet<>();
@@ -353,7 +352,7 @@ public class GameEngine {
                     int boardX = px + c;
                     int boardY = py + r;
 
-                    // 보드 범위 ?�에 ?�는 경우�?
+                    // 보드 범위 내에 있는 경우만
                     if (boardX >= 0 && boardX < board.getWidth() && boardY >= 0 && boardY < board.getHeight()) {
                         occupiedColumns.add(boardX);
                         bottomRow = Math.max(bottomRow, boardY);
@@ -362,7 +361,7 @@ public class GameEngine {
             }
         }
 
-        // 무게�?바로 ?�래 ??줄만 ?�괴 (중력 ?�용 ?�함)
+        // 무게추 바로 아래 한 줄만 파괴 (중력 적용 안함)
         int targetRow = bottomRow + 1;
         if (targetRow < board.getHeight()) {
             for (int col : occupiedColumns) {
@@ -370,17 +369,17 @@ public class GameEngine {
                     board.setCell(col, targetRow, 0);
                 }
             }
-            // 무게추는 ?�괴�??�고 중력?� ?�용?��? ?�음
+            // 무게추는 파괴하지 않고 중력을 적용하여 떨어짐
         }
     }
 
-    
-    // ?�드?�롭 ??무게�??�래??모든 블록??즉시 ?�괴?�니??
-    
-    private void destroyAllBlocksBelow() {
-        if (current == null || !current.isItemPiece() || current.getKind() != Tetromino.Kind.WEIGHT) return;
+    // 하드드롭 시 무게추 아래의 모든 블록을 즉시 파괴합니다
 
-        // 무게추�? 차�??�는 모든 ?�과 가???�래�??�을 찾기
+    private void destroyAllBlocksBelow() {
+        if (current == null || !current.isItemPiece() || current.getKind() != Tetromino.Kind.WEIGHT)
+            return;
+
+        // 무게추가 차지하는 모든 열과 가장 아래의 위치를 찾기
         int[][] shape = current.getShape();
         int bottomRow = -1;
         java.util.Set<Integer> occupiedColumns = new java.util.HashSet<>();
@@ -391,7 +390,7 @@ public class GameEngine {
                     int boardX = px + c;
                     int boardY = py + r;
 
-                    // 보드 범위 ?�에 ?�는 경우�?
+                    // 보드 범위 안에 있는 경우
                     if (boardX >= 0 && boardX < board.getWidth() && boardY >= 0 && boardY < board.getHeight()) {
                         occupiedColumns.add(boardX);
                         bottomRow = Math.max(bottomRow, boardY);
@@ -400,7 +399,7 @@ public class GameEngine {
             }
         }
 
-        // 무게�??�래??모든 블록??즉시 ?�괴
+        // 무게추가 떨어지면 모든 블록을 즉시 파괴
         for (int y = bottomRow + 1; y < board.getHeight(); y++) {
             for (int col : occupiedColumns) {
                 if (board.getCell(col, y) != 0) {
@@ -408,26 +407,25 @@ public class GameEngine {
                 }
             }
         }
-        // ?�드?�롭?��?�??�니메이???�이 즉시 ?�괴?�고 중력 ?�용 ?�함
+        // 하드드롭 시의 애니메이션에서 즉시 파괴하고 중력 적용 함
     }
 
-    
-    // 중력 ?�이???�과�?처리?�니??
-    // ?�체 보드??중력???�용?�여 �?공간??메웁?�다.
-    
+    // 중력 아이템의 효과를 처리합니다.
+    // 전체 보드에 중력을 적용하여 빈 공간을 메웁니다.
+
     private void processGravityEffect() {
-        // ?�체 보드??중력 ?�용
+        // 전체 보드에 중력 적용
         board.applyGravity();
     }
 
-    
-    // 분할 ?�이???�과�?처리?�니??
-    // SPLIT 블록??차�??�는 3개의 ?�을 각각 ?�립?�으�??�어?�립?�다.
-     
-    private void processSplitEffect() {
-        if (current == null || !current.isItemPiece()) return;
+    // 분할 아이템의 효과를 처리합니다.
+    // SPLIT 블록이 차지하는 3개의 열을 각각 분리하여 떨어지게 한다.
 
-        // SPLIT 블록??차�??�는 ?�들??찾기
+    private void processSplitEffect() {
+        if (current == null || !current.isItemPiece())
+            return;
+
+        // SPLIT 블록이 차지하는 열들을 찾기
         int[][] shape = current.getShape();
         java.util.Set<Integer> occupiedColumns = new java.util.HashSet<>();
 
@@ -442,64 +440,62 @@ public class GameEngine {
             }
         }
 
-        // �??�에 ?�???�립?�으�?중력 ?�용
+        // 각 열에 대해 분리하여 중력 적용
         for (int col : occupiedColumns) {
             applySingleColumnGravity(col);
         }
 
     }
 
-    
-    // ?�정 ?�에???�플�?블록?�에�??�드?�롭???�용?�니??
-     
+    // 특정 열의 SPLIT 블록들에 대해 하드드롭을 적용합니다.
+
     private void applySingleColumnGravity(int col) {
         if (col < 0 || col >= board.getWidth())
             return;
 
         int height = board.getHeight();
 
-        // ?�당 ?�에???�플�?블록?�만 추출 (?�에???�래 ?�서�?
+        // 해당 열의 SPLIT 블록들만 추출 (제거하면서)
         java.util.List<Integer> splitBlocks = new java.util.ArrayList<>();
 
         for (int y = 0; y < height; y++) {
             int val = board.getCell(col, y);
-            if (val >= 500 && val < 600) { // SPLIT 블록??(500번�?)
+            if (val >= 500 && val < 600) { // SPLIT 블록들(500번대)
                 splitBlocks.add(val);
-                board.setCell(col, y, 0); // ?�래 ?�치?�서 ?�거
+                board.setCell(col, y, 0); // 원래 위치에서 제거
             }
         }
 
-        // �??�플�?블록???�에?��????�차?�으�??�드?�롭
+        // 각 SPLIT 블록들을 아래쪽으로 떨어지게 하드드롭
         for (int blockValue : splitBlocks) {
-            // �??��????�작?�서 ?�당 블록???�어�????�는 ?�치 찾기
+            // 각 블록을 아래쪽으로 시작해서 해당 블록이 들어갈 수 있는 위치 찾기
             int dropPosition = 0;
 
-            // ?�에?��????�래�??�려가면서 ?�어�????�는 가???�래 ?�치 찾기
+            // 아래쪽으로부터 위쪽으로 올라가면서 들어갈 수 있는 가장 아래 위치 찾기
             while (dropPosition < height - 1 && board.getCell(col, dropPosition + 1) == 0) {
                 dropPosition++;
             }
 
-            // ?�당 ?�치??블록 배치
+            // 해당 위치에 블록 배치
             board.setCell(col, dropPosition, blockValue);
         }
     }
 
-    
-    // LINE_CLEAR ?�이???�과�?처리?�니??
-    // L 블록???�는 ?�을 ?�인?�리?�하�??�수�??�용?�니??
-     
+    // LINE_CLEAR 아이템의 효과를 처리합니다.
+    // L 블록이 있는 행을 인위적으로 사용할 수 있습니다.
+
     private void processLineClearEffect() {
         if (current == null || !current.isItemPiece()) {
             return;
         }
 
-        // 보드�??�캔?�여 LINE_CLEAR 마커(200번�? �?가 ?�는 ?�을 찾기
+        // 보드를 스캔하여 LINE_CLEAR 마커(200번대)가 있는 행을 찾기
         int targetRow = -1;
-        
+
         for (int y = 0; y < board.getHeight(); y++) {
             for (int x = 0; x < board.getWidth(); x++) {
                 int cellValue = board.getCell(x, y);
-                // LINE_CLEAR 마커??200번�? (200-299)
+                // LINE_CLEAR 마커들(200-299)
                 if (cellValue >= 200 && cellValue < 300) {
                     targetRow = y;
                     break;
@@ -510,65 +506,65 @@ public class GameEngine {
             }
         }
 
-        // ?�효???�인지 ?�인
+        // 효과적인지 확인
         if (targetRow >= 0 && targetRow < board.getHeight()) {
             final int finalTargetRow = targetRow;
-            
-            // ?�인 ??�� ???�래 ?�태�??�??
+
+            // 인위적 행의 원래 상태를 저장
             final int[] originalRow = new int[board.getWidth()];
             for (int c = 0; c < board.getWidth(); c++) {
                 originalRow[c] = board.getCell(c, finalTargetRow);
             }
 
-            // ?��??�으�?변�?(250ms)
-            board.fillLineWith(finalTargetRow, -1); // ?�색 ?�래??마커
+            // 인위적으로 변형(250ms)
+            board.fillLineWith(finalTargetRow, -1); // 회색 플래시 마커
             if (listener != null) {
                 if (listener != null) {
                     listener.onBoardUpdated(board);
                 }
             }
 
-            // Timer�??�용?�여 250ms ???�인 ?�거 �?게임 진행
+            // Timer를 이용하여 250ms 인위적 제거 후 게임 진행
             java.util.Timer delayTimer = new java.util.Timer();
             delayTimer.schedule(new java.util.TimerTask() {
                 @Override
                 public void run() {
                     javafx.application.Platform.runLater(() -> {
-                        // ?�색 ?�래?��? ?�래 ?�태�?복원
+                        // 회색 플래시를 원래 상태로 복원
                         for (int c = 0; c < board.getWidth(); c++) {
                             board.setCell(c, finalTargetRow, originalRow[c]);
                         }
-                        
-                        // ?�당 ?�을 직접 ?�거?�고 ?�의 ?�들???�래�??�동
-                        // ?�쪽 ?�들????줄씩 ?�래�?복사
+
+                        // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
+                        // 위쪽 행들을 한 줄씩 아래로 복사
                         for (int r = finalTargetRow; r > 0; r--) {
                             for (int c = 0; c < board.getWidth(); c++) {
                                 board.setCell(c, r, board.getCell(c, r - 1));
                             }
                         }
 
-                        // �????�을 �?공간?�로 ?�정
+                        // 최상단 행을 빈 공간으로 설정
                         for (int c = 0; c < board.getWidth(); c++) {
                             board.setCell(c, 0, 0);
                         }
 
                         totalLinesCleared += 1;
 
-                        // ?�수 ?�산 (?�반 ?�인?�리?��? ?�일)
+                        // 점수 계산 (일반 라인 클리어와 동일)
                         addScoreForClearedLines(1);
                         updateSpeedForLinesCleared(1, totalLinesCleared);
 
-                        // 보드 ?�데?�트
+                        // 보드 업데이트
                         if (listener != null) {
                             if (listener != null) {
                                 listener.onBoardUpdated(board);
                             }
                         }
-                        
-                        // LINE_CLEAR ?�과 ???�아?�는 full line???�는지 체크
+
+                        // LINE_CLEAR 효과와 관련하여 full line이 있는지 체크
                         java.util.List<Integer> remainingFullLines = board.getFullLineIndices();
                         if (!remainingFullLines.isEmpty()) {
-                            // ?��? full line???�으�??�반 ?�인?�리??처리
+                            // 추가 full line들을 일반 라인 클리어로 처리
                             board.clearFullLines();
                             int cleared = remainingFullLines.size();
                             totalLinesCleared += cleared;
@@ -580,23 +576,24 @@ public class GameEngine {
                                 }
                             }
                         }
-                        
-                        // ?�음 블록 ?�성
+
+                        // 다음 블록 생성
                         spawnNext();
                     });
-                    
-                    delayTimer.cancel(); // Timer ?�리
+
+                    delayTimer.cancel(); // Timer 정리
                 }
-            }, 250); // 250ms 지??
+            }, 250); // 250ms 지연
         }
     }
 
-    // ?�재 블록??보드??배치?�는 공통 메서??
+    // 현재 블록을 보드에 배치하는 공통 메서드
     private void placeCurrentPiece() {
-        if (current == null) return;
-        
+        if (current == null)
+            return;
+
         if (current.isItemPiece()) {
-            // 모든 ?�이?��? ?�별???�이??블록?�로 배치
+            // 모든 아이템을 별도의 아이템 블록으로 배치
             String itemTypeStr = current.getItemType().name();
             int itemBlockIndex;
 
@@ -605,26 +602,26 @@ public class GameEngine {
             } else if (current.getItemType() == Tetromino.ItemType.LINE_CLEAR) {
                 itemBlockIndex = current.getLineClearBlockIndex();
             } else {
-                itemBlockIndex = 0; // ?�른 ?�이?��? �?번째 블록???�이??블록?�로 ?�용
+                itemBlockIndex = 0; // 다른 아이템의 첫 번째 블록을 아이템 블록으로 사용
             }
 
             board.placeItemPiece(current.getShape(), px, py, current.getId(), itemBlockIndex, itemTypeStr);
         } else {
-            // ?�반 미노???�반 블록?�로 배치
+            // 일반 미노를 일반 블록으로 배치
             board.placePiece(current.getShape(), px, py, current.getId());
         }
     }
 
     private void spawnNext() {
-        // ?�로??미노 ?�성 ??무게�?충돌 ?�태 리셋
+        // 새로운 미노 생성 시 무게추 충돌 상태 리셋
         weightCollisionDetected = false;
 
         current = next != null ? next : randomPiece();
 
-        // ?�이??모드?�서 nextItemPiece가 ?�정?�어 ?�으�?그것??next�??�용
+        // 아이템 모드에서 nextItemPiece가 설정되어 있으면 그것을 next로 사용
         if (itemModeEnabled && nextItemPiece != null) {
             next = nextItemPiece;
-            nextItemPiece = null; // ??�??�용 ??초기??
+            nextItemPiece = null; // 사용 후 초기화
         } else {
             next = randomPiece();
         }
@@ -632,28 +629,28 @@ public class GameEngine {
         px = (board.getWidth() - current.getWidth()) / 2;
         py = 0;
 
-        // 게임?�버 조건: ??블록???�성 ?�치??배치?????�을 ??
+        // 게임오버 조건: 새 블록의 생성 위치에 배치할 수 없으면
         if (!board.fits(current.getShape(), px, py)) {
-            // 게임?�버 즉시 처리
-            stopAutoDrop(); // ?�동 ?�강??먼�? ?�전??중�?
-            current = null; // current�?null�??�정?�여 ???�상??조작 방�?
+            // 게임오버 즉시 처리
+            stopAutoDrop(); // 자동 강제 드롭을 먼저 중지
+            current = null; // current를 null로 설정하여 이상한 조작 방지
 
-            // JavaFX Application Thread?�서 ?�전?�게 게임?�버 처리
+            // JavaFX Application Thread에서 안전하게 게임오버 처리
             javafx.application.Platform.runLater(() -> {
                 if (listener != null) {
                     if (listener != null) {
                         listener.onGameOver();
-                    } // 게임?�버 ?�벤??발생
+                    } // 게임오버 이벤트 발생
                 }
             });
 
             return;
         }
 
-        // ??블록???�성????보드 ?�태 ?�냅???�??(블록 배치 ??
+        // 새 블록 생성 시 보드 상태 스냅샷 저장(블록 배치 전)
         boardSnapshotBeforeClear = board.snapshot();
 
-        // ?�상?�으�??�성??경우?�만 리스???�출
+        // 성공적으로 생성된 경우에만 리스너 호출
         if (listener != null) {
             if (listener != null) {
                 listener.onPieceSpawned(current, px, py);
@@ -667,10 +664,9 @@ public class GameEngine {
         }
     }
 
-    
-    // ?�재 ?�정???�강 간격???�용?�여 ?�동 ?�강 ?��?줄러�??�작?�니??
-    // ?�러 �??�출?�도 ?�전?�며, ?�요 ???��?줄러�??�성?�니??
-    
+    // 현재 설정된 드롭 간격을 이용하여 자동 드롭 스케줄러를 시작합니다.
+    // 여러 호출도 안전하며, 필요 시 스케줄러를 생성합니다.
+
     public void startAutoDrop() {
         synchronized (schedulerLock) {
             if (scheduler == null || scheduler.isShutdown()) {
@@ -689,23 +685,23 @@ public class GameEngine {
             long initialDelay = periodMillis;
             long currentTime = System.currentTimeMillis();
 
-            // ?�시?��? ???�개?�는 경우 - pauseStartTime > 0?�면 ?�시?��????�태?�??
+            // 일시정지에서 벗어나는 경우 - pauseStartTime > 0이면 일시정지 상태였음
             if (pauseStartTime > 0) {
                 if (lastDropTime > 0) {
-                    // ?�전 ?�랍???�었??경우: ?�시?��????�간??보상
+                    // 이전 드랍이 있었던 경우: 일시정지 시간을 보상
                     long pauseDuration = currentTime - pauseStartTime;
                     lastDropTime += pauseDuration;
                     long timeSinceLastDrop = currentTime - lastDropTime;
                     long remainingTime = periodMillis - (timeSinceLastDrop % periodMillis);
                     initialDelay = Math.max(1L, remainingTime);
                 } else {
-                    // ?�전 ?�랍???�었??경우: 바로 ?�작
+                    // 이전 드랍이 있었던 경우: 바로 시작
                     lastDropTime = currentTime;
                     initialDelay = periodMillis;
                 }
                 pauseStartTime = 0; // 리셋
             } else {
-                // ??게임 ?�작
+                // 새 게임 시작
                 lastDropTime = currentTime;
             }
 
@@ -720,21 +716,20 @@ public class GameEngine {
         }
     }
 
-    
-    // ?�동 ?�강 ?��?줄러�?중�??�고 ?�약???�업??취소?�니??
+    // 자동 드롭 스케줄러를 중지하고 작업을 취소합니다.
     public void stopAutoDrop() {
         synchronized (schedulerLock) {
-            pauseStartTime = System.currentTimeMillis(); // ?�시?��? ?�간 기록
+            pauseStartTime = System.currentTimeMillis(); // 일시정지 시간 기록
 
             if (autoDropFuture != null) {
                 autoDropFuture.cancel(false);
                 autoDropFuture = null;
             }
-            // ?��?줄러??종료?��? ?�고 ?��? (?�사?�을 ?�해)
+            // 스케줄러를 종료하고 정리 (안전을 위해)
         }
     }
 
-    // 게임 종료 ???��?줄러�??�전??종료?�니??
+    // 게임 종료 시 모든 스케줄러를 완전 종료합니다.
     public void shutdown() {
         synchronized (schedulerLock) {
             if (autoDropFuture != null) {
@@ -755,8 +750,7 @@ public class GameEngine {
         return dropIntervalSeconds;
     }
 
-    
-    // ?�동 ?�강 간격(�????�정?�니?? ?�동 ?�강???�작 중이�??�로??간격?�로 ?�스케줄링?�니??
+    // 자동 드롭 간격을 설정합니다. 자동 드롭이 실행 중이라면 새로운 간격으로 스케줄링합니다.
     public void setDropIntervalSeconds(double seconds) {
         if (seconds <= 0)
             throw new IllegalArgumentException("drop interval must be > 0");
@@ -778,9 +772,10 @@ public class GameEngine {
     }
 
     public void moveLeft() {
-        if (current == null)return;
+        if (current == null)
+            return;
 
-        // 무게�?충돌 ?�태?�서??좌우 ?�동 ?�한
+        // 무게추 충돌 상태에서는 좌우 이동 금지
         if (weightCollisionDetected) {
             return;
         }
@@ -796,11 +791,12 @@ public class GameEngine {
     }
 
     public void moveRight() {
-        if (current == null) return;
+        if (current == null)
+            return;
 
-        // 무게�?충돌 ?�태?�서??좌우 ?�동 ?�한
-        if (weightCollisionDetected) return;
-        
+        // 무게추 충돌 상태에서는 좌우 이동 금지
+        if (weightCollisionDetected)
+            return;
 
         if (board.fits(current.getShape(), px + 1, py)) {
             px++;
@@ -814,7 +810,7 @@ public class GameEngine {
         if (current == null)
             return;
 
-        // 무게�??�이?��? ?�전?????�음
+        // 무게추 아이템에서는 회전 금지
         if (current.isItemPiece() && current.getKind() == Tetromino.Kind.WEIGHT) {
             return;
         }
@@ -839,74 +835,79 @@ public class GameEngine {
     }
 
     public boolean softDrop() {
-        if (current == null) return false;
+        if (current == null)
+            return false;
         if (board.fits(current.getShape(), px, py + 1)) {
             py++;
 
-            // 무게�??�이?�의 경우 ??�??�어�??�마??바로 ?�래 ??�??�괴
+            // 무게추 아이템의 경우 소프트 드롭 시 바로 아래 파괴
             if (current.isItemPiece() && current.getKind() == Tetromino.Kind.WEIGHT && weightCollisionDetected) {
                 destroyLineDirectlyBelow();
             }
 
-            // ?�프???�롭 ?�수 추�? (??�??�강)
+            // 소프트 드롭 점수 추가 (단계별 강제)
             addDropScore(1);
             if (listener != null) {
                 listener.onBoardUpdated(board);
             }
             return true;
         } else {
-            // 무게�??�이?�의 경우 �?번째 충돌 감�? ?�점?�서 ?�태 변�?
+            // 무게추 아이템의 경우 첫 번째 충돌 감지 시점에서 상태 변경
             if (current.isItemPiece() && current.getKind() == Tetromino.Kind.WEIGHT && !weightCollisionDetected) {
                 weightCollisionDetected = true;
-                // �?충돌 ?�에??바로 ?�래 ??�??�괴
+                // 첫 충돌 시에 바로 아래 파괴
                 destroyLineDirectlyBelow();
-                // 무게추는 충돌 감�? ?�에??바로 착�??�키지 ?�고 계속 진행
+                // 무게추는 충돌 감지 시에 바로 착지하지 않고 계속 진행
                 return false;
             }
 
-            // ?�재 블록??보드??배치
+            // 현재 블록을 보드에 배치
             placeCurrentPiece();
-            
-            // 마�?막으�?고정??블록?????�치 ?�??
+
+            // 마지막으로 고정된 블록들의 위치 기록
             recordLastLockedColumns();
-            
+
             handleLockedPiece();
             return false;
         }
     }
 
     public void hardDrop() {
-        if (current == null) return;
+        if (current == null)
+            return;
 
-        int startY = py; // ?�작 ?�치 기록
+        int startY = py; // 시작 위치 기록
 
-        // 무게�??�이?�의 경우 ?�별 처리
+        // 무게추 아이템의 경우 특별 처리
         if (current.isItemPiece() && current.getKind() == Tetromino.Kind.WEIGHT) {
             weightCollisionDetected = true;
 
-            // 먼�? 최�????�래�??�려가�?
-            while (board.fits(current.getShape(), px, py + 1)) py++;
+            // 먼저 최대로 아래로 떨어지기
+            while (board.fits(current.getShape(), px, py + 1))
+                py++;
 
-            // ?�래 모든 블록 ?�괴
+            // 아래 모든 블록 파괴
             destroyAllBlocksBelow();
 
-            // 블록 ?�괴 ???�시 최�????�래�??�려가�?
-            while (board.fits(current.getShape(), px, py + 1)) py++;
+            // 블록 파괴 후에 다시 최대로 아래로 떨어지기
+            while (board.fits(current.getShape(), px, py + 1))
+                py++;
         } else {
-            // ?�반 미노???�른 ?�이?�의 경우
-            while (board.fits(current.getShape(), px, py + 1)) py++;
+            // 일반 미노나 다른 아이템의 경우
+            while (board.fits(current.getShape(), px, py + 1))
+                py++;
         }
 
-        int dropDistance = py - startY; // ?�어�?거리 계산
+        int dropDistance = py - startY; // 떨어진 거리 계산
 
-        // ?�드 ?�롭 ?�수 추�? (거리 > 0???�만)
-        if (dropDistance > 0) addHardDropScore(dropDistance);
-        
+        // 하드 드롭 점수 추가 (거리 > 0일 때만)
+        if (dropDistance > 0)
+            addHardDropScore(dropDistance);
 
-        // ?�재 블록??보드??배치
+        // 현재 블록을 보드에 배치
         placeCurrentPiece();
 
-        // 마�?막으�?고정??블록?????�치 ?�??
+        // 마지막으로 고정된 블록들의 위치 기록
         recordLastLockedColumns();
 
         handleLockedPiece();
@@ -914,56 +915,57 @@ public class GameEngine {
 
     // Handles animation + scoring after the falling piece is fixed to the board.
     private void handleLockedPiece() {
-        // ?��? 게임?�버 ?�태?�면 ???�상 처리?��? ?�음
-        if (current == null) return;
-        
-        // 기본?�으�??�반 ?�인?�리?�로 간주
+        // 이미 게임오버 상태라면 이상한 처리하지 말고 다음
+        if (current == null)
+            return;
+
+        // 기본적으로 일반 라인 클리어로 간주
         lastClearWasByGravityOrSplit = false;
-        
-        // ?�이?�이 착�???경우 즉시 ?�과 발동 (current�?null�?만들�??�에)
+
+        // 아이템이 착지한 경우 즉시 효과 발동 (current를 null로 만들기 전에)
         if (itemModeEnabled && current != null && current.isItemPiece()) {
             Tetromino.Kind kind = current.getKind();
             Tetromino.ItemType itemType = current.getItemType();
 
-            // 무게추는 softDrop?�서 ?��? 처리?��?�??�기?�는 ?�외
+            // 무게추는 softDrop에서 이미 처리했으므로 여기서는 제외
             if (kind == Tetromino.Kind.GRAVITY) {
-                lastClearWasByGravityOrSplit = true; // 중력 블록?�로 ?�인?�리??
+                lastClearWasByGravityOrSplit = true; // 중력 블록으로 라인 클리어
                 processGravityEffect();
             } else if (kind == Tetromino.Kind.SPLIT) {
-                lastClearWasByGravityOrSplit = true; // ?�플�?블록?�로 ?�인?�리??
+                lastClearWasByGravityOrSplit = true; // 스플릿 블록으로 라인 클리어
                 processSplitEffect();
             } else if (itemType == Tetromino.ItemType.LINE_CLEAR) {
-                // LINE_CLEAR???�체?�으�??�인 ?�거 �??�음 블록 ?�성??처리?��?�?
-                // ?�반 ?�인 ?�리??로직???�행?��? ?�음
+                // LINE_CLEAR은 즉시 인위적 제거 후 다음 블록 생성으로 처리합니다.
+                // 일반 라인 클리어 로직을 실행하지 말고 다음
                 processLineClearEffect();
-                current = null; // 조작 방�?
-                return; // ?�기??종료
+                current = null; // 조작 방지
+                return; // 여기서 종료
             }
         }
-        
-        // ?�이???�과 ?�용 ??보드 ?�태 ?�냅???�??(?�인 ?�리?????�태)
+
+        // 아이템 효과 적용 후 보드 상태 스냅샷 저장(라인 클리어 전 상태)
         boardSnapshotBeforeClear = board.snapshot();
-        
-        // lastLockedColumns?� lastLockedCells�?미리 백업 (?�른 블록???�어지면서 ??��?�워�????�으므�?
+
+        // lastLockedColumns와 lastLockedCells를 미리 백업 (다른 블록들이 사라지면서 바뀌기 때문에)
         tempLockedColumnsForEvent = new java.util.HashSet<>(lastLockedColumns);
         tempLockedCellsForEvent = new java.util.ArrayList<>(lastLockedCells);
 
         java.util.List<Integer> fullLines = board.getFullLineIndices();
-        
-        // ??��??�??�덱???�??
+
+        // 인덱스 리스트 초기화
         clearedLineIndices = new java.util.ArrayList<>(fullLines);
 
-        current = null; // ?�시 조작??막고, 보드?�는 고정??조각�??��?
+        current = null; // 즉시 조작을 막고, 보드에는 고정된 조각을 유지
 
         if (fullLines.isEmpty()) {
             spawnNext();
             return;
         }
 
-        // ?�이??모드: fillLineWith�???��?�기 ?�에 ?�이??블록 ?�인
+        // 아이템 모드: fillLineWith를 적용하기 전에 아이템 블록 확인
         boolean hasItemBlockInFullLines = false;
-        Tetromino.Kind itemPieceKind = null; // ?�이??블록???�래 미노 ?�??
-        Tetromino.ItemType detectedItemType = null; // 감�????�이???�??
+        Tetromino.Kind itemPieceKind = null; // 아이템 블록의 원래 미노 종류
+        Tetromino.ItemType detectedItemType = null; // 감지된 아이템 타입
 
         if (itemModeEnabled) {
             int[][] snapshot = board.snapshot();
@@ -971,13 +973,13 @@ public class GameEngine {
                 for (int c = 0; c < snapshot[row].length; c++) {
                     if (snapshot[row][c] != 0) {
                     }
-                    // ?�이??블록 범위 ?�인 (100-599)
+                    // 아이템 블록 범위 확인 (100-599)
                     if (snapshot[row][c] >= 100 && snapshot[row][c] < 600) {
                         hasItemBlockInFullLines = true;
-                        int originalId = snapshot[row][c] % 100; // ?�래 미노 ID 추출
-                        itemPieceKind = Tetromino.kindForId(originalId); // ID로�???Kind 추출
+                        int originalId = snapshot[row][c] % 100; // 원래 미노 ID 추출
+                        itemPieceKind = Tetromino.kindForId(originalId); // ID로부터 Kind 추출
 
-                        // ?�이???�??구분
+                        // 아이템 타입 구분
                         if (snapshot[row][c] >= 100 && snapshot[row][c] < 200) {
                             detectedItemType = Tetromino.ItemType.COPY;
                         } else if (snapshot[row][c] >= 200 && snapshot[row][c] < 300) {
@@ -992,12 +994,14 @@ public class GameEngine {
                         break;
                     }
                 }
-                if (hasItemBlockInFullLines) break;
+                if (hasItemBlockInFullLines)
+                    break;
             }
         }
 
-        // ?��??�으�?변�?(250ms)
-        for (int row : fullLines) board.fillLineWith(row, -1); // ?�색 ?�래??마커
+        // 인위적으로 변형(250ms)
+        for (int row : fullLines)
+            board.fillLineWith(row, -1); // 회색 플래시 마커
         if (listener != null) {
             listener.onBoardUpdated(board);
         }
@@ -1006,20 +1010,20 @@ public class GameEngine {
         final Tetromino.Kind finalItemPieceKind = itemPieceKind;
         final Tetromino.ItemType finalDetectedItemType = detectedItemType;
         final int lineCount = fullLines.size();
-        
-        // ?�인 ??�� ?�벤?��? 즉시 발생 (lastLockedColumns ?�보가 ?�효???�안)
+
+        // 라인 클리어 이벤트가 즉시 발생 (lastLockedColumns 정보가 유효한 동안)
         if (lineCount > 0 && listener != null) {
             listener.onLinesCleared(lineCount);
         }
 
-        // Timer�??�용?�여 250ms ???�인 ?�거 �?게임 진행
+        // Timer를 이용하여 250ms 인위적 제거 후 게임 진행
         java.util.Timer delayTimer = new java.util.Timer();
         delayTimer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 boolean copyEffectProcessed = false;
 
-                // ?�색 ?�래?��? ?�래 ?�태�?복원 (clearFullLines ?�에)
+                // 보드 스냅샷의 이전 상태 복원 (clearFullLines 전에)
                 if (boardSnapshotBeforeClear != null) {
                     for (int row : fullLines) {
                         if (row >= 0 && row < boardSnapshotBeforeClear.length) {
@@ -1030,22 +1034,22 @@ public class GameEngine {
                     }
                 }
 
-                // ?�이???�과�?먼�? 처리 (clearFullLines ?�에)
-                // ?? GRAVITY/SPLIT/LINE_CLEAR???��? 착�? ?�점??처리?�었?��?�??�외
+                // 아이템 효과 먼저 처리 (clearFullLines 전에)
+                // 만약 GRAVITY/SPLIT/LINE_CLEAR이면 착각하지 말고 점프 처리되었으므로 제외
                 if (itemModeEnabled && finalHasItemBlock && finalDetectedItemType != null) {
                     if (finalDetectedItemType == Tetromino.ItemType.COPY) {
                         copyEffectProcessed = true;
                         processItemEffect(finalDetectedItemType, finalItemPieceKind);
                     }
-                    // GRAVITY, SPLIT, LINE_CLEAR??착�? ???��? 처리?�었?��?�??�기?�는 처리?��? ?�음
+                    // GRAVITY, SPLIT, LINE_CLEAR는 착각하지 말고 이미 처리되었으므로 여기서는 처리하지 말고 다음
                 }
 
-                // ?�이???�과�?처리?�는 콜백 ?�의 (?��?)
+                // 아이템 효과 처리를 위한 콜백 함수 (필요시)
                 Runnable itemEffectCallback = () -> {
                 };
 
                 int cleared = board.clearFullLines(itemEffectCallback);
-                // onLinesCleared???��? ?�출?�었?��?�??�기?�는 ?�수�?추�?
+                // onLinesCleared가 이미 호출되었으므로 여기서는 점수 추가
                 if (cleared > 0) {
                     addScoreForClearedLines(cleared);
                     if (listener != null) {
@@ -1056,16 +1060,16 @@ public class GameEngine {
                     listener.onBoardUpdated(board);
                 }
 
-                // COPY ?�과가 처리??경우 spawnNext�??�출?��? ?�음
+                // COPY 효과가 처리된 경우 spawnNext를 호출하지 말고 다음
                 if (!copyEffectProcessed) {
                     spawnNext();
                 }
-                delayTimer.cancel(); // Timer ?�리
+                delayTimer.cancel(); // Timer 정리
             }
-        }, 250); // 250ms 지??
+        }, 250); // 250ms 지연
     }
 
-    // ?�거???�인 ?�에 ?�른 ?�수 추�?:
+    // 클리어한 줄에 따른 점수 추가:
     // 1 -> 100, 2 -> 250, 3 -> 500, 4 -> 1000
     public void addScoreForClearedLines(int cleared) {
         switch (cleared) {
@@ -1082,25 +1086,27 @@ public class GameEngine {
                 score += 1000;
                 break;
             default:
-                if (cleared > 4) score += 1000 + (cleared - 4) * 250;
+                if (cleared > 4)
+                    score += 1000 + (cleared - 4) * 250;
                 break; // graceful handling
         }
 
-        // ?�이??모드?�서 ?�인 ?�리??처리
+        // 아이템 모드에서 라인 클리어 처리
         if (itemModeEnabled && cleared > 0) {
             totalLinesCleared += cleared;
-            
-            // 
+
+            //
             int beforeClear = totalLinesCleared - cleared;
             int currentGroup = totalLinesCleared / 2;
             int previousGroup = beforeClear / 2;
 
-            if (currentGroup > previousGroup) generateItemPiece();
+            if (currentGroup > previousGroup)
+                generateItemPiece();
         }
     }
 
-    // 블록 ?�강???�른 ?�수 추�? (10??× 거리 × ?�도 계수)
-    // @param dropDistance ?�강??�???
+    // 블록 낙하에 따른 점수 추가 (10점× 거리 × 속도 계수)
+    // @param dropDistance 낙하 거리
     public void addDropScore(int dropDistance) {
         int dropPoints = gameTimer.calculateDropScore(dropDistance);
         score += dropPoints;
@@ -1109,8 +1115,8 @@ public class GameEngine {
         }
     }
 
-    // ?�드 ?�롭???�른 ?�수 추�?
-    // @param dropDistance ?�강??�???
+    // 하드 드롭에 따른 점수 추가
+    // @param dropDistance 낙하 거리
     public void addHardDropScore(int dropDistance) {
         int dropPoints = gameTimer.getHardDropScore(dropDistance);
         score += dropPoints;
@@ -1119,44 +1125,44 @@ public class GameEngine {
         }
     }
 
-    // 게임 ?�?�머 ?�근??(?�도 조정??
-    // @return 게임 ?�?�머 ?�스?�스
+    // 게임 타이머 접근 (속도 조정용)
+    // @return 게임 타이머 인스턴스
     public Timer getGameTimer() {
         return gameTimer;
     }
 
-    // ?�인 ?�리????게임 ?�도 증�? (10줄마??
-    // Timer???�도?� GameEngine???�롭 간격???�기?�합?�다.
-    // ?�이?�에 ?�라 ?�도 증�??�이 ?�라집니??
-    // - EASY: 20% ??증�? (0.8�?
-    // - NORMAL: 기본 증�? (1.0�?
-    // - HARD: 20% ??증�? (1.2�?
-    // @param clearedLines      ?�번???�리?�된 ?�인 ??
-    // @param totalLinesCleared �??�리?�된 ?�인 ??
+    // 라인 클리어로 게임 속도 증가 (10줄마다)
+    // Timer의 속도와 GameEngine의 드롭 간격을 동기화합니다.
+    // 난이도에 따라 속도 증가 방식이 다릅니다:
+    // - EASY: 20% 감속 (0.8배)
+    // - NORMAL: 기본 증가 (1.0배)
+    // - HARD: 20% 가속 (1.2배)
+    // @param clearedLines 이번에 클리어된 라인 수
+    // @param totalLinesCleared 총 클리어된 라인 수
     public void updateSpeedForLinesCleared(int clearedLines, int totalLinesCleared) {
-        // 3줄마???�도 증�?
+        // 3줄마다 속도 증가
         int newSpeedLevel = totalLinesCleared / speedPerClearLines;
         if (newSpeedLevel > (totalLinesCleared - clearedLines) / speedPerClearLines) {
-            // ?�이?�에 ?�른 ?�도 증�? 배율 ?�용
+            // 난이도에 따른 속도 증가 배율 적용
             double speedMultiplier = getSpeedIncreaseMultiplier();
             gameTimer.increaseSpeed(speedMultiplier);
-            // Timer???�로???�도�??�롭 간격 ?�데?�트
+            // Timer로부터 속도를 드롭 간격 업데이트
             double newInterval = gameTimer.getInterval() / 1000.0; // milliseconds to seconds
             setDropIntervalSeconds(newInterval);
         }
     }
 
-    // ?�이?�에 ?�른 ?�도 증�? 배율??반환?�니??
+    // 난이도에 따른 속도 증가 배율을 반환합니다.
     // @return EASY: 0.8, NORMAL: 1.0, HARD: 1.2
     private double getSpeedIncreaseMultiplier() {
         switch (difficulty) {
             case EASY:
-                return 0.8; // 20% ??증�?
+                return 0.8; // 20% 감속
             case HARD:
-                return 1.2; // 20% ??증�?
+                return 1.2; // 20% 가속
             case NORMAL:
             default:
-                return 1.0; // 기본 증�???
+                return 1.0; // 기본 증가
         }
     }
 
@@ -1173,21 +1179,21 @@ public class GameEngine {
     }
 
     /**
-     * ?�재 블록???�드 ?�롭?�을 ???�달?�게 ??Y ?�치�?계산?�니??
-     * 고스??블록 ?�시�??�해 ?�용?�니??
+     * 현재 블록의 하드 드롭을 위한 최적 Y 위치를 계산합니다.
+     * 고스트 블록 표시용으로 사용됩니다.
      * 
-     * @return 고스??블록??Y ?�치, ?�재 블록???�으�?-1
+     * @return 고스트 블록의 Y 위치, 현재 블록이 없으면 -1
      */
     public int getGhostY() {
         if (current == null) {
             return -1;
         }
-        
+
         int ghostY = py;
         while (board.fits(current.getShape(), px, ghostY + 1)) {
             ghostY++;
         }
-        
+
         return ghostY;
     }
 
@@ -1206,39 +1212,39 @@ public class GameEngine {
     public int getTotalLinesCleared() {
         return totalLinesCleared;
     }
-    
+
     public java.util.Set<Integer> getLastLockedColumns() {
-        // tempLockedColumnsForEvent가 ?�정?�어 ?�으�?그것??반환 (?�벤?�용 백업)
+        // tempLockedColumnsForEvent가 설정되어 있으면 그것을 반환 (이벤트용 백업)
         if (tempLockedColumnsForEvent != null) {
             return new java.util.HashSet<>(tempLockedColumnsForEvent);
         }
         return new java.util.HashSet<>(lastLockedColumns);
     }
-    
+
     public java.util.List<int[]> getLastLockedCells() {
-        // tempLockedCellsForEvent가 ?�정?�어 ?�으�?그것??반환 (?�벤?�용 백업)
+        // tempLockedCellsForEvent가 설정되어 있으면 그것을 반환 (이벤트용 백업)
         if (tempLockedCellsForEvent != null) {
             return new java.util.ArrayList<>(tempLockedCellsForEvent);
         }
         return new java.util.ArrayList<>(lastLockedCells);
     }
-    
+
     public int[][] getBoardSnapshotBeforeClear() {
         return boardSnapshotBeforeClear;
     }
-    
+
     public java.util.List<Integer> getClearedLineIndices() {
         return clearedLineIndices;
     }
-    
+
     public boolean isLastClearByGravityOrSplit() {
         return lastClearWasByGravityOrSplit;
     }
-    
+
     private void recordLastLockedColumns() {
         java.util.Set<Integer> newLockedColumns = new java.util.HashSet<>();
         java.util.List<int[]> newLockedCells = new java.util.ArrayList<>();
-        
+
         if (current != null) {
             int[][] shape = current.getShape();
             for (int r = 0; r < shape.length; r++) {
@@ -1247,7 +1253,7 @@ public class GameEngine {
                         int boardX = px + c;
                         int boardY = py + r;
                         newLockedColumns.add(boardX);
-                        newLockedCells.add(new int[]{boardX, boardY}); // [x, y] 좌표 ?�??
+                        newLockedCells.add(new int[] { boardX, boardY }); // [x, y] 좌표 기록
                     }
                 }
             }
@@ -1256,8 +1262,8 @@ public class GameEngine {
         lastLockedCells = newLockedCells;
     }
 
-    // ?�스?�용: ?�이??기반 ?�덤 ?�스�??�성?�니??
-    // ??메서?�는 Roulette Wheel Selection ?�고리즘???�스?�하�??�해 ?�용?�니??
+    // 테스트용: 아이템 기반 랜덤 피스 생성입니다.
+    // 이 메서드는 Roulette Wheel Selection 알고리즘을 사용하여 아이템을 생성합니다.
     public Tetromino generateTestPiece() {
         return randomPiece();
     }
