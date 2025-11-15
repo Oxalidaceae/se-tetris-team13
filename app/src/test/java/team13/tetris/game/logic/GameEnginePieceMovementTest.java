@@ -322,7 +322,14 @@ public class GameEnginePieceMovementTest {
         itemEngine.startNewGame();
 
         // WEIGHT 아이템을 직접 테스트하기 위해 Tetromino 확인
-        Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        Tetromino weightItem = Tetromino.item(
+            Tetromino.Kind.WEIGHT,
+            0,
+            Tetromino.ItemType.WEIGHT,
+            0
+        );
+        
         assertFalse(weightItem.canRotate(), "WEIGHT 아이템은 회전할 수 없어야 함");
 
         itemEngine.shutdown();

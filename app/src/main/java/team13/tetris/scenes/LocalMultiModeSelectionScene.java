@@ -2,7 +2,6 @@ package team13.tetris.scenes;
 
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
-import team13.tetris.data.ScoreBoard;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

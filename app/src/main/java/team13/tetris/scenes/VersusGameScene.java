@@ -1,20 +1,14 @@
 package team13.tetris.scenes;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
@@ -24,9 +18,10 @@ import team13.tetris.game.model.Tetromino;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VersusGameScene {
+public class VersusGameScene extends BaseGameScene {
+    // 향후 확장을 위해 보존
+    @SuppressWarnings("unused")
     private final SceneManager manager;
-    private final Settings settings;
     private GameEngine engine1; // Player 1
     private GameEngine engine2; // Player 2
     private final HBox root;
@@ -38,11 +33,7 @@ public class VersusGameScene {
     // UI 업데이트 throttle을 위한 변수
     private volatile boolean updatePending = false;
     
-    // 셀 캐싱 (성능 최적화) - CellView로 변경
-    private final Map<String, CellView> cellCache1 = new HashMap<>();
-    private final Map<String, CellView> cellCache2 = new HashMap<>();
-    private final Map<String, CellView> previewCache1 = new HashMap<>();
-    private final Map<String, CellView> previewCache2 = new HashMap<>();
+    // incoming grid용 캐시만 유지
     private final Map<String, Label> incomingCache1 = new HashMap<>();
     private final Map<String, Label> incomingCache2 = new HashMap<>();
     
@@ -64,8 +55,8 @@ public class VersusGameScene {
             GameEngine engine1,
             GameEngine engine2,
             boolean timerMode) {
+        super(settings);
         this.manager = manager;
-        this.settings = settings;
         this.engine1 = engine1;
         this.engine2 = engine2;
         this.timerMode = timerMode;
@@ -73,161 +64,23 @@ public class VersusGameScene {
         root = new HBox(20);
         root.getStyleClass().add("game-root");
 
-        // Player 1 보드
+        // Player 1 보드 초기화
         Board board1 = engine1.getBoard();
         boardGrid1 = createBoardGrid(board1);
         previewGrid1 = createPreviewGrid();
-        incomingGrid1 = createIncomingGrid(); // 넘어올 블록 표시
+        incomingGrid1 = createIncomingGrid();
         scoreLabel1 = new Label("Player 1\nScore: 0");
-        scoreLabel1.getStyleClass().add("score-label");
-        scoreLabel1.setPrefWidth(150);
-        
-        Label incomingLabel1 = new Label("Incoming:");
-        incomingLabel1.getStyleClass().add("label");
-        
-        // 화면 크기에 따라 incoming 글자 크기 조정
-        String incomingFontSize = "10px"; // 기본 크기
-        if ("MEDIUM".equals(settings.getWindowSize())) {
-            incomingFontSize = "12px";
-        } else if ("LARGE".equals(settings.getWindowSize())) {
-            incomingFontSize = "16px"; // LARGE에서 더 큰 글자
-        }
-        incomingLabel1.setStyle("-fx-font-size: " + incomingFontSize + ";");
 
-        VBox player1Panel = new VBox(12);
-        HBox player1Game = new HBox(12);
-        
-        // 타이머 모드인 경우 Player 1 타이머 추가
-        if (timerMode) {
-            timerLabel1 = new Label("Time: 120");
-            timerLabel1.getStyleClass().add("label-title");
-            timerLabel1.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
-            
-            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
-            if ("SMALL".equals(settings.getWindowSize())) {
-                // 타이머를 위쪽에, incoming을 아래쪽에 배치
-                VBox right1 = new VBox(6, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 50));
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            } else if ("MEDIUM".equals(settings.getWindowSize())) {
-                // 타이머를 위쪽에, incoming을 아래쪽에 배치 (조금 더 넓은 간격)
-                VBox right1 = new VBox(8, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            } else {
-                // LARGE: 타이머를 위쪽에, incoming을 아래쪽에 배치
-                VBox right1 = new VBox(10, previewGrid1, scoreLabel1, timerLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (20 -> 80)
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            }
-        } else {
-            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
-            if ("SMALL".equals(settings.getWindowSize())) {
-                VBox right1 = new VBox(8, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 50));
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            } else if ("MEDIUM".equals(settings.getWindowSize())) {
-                VBox right1 = new VBox(10, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            } else {
-                // LARGE: incoming을 아래쪽에 배치
-                VBox right1 = new VBox(12, previewGrid1, scoreLabel1, incomingLabel1, incomingGrid1);
-                right1.getStyleClass().add("right-panel");
-                right1.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right1, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (20 -> 80)
-                player1Game.getChildren().addAll(boardGrid1, right1);
-            }
-        }
-        player1Panel.getChildren().add(player1Game);
-
-        // Player 2 보드
+        // Player 2 보드 초기화  
         Board board2 = engine2.getBoard();
         boardGrid2 = createBoardGrid(board2);
         previewGrid2 = createPreviewGrid();
-        incomingGrid2 = createIncomingGrid(); // 넘어올 블록 표시
+        incomingGrid2 = createIncomingGrid();
         scoreLabel2 = new Label("Player 2\nScore: 0");
-        scoreLabel2.getStyleClass().add("score-label");
-        scoreLabel2.setPrefWidth(150);
-        
-        Label incomingLabel2 = new Label("Incoming:");
-        incomingLabel2.getStyleClass().add("label");
-        
-        // 화면 크기에 따라 incoming 글자 크기 조정 (Player 2도 동일)
-        String incomingFontSize2 = "10px"; // 기본 크기
-        if ("MEDIUM".equals(settings.getWindowSize())) {
-            incomingFontSize2 = "12px";
-        } else if ("LARGE".equals(settings.getWindowSize())) {
-            incomingFontSize2 = "16px"; // LARGE에서 더 큰 글자
-        }
-        incomingLabel2.setStyle("-fx-font-size: " + incomingFontSize2 + ";");
 
-        VBox player2Panel = new VBox(12);
-        HBox player2Game = new HBox(12);
-        
-        // 타이머 모드인 경우 Player 2 타이머 추가
-        if (timerMode) {
-            timerLabel2 = new Label("Time: 120");
-            timerLabel2.getStyleClass().add("label-title");
-            timerLabel2.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
-            
-            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
-            if ("SMALL".equals(settings.getWindowSize())) {
-                // 타이머를 위쪽에, incoming을 아래쪽에 배치
-                VBox right2 = new VBox(6, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 50));
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            } else if ("MEDIUM".equals(settings.getWindowSize())) {
-                // 타이머를 위쪽에, incoming을 아래쪽에 배치 (조금 더 넓은 간격)
-                VBox right2 = new VBox(8, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 30)); // 왼쪽으로 이동
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            } else {
-                // LARGE: 타이머를 위쪽에, incoming을 아래쪽에 배치
-                VBox right2 = new VBox(10, previewGrid2, scoreLabel2, timerLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (40 -> 80)
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            }
-        } else {
-            // SMALL, MEDIUM 크기에서는 incoming을 아래로 배치하고 간격 조정
-            if ("SMALL".equals(settings.getWindowSize())) {
-                VBox right2 = new VBox(8, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 50));
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            } else if ("MEDIUM".equals(settings.getWindowSize())) {
-                VBox right2 = new VBox(10, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 30));
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            } else {
-                // LARGE: incoming을 아래쪽에 배치
-                VBox right2 = new VBox(12, previewGrid2, scoreLabel2, incomingLabel2, incomingGrid2);
-                right2.getStyleClass().add("right-panel");
-                right2.setAlignment(Pos.TOP_CENTER);
-                HBox.setMargin(right2, new Insets(0, 0, 0, 50)); // 오른쪽으로 이동 (40 -> 80)
-                player2Game.getChildren().addAll(boardGrid2, right2);
-            }
-        }
-        player2Panel.getChildren().add(player2Game);
+        // Player 1과 Player 2 UI 생성
+        VBox player1Panel = createPlayerUI(1, engine1, timerMode);
+        VBox player2Panel = createPlayerUI(2, engine2, timerMode);
 
         HBox.setHgrow(player1Panel, Priority.ALWAYS);
         HBox.setHgrow(player2Panel, Priority.ALWAYS);
@@ -241,50 +94,109 @@ public class VersusGameScene {
         updateGrid();
     }
 
-    private GridPane createBoardGrid(Board board) {
-        int w = board.getWidth();
-        int h = board.getHeight();
-
-        GridPane grid = new GridPane();
-        grid.getStyleClass().add("board-grid");
+    // 플레이어별 UI를 생성하는 공통 메서드
+    private VBox createPlayerUI(int playerNumber, GameEngine engine, boolean timerMode) {
+        // 플레이어별 변수 설정
+        GridPane boardGrid, previewGrid, incomingGrid;
+        Label scoreLabel, timerLabel = null;
         
-        // 캐시 맵 선택 - CellView로 변경
-        Map<String, CellView> cache = (grid == boardGrid1 || boardGrid1 == null) ? cellCache1 : cellCache2;
-
-        for (int gy = 0; gy < h + 2; gy++) {
-            for (int gx = 0; gx < w + 2; gx++) {
-                CellView cell = new CellView(28, settings); // 기본 셀 크기
-
-                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) {
-                    cell.setBorder();
-                }
-
-                grid.add(cell, gx, gy);
-                // 캐시에 저장
-                cache.put(gy + "," + gx, cell);
+        if (playerNumber == 1) {
+            boardGrid = boardGrid1;
+            previewGrid = previewGrid1;
+            incomingGrid = incomingGrid1;
+            scoreLabel = scoreLabel1;
+            if (timerMode) {
+                if (timerLabel1 == null)
+                    timerLabel1 = new Label("Time: 120");
+                timerLabel = timerLabel1;
+            }
+        } else {
+            boardGrid = boardGrid2;
+            previewGrid = previewGrid2;
+            incomingGrid = incomingGrid2;
+            scoreLabel = scoreLabel2;
+            if (timerMode) {
+                if (timerLabel2 == null)
+                    timerLabel2 = new Label("Time: 120");
+                timerLabel = timerLabel2;
             }
         }
+        
+        // 공통 스타일 설정
+        scoreLabel.getStyleClass().add("score-label");
+        scoreLabel.setPrefWidth(150);
+        
+        Label incomingLabel = new Label("Incoming:");
+        incomingLabel.getStyleClass().add("label");
+        
+        // 화면 크기에 따라 incoming 글자 크기 조정
+        String incomingFontSize = getIncomingFontSize();
+        incomingLabel.setStyle("-fx-font-size: " + incomingFontSize + ";");
 
-        return grid;
+        VBox playerPanel = new VBox(12);
+        HBox playerGame = new HBox(12);
+        
+        // 타이머 모드인 경우 타이머 라벨 설정
+        if (timerMode && timerLabel != null) {
+            timerLabel.getStyleClass().add("label-title");
+            timerLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
+        }
+        
+        // 화면 크기별 레이아웃 구성
+        VBox rightPanel = createRightPanel(previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid, timerMode);
+        playerGame.getChildren().addAll(boardGrid, rightPanel);
+        playerPanel.getChildren().add(playerGame);
+        
+        return playerPanel;
     }
-
-    private GridPane createPreviewGrid() {
-        GridPane grid = new GridPane();
-        grid.getStyleClass().add("preview-grid");
+    
+    // 화면 크기에 따른 incoming 폰트 크기 반환
+    private String getIncomingFontSize() {
+        String windowSize = settings.getWindowSize();
+        if ("MEDIUM".equals(windowSize)) {
+            return "12px";
+        } else if ("LARGE".equals(windowSize)) {
+            return "16px";
+        }
+        return "10px"; // 기본 크기
+    }
+    
+    // 오른쪽 패널 (preview, score, timer, incoming) 생성
+    private VBox createRightPanel(GridPane previewGrid, Label scoreLabel, Label timerLabel, 
+                                 Label incomingLabel, GridPane incomingGrid, boolean timerMode) {
+        String windowSize = settings.getWindowSize();
+        VBox rightPanel;
         
-        // 캐시 맵 선택 - CellView로 변경
-        Map<String, CellView> cache = (grid == previewGrid1 || previewGrid1 == null) ? previewCache1 : previewCache2;
-
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
-                CellView cell = new CellView(22, settings); // 프리뷰 셀 크기
-                grid.add(cell, c, r);
-                // 캐시에 저장
-                cache.put(r + "," + c, cell);
+        if (timerMode && timerLabel != null) {
+            // 타이머 모드: 타이머 포함
+            if ("SMALL".equals(windowSize)) {
+                rightPanel = new VBox(6, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            } else if ("MEDIUM".equals(windowSize)) {
+                rightPanel = new VBox(8, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
+            } else { // LARGE
+                rightPanel = new VBox(10, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            }
+        } else {
+            // 일반 모드: 타이머 제외
+            if ("SMALL".equals(windowSize)) {
+                rightPanel = new VBox(8, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            } else if ("MEDIUM".equals(windowSize)) {
+                rightPanel = new VBox(10, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
+            } else { // LARGE
+                rightPanel = new VBox(12, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             }
         }
-
-        return grid;
+        
+        rightPanel.getStyleClass().add("right-panel");
+        rightPanel.setAlignment(Pos.TOP_CENTER);
+        
+        return rightPanel;
     }
 
     private GridPane createIncomingGrid() {
@@ -335,17 +247,11 @@ public class VersusGameScene {
         return scene;
     }
 
-    public Scene getScene() {
-        return scene;
-    }
+    public Scene getScene() { return scene; }
 
-    public void setEngine1(GameEngine engine) {
-        this.engine1 = engine;
-    }
+    public void setEngine1(GameEngine engine) { this.engine1 = engine; }
 
-    public void setEngine2(GameEngine engine) {
-        this.engine2 = engine;
-    }
+    public void setEngine2(GameEngine engine) { this.engine2 = engine; }
 
     public void requestFocus() {
         Platform.runLater(() -> {
@@ -355,9 +261,7 @@ public class VersusGameScene {
 
     public void updateGrid() {
         // 이미 업데이트가 예약되어 있으면 스킵
-        if (updatePending) {
-            return;
-        }
+        if (updatePending) return;
         updatePending = true;
         
         Platform.runLater(() -> {
@@ -437,17 +341,12 @@ public class VersusGameScene {
         int w = b.getWidth();
         int h = b.getHeight();
         
-        // 캐시 선택 - CellView로 변경
-        Map<String, CellView> boardCache = (boardGrid == boardGrid1) ? cellCache1 : cellCache2;
-        Map<String, CellView> prevCache = (previewGrid == previewGrid1) ? previewCache1 : previewCache2;
-        
-        // Platform.runLater 제거 - 이미 updateGrid()에서 처리됨
         // 보드 업데이트
         for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     int val = b.getCell(x, y);
-                    // 캐시에서 직접 가져오기 (getNodeByRowColumnIndex 대신)
-                    CellView cell = boardCache.get((y + 1) + "," + (x + 1));
+                    // getNodeByRowColumnIndex 사용
+                    CellView cell = (CellView) getNodeByRowColumnIndex(y + 1, x + 1, boardGrid);
                     if (cell == null) continue;
 
                     if (val == 0) {
@@ -506,23 +405,7 @@ public class VersusGameScene {
                 String blockClass = current.getBlockStyleClass();
                 
                 // 고스트 블록 그리기 (현재 블록보다 먼저 그려서 뒤에 표시됨)
-                if (ghostY != -1 && ghostY != py) {
-                    for (int r = 0; r < shape.length; r++) {
-                        for (int c = 0; c < shape[r].length; c++) {
-                            if (shape[r][c] != 0) {
-                                int bx = px + c;
-                                int by = ghostY + r;
-                                if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                                    CellView cell = boardCache.get((by + 1) + "," + (bx + 1));
-                                    if (cell != null) {
-                                        // 고스트 블록은 반투명하게 표시
-                                        cell.setBlock("O", "block-ghost", "tetris-ghost-text");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                renderGhostBlock(shape, px, py, ghostY, w, h, boardGrid);
                 
                 int blockIndex = 0;
                 
@@ -532,36 +415,11 @@ public class VersusGameScene {
                             int bx = px + c;
                             int by = py + r;
                             if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                                // 캐시에서 직접 가져오기
-                                CellView cell = boardCache.get((by + 1) + "," + (bx + 1));
+                                // getNodeByRowColumnIndex 사용
+                                CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
                                 if (cell != null) {
                                     // 아이템 미노 표시 로직
-                                    if (current.isItemPiece()) {
-                                        if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY
-                                                && blockIndex == current.getCopyBlockIndex()) {
-                                            // COPY 아이템: 특정 블록만 C 표시, 원래 블록 색상 유지
-                                            cell.setBlock("C", blockClass, "item-copy-block");
-                                        } else if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR
-                                                && blockIndex == current.getLineClearBlockIndex()) {
-                                            // LINE_CLEAR 아이템: 특정 블록만 L 표시, 원래 블록 색상 유지
-                                            cell.setBlock("L", blockClass, "item-copy-block");
-                                        } else if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.WEIGHT) {
-                                            // WEIGHT 아이템: 모든 블록 W 표시
-                                            cell.setBlock("W", blockClass, textClass);
-                                        } else if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.GRAVITY) {
-                                            // GRAVITY 아이템: 모든 블록 G 표시
-                                            cell.setBlock("G", blockClass, textClass);
-                                        } else if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.SPLIT) {
-                                            // SPLIT 아이템: 모든 블록 S 표시
-                                            cell.setBlock("S", blockClass, textClass);
-                                        } else {
-                                            // 기타 아이템 블록은 O 표시
-                                            cell.setBlock("O", blockClass, textClass);
-                                        }
-                                    } else {
-                                        // 일반 미노는 O 표시
-                                        cell.setBlock("O", blockClass, textClass);
-                                    }
+                                    applyItemMinoDisplay(cell, current, blockIndex, blockClass, textClass);
                                 }
                             }
                             blockIndex++;
@@ -601,7 +459,7 @@ public class VersusGameScene {
                 // 먼저 모든 셀을 비움
                 for (int r = 0; r < 4; r++) {
                     for (int c = 0; c < 4; c++) {
-                        CellView cell = prevCache.get(r + "," + c);
+                        CellView cell = (CellView) getNodeByRowColumnIndex(r, c, previewGrid);
                         if (cell != null) {
                             applyCellEmpty(cell);
                         }
@@ -616,36 +474,11 @@ public class VersusGameScene {
                             int displayRow = r - minRow + offsetRow;
                             int displayCol = c - minCol + offsetCol;
                             
-                            // 캐시에서 직접 가져오기
-                            CellView cell = prevCache.get(displayRow + "," + displayCol);
+                            // getNodeByRowColumnIndex 사용
+                            CellView cell = (CellView) getNodeByRowColumnIndex(displayRow, displayCol, previewGrid);
                             if (cell != null) {
                                 // 아이템 미노 표시 로직
-                                if (next.isItemPiece()) {
-                                    if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY
-                                            && blockIndex == next.getCopyBlockIndex()) {
-                                        // COPY 아이템: 특정 블록만 C 표시, 원래 블록 색상 유지
-                                        cell.setBlock("C", blockClass, "item-copy-block");
-                                    } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR
-                                            && blockIndex == next.getLineClearBlockIndex()) {
-                                        // LINE_CLEAR 아이템: 특정 블록만 L 표시, 원래 블록 색상 유지
-                                        cell.setBlock("L", blockClass, "item-copy-block");
-                                    } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.WEIGHT) {
-                                        // WEIGHT 아이템: 모든 블록 W 표시
-                                        cell.setBlock("W", blockClass, textClass);
-                                    } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.GRAVITY) {
-                                        // GRAVITY 아이템: 모든 블록 G 표시
-                                        cell.setBlock("G", blockClass, textClass);
-                                    } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.SPLIT) {
-                                        // SPLIT 아이템: 모든 블록 S 표시
-                                        cell.setBlock("S", blockClass, textClass);
-                                    } else {
-                                        // 기타 아이템 블록은 O 표시
-                                        cell.setBlock("O", blockClass, textClass);
-                                    }
-                                } else {
-                                    // 일반 미노는 O 표시
-                                    cell.setBlock("O", blockClass, textClass);
-                                }
+                                applyItemMinoDisplay(cell, next, blockIndex, blockClass, textClass);
                                 blockIndex++;
                             }
                         }
@@ -657,9 +490,34 @@ public class VersusGameScene {
             scoreLabel.setText(playerName + "\nScore:\n" + engine.getScore());
     }
 
-    // CellView 오버로딩 메서드들
-    private void applyCellEmpty(CellView cell) {
-        cell.setEmpty();
+    // 아이템 미노 표시 로직 - 공통 메서드
+    private void applyItemMinoDisplay(CellView cell, Tetromino tetromino, int blockIndex, String blockClass, String textClass) {
+        if (tetromino.isItemPiece()) {
+            if (tetromino.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY
+                    && blockIndex == tetromino.getCopyBlockIndex()) {
+                // COPY 아이템: 특정 블록만 C 표시, 원래 블록 색상 유지
+                cell.setBlock("C", blockClass, "item-copy-block");
+            } else if (tetromino.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR
+                    && blockIndex == tetromino.getLineClearBlockIndex()) {
+                // LINE_CLEAR 아이템: 특정 블록만 L 표시, 원래 블록 색상 유지
+                cell.setBlock("L", blockClass, "item-copy-block");
+            } else if (tetromino.getItemType() == team13.tetris.game.model.Tetromino.ItemType.WEIGHT) {
+                // WEIGHT 아이템: 모든 블록 W 표시
+                cell.setBlock("W", blockClass, textClass);
+            } else if (tetromino.getItemType() == team13.tetris.game.model.Tetromino.ItemType.GRAVITY) {
+                // GRAVITY 아이템: 모든 블록 G 표시
+                cell.setBlock("G", blockClass, textClass);
+            } else if (tetromino.getItemType() == team13.tetris.game.model.Tetromino.ItemType.SPLIT) {
+                // SPLIT 아이템: 모든 블록 S 표시
+                cell.setBlock("S", blockClass, textClass);
+            } else {
+                // 기타 아이템 블록은 O 표시
+                cell.setBlock("O", blockClass, textClass);
+            }
+        } else {
+            // 일반 미노는 O 표시
+            cell.setBlock("O", blockClass, textClass);
+        }
     }
 
     private void applyCellBlockText(CellView cell, String blockClass) {
@@ -712,181 +570,5 @@ public class VersusGameScene {
         }
         
         cell.setBlock(symbol, cssBlockClass, textClass);
-    }
-
-    // CellView: Rectangle 기반의 사각형 셀 (솔로 모드와 동일)
-    private static final class CellView extends StackPane {
-        private final Rectangle rect;
-        private final Canvas patternCanvas;
-        private final Label label;
-        private final Settings settings;
-
-        private CellView(double size, Settings settings) {
-            this.settings = settings;
-            setMinSize(size, size);
-            setPrefSize(size, size);
-            setMaxSize(size, size);
-            setAlignment(Pos.CENTER);
-            getStyleClass().add("cell");
-
-            rect = new Rectangle(size, size);
-            rect.getStyleClass().add("cell-rect");
-            rect.setStrokeWidth(0);
-            rect.widthProperty().bind(widthProperty());
-            rect.heightProperty().bind(heightProperty());
-
-            patternCanvas = new Canvas(size, size);
-            patternCanvas.widthProperty().bind(widthProperty());
-            patternCanvas.heightProperty().bind(heightProperty());
-            patternCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-            patternCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawPattern());
-
-            label = new Label(" ");
-            label.setAlignment(Pos.CENTER);
-            label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            label.getStyleClass().add("cell-text");
-
-            getChildren().addAll(rect, patternCanvas, label);
-
-            setEmpty();
-        }
-
-        private String currentPattern = null;
-
-        private void redrawPattern() {
-            if (currentPattern == null || currentPattern.equals("none")) {
-                clearCanvas();
-                return;
-            }
-
-            double w = patternCanvas.getWidth();
-            double h = patternCanvas.getHeight();
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, w, h);
-            gc.setStroke(Color.rgb(0, 0, 0, 0.7));
-            gc.setLineWidth(1);
-
-            switch (currentPattern) {
-                case "horizontal": // S - 수평 줄무늬
-                    for (double y = 0; y < h; y += 5) {
-                        gc.strokeLine(0, y, w, y);
-                    }
-                    break;
-                case "vertical": // J - 수직 줄무늬
-                    for (double x = 0; x < w; x += 5) {
-                        gc.strokeLine(x, 0, x, h);
-                    }
-                    break;
-                case "diagonal-right": // I - 빗살무늬 ↗
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left": // T - 빗살무늬 ↖
-                    for (double offset = -h; offset < w + h; offset += 5) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-                case "diagonal-right-wide": // Z - 빗살무늬 ↗ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, h, offset + h, 0);
-                    }
-                    break;
-                case "diagonal-left-wide": // L - 빗살무늬 ↖ (넓은 간격)
-                    for (double offset = -h; offset < w + h; offset += 7) {
-                        gc.strokeLine(offset, 0, offset + h, h);
-                    }
-                    break;
-            }
-        }
-
-        private void clearCanvas() {
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0, 0, patternCanvas.getWidth(), patternCanvas.getHeight());
-        }
-
-        private void clearDynamicStyles() {
-            ObservableList<String> rectClasses = rect.getStyleClass();
-            rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-
-            ObservableList<String> labelClasses = label.getStyleClass();
-            labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || name.equals("cell-empty") || name.equals("cell-border"));
-        }
-
-        private void setEmpty() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-empty")) rect.getStyleClass().add("cell-empty");
-            if (!label.getStyleClass().contains("cell-empty")) label.getStyleClass().add("cell-empty");
-            label.setText(" ");
-        }
-
-        private void setBorder() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-            if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
-            if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
-            label.setText("X");
-        }
-
-        private void setBlock(String symbol, String blockClass, String textClass) {
-            clearDynamicStyles();
-            if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass)) {
-                rect.getStyleClass().add(blockClass);
-            }
-            if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass)) {
-                label.getStyleClass().add(textClass);
-            }
-            
-            // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
-            boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
-                                                      symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
-            boolean isGhostBlock = "block-ghost".equals(blockClass);
-            
-            if ((settings.isColorBlindMode() && !isItemBlock) || isGhostBlock) {
-                label.setText(" "); // 일반 블록은 색맹모드에서 글자 숨김, 고스트 블록은 항상 글자 숨김
-            } else {
-                label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
-            }
-            
-            // 색맹 모드에서 패턴 적용
-            if (blockClass != null && settings.isColorBlindMode()) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-        }
-
-        private void applyPattern(String blockClass) {
-            switch (blockClass) {
-                case "block-I":
-                    currentPattern = "diagonal-right";
-                    break;
-                case "block-O":
-                    currentPattern = "none";
-                    break;
-                case "block-T":
-                    currentPattern = "diagonal-left";
-                    break;
-                case "block-S":
-                    currentPattern = "horizontal";
-                    break;
-                case "block-Z":
-                    currentPattern = "diagonal-right-wide";
-                    break;
-                case "block-J":
-                    currentPattern = "vertical";
-                    break;
-                case "block-L":
-                    currentPattern = "diagonal-left-wide";
-                    break;
-                default:
-                    currentPattern = null;
-            }
-            redrawPattern();
-        }
     }
 }
