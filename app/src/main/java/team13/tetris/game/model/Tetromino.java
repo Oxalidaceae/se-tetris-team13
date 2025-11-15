@@ -264,17 +264,16 @@ public class Tetromino {
     
     public ItemType getItemType() { return itemType; }
     
-    public boolean canRotate() { return canRotate; }
-
-    public boolean isLocked() { return isLocked; }
-
-    public void setLocked(boolean locked) { this.isLocked = locked; }
-
     // 현재 회전 인덱스 반환 (네트워크 전송용)
     public int getRotationIndex() {
         return rotation;
     }
     
+    public boolean canRotate() { return canRotate; }
+
+    public boolean isLocked() { return isLocked; }
+
+    public void setLocked(boolean locked) { this.isLocked = locked; }
     // LINE_CLEAR 아이템 전용 getter 메소드들 (COPY와 분리)
     public int getLineClearBlockIndex() { return lineClearBlockIndex; }
     
