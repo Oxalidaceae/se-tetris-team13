@@ -25,6 +25,10 @@ public class App extends Application {
         primaryStage.setTitle("Tetris");
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
+            // 네트워크 연결 등 리소스 정리
+            manager.cleanup();
+            
+            // 설정 저장
             settings.setColorBlindMode(manager.isColorBlindMode());
             settings.setWindowSize(getCurrentWindowSize(primaryStage, manager));
             SettingsRepository.save(settings);

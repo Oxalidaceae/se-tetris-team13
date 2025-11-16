@@ -1,6 +1,5 @@
 package team13.tetris.scenes;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -56,8 +55,8 @@ public class HostOrJoinScene {
         ipLabel.getStyleClass().add("label");
         ipLabel.setVisible(false);
         
-        TextField ipTextField = new TextField("127.0.0.1");
-        ipTextField.getStyleClass().add("text-field");
+        TextField ipTextField = new TextField();
+        ipTextField.setPromptText("Enter IP address (e.g., 127.0.0.1)"); 
         ipTextField.setMaxWidth(300);
         ipTextField.setVisible(false);
         
@@ -83,9 +82,14 @@ public class HostOrJoinScene {
             } else {
                 // 클라이언트로 접속
                 String serverIP = ipTextField.getText().trim();
-                if (serverIP.isEmpty()) {
-                    serverIP = "127.0.0.1";
+
+                // IP 주소 유효성 검증
+                if (!isValidIPAddress(serverIP)) {
+                    showErrorDialog("Invalid IP Address", 
+                        "Please enter a valid IP address (e.g., 192.168.1.1 or localhost)");
+                    return;
                 }
+                
                 manager.showNetworkLobby(settings, false, serverIP);
             }
         });
@@ -113,5 +117,41 @@ public class HostOrJoinScene {
     
     public Scene getScene() {
         return scene;
+    }
+    
+    // IP 주소 유효성 검증
+    private boolean isValidIPAddress(String ip) {
+        // localhost 허용
+        if (ip.equalsIgnoreCase("localhost")) {
+            return true;
+        }
+        
+        // IPv4 형식 검증: xxx.xxx.xxx.xxx (각 부분은 0-255)
+        String[] parts = ip.split("\\.");
+        if (parts.length != 4) {
+            return false;
+        }
+        
+        try {
+            for (String part : parts) {
+                int num = Integer.parseInt(part);
+                if (num < 0 || num > 255) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    
+    // 에러 다이얼로그 표시
+    private void showErrorDialog(String title, String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+            javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
