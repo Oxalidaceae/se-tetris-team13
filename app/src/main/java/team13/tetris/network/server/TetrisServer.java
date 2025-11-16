@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.TimerTask;
 
 public class TetrisServer {
     private static final int MAX_PLAYERS = 1;  // 서버 자신(호스트) + 클라이언트 1명
@@ -260,9 +261,19 @@ public class TetrisServer {
             }
         }
         
-        // 모든 조건 만족 시 게임 시작
-        System.out.println("All players ready! Starting game...");
-        startGame();
+        // 모든 조건 만족 시 카운트다운 시작 메시지 전송 후 5초 뒤 게임 시작
+        System.out.println("All players ready! Starting countdown...");
+        broadcastMessage(ConnectionMessage.createCountdownStart("server"));
+        if (hostMessageListener != null) {
+            hostMessageListener.onCountdownStart();
+        }
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                startGame();
+            }
+        }, 5000);
     }
     
     // 현재 서버의 IP 주소 반환
@@ -397,6 +408,19 @@ public class TetrisServer {
         broadcastToOthers(playerId, msg);
     }
 
+    // 모든 플레이어에게 UNREADY 이벤트 전달 (호스트 포함, 발신자 제외)
+    public void broadcastPlayerUnready(String playerId) {
+        ConnectionMessage msg = ConnectionMessage.createPlayerUnready(playerId);
+
+        // Host에도 전달 (호스트가 발신자가 아닌 경우만)
+        if (hostMessageListener != null && !playerId.equals(hostPlayerId)) {
+            hostMessageListener.onPlayerUnready(playerId);
+        }
+
+        // 발신자 제외 클라이언트들에게 전달
+        broadcastToOthers(playerId, msg);
+    }
+
     // 발신자를 제외한 모든 플레이어에게 보드 업데이트 전달
     public void broadcastBoardUpdateToOthers(String senderId, BoardUpdateMessage msg) {
         broadcastToOthers(senderId, msg);
@@ -513,6 +537,11 @@ public class TetrisServer {
         
         // 모든 플레이어가 준비되었는지 확인 (게임 시작)
         checkAllReady();
+    }
+
+    public void setHostUnready() {
+        setPlayerReady(hostPlayerId, false);
+        broadcastPlayerUnready(hostPlayerId);
     }
     
     // 서버 중지

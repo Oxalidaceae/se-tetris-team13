@@ -6,12 +6,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
+import team13.tetris.network.protocol.GameModeMessage;
 import javafx.scene.text.TextAlignment;
 
 // 대기 화면
@@ -34,8 +33,10 @@ public class NetworkLobbyScene {
     private Button readyButton;
 
     private Label gameModeLabel;
-    private RadioButton normalModeButton;
-    private RadioButton itemModeButton;
+    private Button normalModeButton;
+    private Button itemModeButton;
+    private Button timerModeButton;
+    private GameModeMessage.GameMode selectedGameMode = GameModeMessage.GameMode.NORMAL;
     
     private boolean myReady = false;
     private boolean opponentReady = false;
@@ -52,11 +53,10 @@ public class NetworkLobbyScene {
         
         Label titleLabel = new Label("Game Lobby");
         titleLabel.getStyleClass().add("label-title");
-        titleLabel.setStyle("-fx-font-size: 36px;");
 
         statusLabel = new Label(/* 컨트롤러에서 글씨 설정*/);
         statusLabel.getStyleClass().add("label");
-        statusLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: yellow;");
+        statusLabel.setStyle("-fx-text-fill: yellow;");
         statusLabel.setTextAlignment(TextAlignment.CENTER);
         
         // 게임 모드 선택 (서버만)
@@ -65,28 +65,43 @@ public class NetworkLobbyScene {
         
         gameModeLabel = new Label("Select Game Mode:");
         gameModeLabel.getStyleClass().add("label");
-        gameModeLabel.setStyle("-fx-font-size: 20px;");
-        
-        ToggleGroup modeGroup = new ToggleGroup();
-        
-        normalModeButton = new RadioButton("Normal Mode");
-        normalModeButton.setToggleGroup(modeGroup);
-        normalModeButton.setSelected(true);
-        normalModeButton.getStyleClass().add("radio-button");
-        normalModeButton.setStyle("-fx-font-size: 18px;");
-        
-        itemModeButton = new RadioButton("Item Mode");
-        itemModeButton.setToggleGroup(modeGroup);
-        itemModeButton.getStyleClass().add("radio-button");
-        itemModeButton.setStyle("-fx-font-size: 18px;");
-        
+
+        normalModeButton = new Button("Normal Mode");
+        normalModeButton.getStyleClass().addAll("button", "selected");
+
+        itemModeButton = new Button("Item Mode");
+        itemModeButton.getStyleClass().add("button");
+
+        timerModeButton = new Button("Timer Mode");
+        timerModeButton.getStyleClass().add("button");
+
+        normalModeButton.setOnAction(e -> {
+            selectedGameMode = GameModeMessage.GameMode.NORMAL;
+            normalModeButton.getStyleClass().add("selected");
+            itemModeButton.getStyleClass().remove("selected");
+            timerModeButton.getStyleClass().remove("selected");
+        });
+        itemModeButton.setOnAction(e -> {
+            selectedGameMode = GameModeMessage.GameMode.ITEM;
+            normalModeButton.getStyleClass().remove("selected");
+            itemModeButton.getStyleClass().add("selected");
+            timerModeButton.getStyleClass().remove("selected");
+        });
+        timerModeButton.setOnAction(e -> {
+            selectedGameMode = GameModeMessage.GameMode.TIMER;
+            normalModeButton.getStyleClass().remove("selected");
+            itemModeButton.getStyleClass().remove("selected");
+            timerModeButton.getStyleClass().add("selected");
+        });
+
+        HBox modeButtonBox = new HBox(10, normalModeButton, itemModeButton, timerModeButton);
+        modeButtonBox.setAlignment(Pos.CENTER);
+
         if (isHost) {
-            gameModeBox.getChildren().addAll(gameModeLabel, normalModeButton, itemModeButton);
+            gameModeBox.getChildren().addAll(gameModeLabel, modeButtonBox);
         } else {
             // 클라이언트는 모드 표시만
             gameModeLabel.setText("Game Mode: Waiting...");
-            normalModeButton.setVisible(false);
-            itemModeButton.setVisible(false);
             gameModeBox.getChildren().add(gameModeLabel);
         }
         
@@ -96,26 +111,23 @@ public class NetworkLobbyScene {
         
         Label readyTitleLabel = new Label("Player Status:");
         readyTitleLabel.getStyleClass().add("label");
-        readyTitleLabel.setStyle("-fx-font-size: 20px;");
         
         myReadyLabel = new Label((isHost ? "Host" : "Client") + ": Not Ready");
         myReadyLabel.getStyleClass().add("label");
-        myReadyLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: red;");
+        myReadyLabel.setStyle("-fx-text-fill: red;");
         
         opponentReadyLabel = new Label((isHost ? "Client" : "Host") + ": Not Ready");
         opponentReadyLabel.getStyleClass().add("label");
-        opponentReadyLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: red;");
+        opponentReadyLabel.setStyle("-fx-text-fill: red;");
         
         readyBox.getChildren().addAll(readyTitleLabel, myReadyLabel, opponentReadyLabel);
         
         // 준비 버튼
         readyButton = new Button("Ready");
-        readyButton.getStyleClass().add("menu-button");
-        readyButton.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
+        readyButton.getStyleClass().add("button");
         
         Button backButton = new Button("Cancel");
-        backButton.getStyleClass().add("menu-button");
-        backButton.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
+        backButton.getStyleClass().add("button");
         
         backButton.setOnAction(e -> {
             if (onCancelCallback != null) {
@@ -149,8 +161,8 @@ public class NetworkLobbyScene {
         return readyButton;
     }
     
-    public boolean isItemMode() {
-        return itemModeButton.isSelected();
+    public GameModeMessage.GameMode getSelectedGameMode() {
+        return selectedGameMode;
     }
     
     public void setStatusText(String text) {
@@ -169,8 +181,14 @@ public class NetworkLobbyScene {
         this.myReady = ready;
         Platform.runLater(() -> {
             myReadyLabel.setText((isHost ? "Host" : "Client") + ": " + (ready ? "Ready!" : "Not Ready"));
-            myReadyLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: " + (ready ? "green" : "red") + ";");
-            readyButton.setDisable(ready);
+            myReadyLabel.setStyle("-fx-text-fill: " + (ready ? "green" : "red") + ";");
+            if (ready) {
+                readyButton.setText("Cancel Ready");
+                readyButton.getStyleClass().add("selected");
+            } else {
+                readyButton.setText("Ready");
+                readyButton.getStyleClass().remove("selected");
+            }
         });
     }
     
@@ -178,7 +196,7 @@ public class NetworkLobbyScene {
         this.opponentReady = ready;
         Platform.runLater(() -> {
             opponentReadyLabel.setText((isHost ? "Client" : "Host") + ": " + (ready ? "Ready!" : "Not Ready"));
-            opponentReadyLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: " + (ready ? "green" : "red") + ";");
+            opponentReadyLabel.setStyle("-fx-text-fill: " + (ready ? "green" : "red") + ";");
         });
     }
     
@@ -188,5 +206,18 @@ public class NetworkLobbyScene {
     
     public void setOnCancelCallback(Runnable callback) {
         this.onCancelCallback = callback;
+    }
+
+    public void setControlsDisabled(boolean disabled) {
+        readyButton.setDisable(disabled);
+        normalModeButton.setDisable(disabled);
+        itemModeButton.setDisable(disabled);
+        timerModeButton.setDisable(disabled);
+    }
+
+    public void setModeSelectionDisabled(boolean disabled) {
+        normalModeButton.setDisable(disabled);
+        itemModeButton.setDisable(disabled);
+        timerModeButton.setDisable(disabled);
     }
 }

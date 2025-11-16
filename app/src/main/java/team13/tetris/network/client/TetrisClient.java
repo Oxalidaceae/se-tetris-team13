@@ -45,8 +45,9 @@ public class TetrisClient {
         try {
             System.out.println("Connecting to server " + serverHost);
             
-            // 서버에 소켓 연결
-            socket = new Socket(serverHost, serverPort);
+            // 서버에 소켓 연결 (10초 타임아웃)
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(serverHost, serverPort), 10000);
             
             // 입출력 스트림 설정
             output = new ObjectOutputStream(socket.getOutputStream());
@@ -86,6 +87,9 @@ public class TetrisClient {
             if (messageListener != null) {
                 messageListener.onConnectionRejected(msg.getMessage());
             }
+            return false;
+        } catch (SocketTimeoutException e) {
+            notifyError("Connection timed out. Please check the server IP.");
             return false;
         } catch (Exception e) {
             notifyError("Connection failed: " + e.getMessage());
@@ -136,10 +140,20 @@ public class TetrisClient {
                     messageListener.onPlayerReady(connMsg.getSenderId());
                 }
             }
+
+            case PLAYER_UNREADY -> {
+                if (message instanceof ConnectionMessage connMsg) {
+                    messageListener.onPlayerUnready(connMsg.getSenderId());
+                }
+            }
             
             case GAME_START -> {
                 gameStarted = true;
                 messageListener.onGameStart();
+            }
+
+            case COUNTDOWN_START -> {
+                messageListener.onCountdownStart();
             }
             
             case GAME_OVER -> {
@@ -213,6 +227,10 @@ public class TetrisClient {
     public boolean requestReady() {
         boolean result = sendMessage(ConnectionMessage.createPlayerReady(playerId));
         return result;
+    }
+
+    public boolean requestUnready() {
+        return sendMessage(ConnectionMessage.createPlayerUnready(playerId));
     }
     
     // 보드 상태 업데이트 전송

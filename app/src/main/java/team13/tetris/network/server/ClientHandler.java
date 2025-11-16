@@ -105,6 +105,12 @@ public class ClientHandler implements Runnable {
                 // 모든 플레이어가 준비되었는지 확인 (게임 시작)
                 server.checkAllReady();
             }
+            
+            case PLAYER_UNREADY -> {
+                server.setPlayerReady(playerId, false);
+                server.broadcastPlayerUnready(playerId);
+            }
+
             case BOARD_UPDATE -> {
                 if (message instanceof BoardUpdateMessage boardMsg) {
                     server.notifyHostBoardUpdate(boardMsg);

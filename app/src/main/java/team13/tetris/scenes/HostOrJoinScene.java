@@ -135,10 +135,6 @@ public class HostOrJoinScene {
         scene = new Scene(root);
     }
     
-    public Scene getScene() {
-        return scene;
-    }
-    
     // IP 주소 유효성 검증
     private boolean isValidIPAddress(String ip) {
         // localhost 허용
