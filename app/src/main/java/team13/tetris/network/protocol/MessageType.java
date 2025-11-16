@@ -12,7 +12,9 @@ public enum MessageType {
     // 게임 준비 및 시작
     GAME_MODE_SELECTED,    // 서버가 게임모드 선택 (일반/아이템)
     PLAYER_READY,         // 플레이어가 준비 완료
+    PLAYER_UNREADY,       // 플레이어가 준비 취소
     GAME_START,           // 게임 시작 신호 (모든 플레이어 준비 완료)
+    COUNTDOWN_START,      // 게임 시작 전 카운트다운 시작 신호
     
     // 게임 상태 동기화
     BOARD_UPDATE,         // 보드 상태 업데이트 (다음 블록 포함)

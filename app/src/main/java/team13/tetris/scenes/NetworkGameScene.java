@@ -1,5 +1,3 @@
-// -------------- NetworkGameScene.java (Final Full Version) ---------------------
-
 package team13.tetris.scenes;
 
 import javafx.application.Platform;
@@ -21,15 +19,9 @@ import team13.tetris.game.model.Tetromino;
 
 import java.util.*;
 
-/**
- * 네트워크 대전 게임 화면 (VersusGameScene과 동일한 디자인 유지)
- * - Player1 = Local
- * - Player2 = Remote
- * - Remote는 서버에서 보드/미노 상태/점수/Incoming을 받아서 갱신
- * - ColorBlind / 아이템 표시 / Ghost / Border 등 모두 동일
- */
+// 네트워크 대전 게임 화면 (VersusGameScene과 동일한 디자인 유지)
 public class NetworkGameScene {
-
+    @SuppressWarnings("unused")
     private final SceneManager manager;
     private final Settings settings;
     private final GameEngine localEngine;   // 실제 엔진
@@ -69,6 +61,8 @@ public class NetworkGameScene {
 
     private final Label scoreLabelLocal;
     private final Label scoreLabelRemote;
+    private final Label timerLabelLocal;
+    private final Label timerLabelRemote;
 
     // 이름표
     private final String localName;
@@ -76,24 +70,27 @@ public class NetworkGameScene {
 
     // Throttle
     private volatile boolean updatePending = false;
+    private final boolean timerMode;
 
 
     public NetworkGameScene(SceneManager manager,
                             Settings settings,
                             GameEngine localEngine,
                             String localName,
-                            String remoteName) {
+                            String remoteName,
+                            boolean timerMode) {
 
         this.manager = manager;
         this.settings = settings;
         this.localEngine = localEngine;
         this.localName = localName;
         this.remoteName = remoteName;
+        this.timerMode = timerMode;
 
         root = new HBox(20);
         root.getStyleClass().add("game-root");
 
-        // ----------------- Local Panel -----------------
+        // Local Panel 
         Board boardL = localEngine.getBoard();
         boardGridLocal = createBoardGrid(boardL, boardCacheLocal);
         previewLocal = createPreviewGrid(previewCacheLocal);
@@ -101,32 +98,30 @@ public class NetworkGameScene {
 
         scoreLabelLocal = new Label(localName + "\nScore: 0");
         scoreLabelLocal.getStyleClass().add("score-label");
+        timerLabelLocal = new Label("Time: 120");
+        timerLabelLocal.getStyleClass().add("label-title");
+
 
         VBox localBox = new VBox(12);
         HBox localGame = new HBox(12);
-        VBox rightL = new VBox(10, previewLocal, scoreLabelLocal, new Label("Incoming:"), incomingLocal);
-        rightL.setAlignment(Pos.TOP_CENTER);
-
-        HBox.setMargin(rightL, new Insets(0, 0, 0, 40));
+        VBox rightL = createRightPanel(previewLocal, scoreLabelLocal, incomingLocal, timerLabelLocal);
         localGame.getChildren().addAll(boardGridLocal, rightL);
         localBox.getChildren().add(localGame);
 
 
-        // ----------------- Remote Panel -----------------
-        // Remote는 서버에서 오는 보드 크기를 동일하게 사용
+        // Remote Panel
         boardGridRemote = createBoardGrid(boardL, boardCacheRemote);
         previewRemote = createPreviewGrid(previewCacheRemote);
         incomingRemote = createIncomingGrid(incomingCacheRemote);
 
         scoreLabelRemote = new Label(remoteName + "\nScore: 0");
         scoreLabelRemote.getStyleClass().add("score-label");
+        timerLabelRemote = new Label("Time: 120");
+        timerLabelRemote.getStyleClass().add("label-title");
 
         VBox remoteBox = new VBox(12);
         HBox remoteGame = new HBox(12);
-        VBox rightR = new VBox(10, previewRemote, scoreLabelRemote, new Label("Incoming:"), incomingRemote);
-        rightR.setAlignment(Pos.TOP_CENTER);
-
-        HBox.setMargin(rightR, new Insets(0, 0, 0, 40));
+        VBox rightR = createRightPanel(previewRemote, scoreLabelRemote, incomingRemote, timerLabelRemote);
         remoteGame.getChildren().addAll(boardGridRemote, rightR);
         remoteBox.getChildren().add(remoteGame);
 
@@ -137,6 +132,43 @@ public class NetworkGameScene {
 
         // 초기 한번 업데이트
         updateGrid();
+    }
+
+    private VBox createRightPanel(GridPane previewGrid, Label scoreLabel, GridPane incomingGrid, Label timerLabel) {
+        Label incomingLabel = new Label("Incoming:");
+        incomingLabel.getStyleClass().add("label");
+
+        String windowSize = settings.getWindowSize();
+        VBox rightPanel;
+
+        if (timerMode) {
+            if ("SMALL".equals(windowSize)) {
+                rightPanel = new VBox(8, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            } else if ("MEDIUM".equals(windowSize)) {
+                rightPanel = new VBox(10, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
+            } else { // LARGE
+                rightPanel = new VBox(12, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            }
+        } else {
+            if ("SMALL".equals(windowSize)) {
+                rightPanel = new VBox(8, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            } else if ("MEDIUM".equals(windowSize)) {
+                rightPanel = new VBox(10, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
+            } else { // LARGE
+                rightPanel = new VBox(12, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
+            }
+        }
+        
+        rightPanel.getStyleClass().add("right-panel");
+        rightPanel.setAlignment(Pos.TOP_CENTER);
+        
+        return rightPanel;
     }
 
     public Scene getScene() {
@@ -150,11 +182,24 @@ public class NetworkGameScene {
         });
     }
 
+    public void updateTimer(int seconds) {
+        if (timerMode) {
+            Platform.runLater(() -> {
+                timerLabelLocal.setText("Time: " + seconds);
+                timerLabelRemote.setText("Time: " + seconds);
+                if (seconds <= 30) {
+                    timerLabelLocal.setStyle("-fx-text-fill: red;");
+                    timerLabelRemote.setStyle("-fx-text-fill: red;");
+                } else {
+                    // 30초 이상일 때 기본 스타일로 되돌림
+                    timerLabelLocal.setStyle(""); 
+                    timerLabelRemote.setStyle("");
+                }
+            });
+        }
+    }
 
-    // =========================================================================
-    //                      Remote 상태 갱신 (서버 → 클라이언트)
-    // =========================================================================
-
+    // Remote 상태 갱신 (서버 → 클라이언트)
     public void updateRemoteBoardState(
             int[][] board,
             int pieceX,
@@ -186,10 +231,7 @@ public class NetworkGameScene {
         // 연결 상태 표시 (필요시 UI 업데이트)
     }
 
-
-    // =========================================================================
-    //                      Main UI 업데이트 (Local + Remote)
-    // =========================================================================
+    // Main UI 업데이트 (Local + Remote)
     public void updateGrid() {
         if (updatePending) return;
         updatePending = true;
@@ -201,10 +243,7 @@ public class NetworkGameScene {
         });
     }
 
-
-    // =========================================================================
-    //                       Local Player UI Update
-    // =========================================================================
+    // Local Player UI Update
     private void updateLocalUI() {
         Board board = localEngine.getBoard();
         Map<String, CellView> cache = boardCacheLocal;
@@ -241,10 +280,7 @@ public class NetworkGameScene {
         updateIncoming(incomingCacheLocal, new LinkedList<>());
     }
 
-
-    // =========================================================================
-    //                       Remote Player UI Update
-    // =========================================================================
+    // Remote Player UI Update
     private void updateRemoteUI() {
         if (remoteBoard == null) return;
 
@@ -312,11 +348,7 @@ public class NetworkGameScene {
         updateIncoming(incomingCacheRemote, remoteIncomingQueue);
     }
 
-
-    // =========================================================================
-    //                   공통 그리기 로직 (Local/Remote 공용)
-    // =========================================================================
-
+    // 공통 그리기 로직 (Local/Remote 공용)
     private void applyCellValue(CellView cell, int v) {
         if (v == 0) {
             cell.setEmpty();
@@ -464,11 +496,7 @@ public class NetworkGameScene {
         }
     }
 
-
-    // =========================================================================
-    //                           Board / Preview / Incoming Grid 생성
-    // =========================================================================
-
+    // Board / Preview / Incoming Grid 생성
     private GridPane createBoardGrid(Board board, Map<String, CellView> cache) {
         int w = board.getWidth();
         int h = board.getHeight();
@@ -476,9 +504,22 @@ public class NetworkGameScene {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("board-grid");
 
+        double cellSize;
+        switch (settings.getWindowSize()) {
+            case "SMALL":
+                cellSize = 21;
+                break;
+            case "LARGE":
+                cellSize = 39;
+                break;
+            default: // MEDIUM
+                cellSize = 30;
+                break;
+        }
+
         for (int gy = 0; gy < h + 2; gy++) {
             for (int gx = 0; gx < w + 2; gx++) {
-                CellView cell = new CellView(28, settings);
+                CellView cell = new CellView(cellSize, settings);
 
                 if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1)
                     cell.setBorder();
@@ -494,9 +535,22 @@ public class NetworkGameScene {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("preview-grid");
 
+        double cellSize;
+        switch (settings.getWindowSize()) {
+            case "SMALL":
+                cellSize = 21;
+                break;
+            case "LARGE":
+                cellSize = 39;
+                break;
+            default: // MEDIUM
+                cellSize = 30;
+                break;
+        }
+
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
-                CellView cell = new CellView(22, settings);
+                CellView cell = new CellView(cellSize, settings);
                 grid.add(cell, c, r);
                 cache.put(r + "," + c, cell);
             }
@@ -524,11 +578,7 @@ public class NetworkGameScene {
         return grid;
     }
 
-
-    // =========================================================================
-    //                          CellView 내부 클래스
-    // =========================================================================
-
+    // CellView 내부 클래스
     private static final class CellView extends StackPane {
 
         private final Rectangle rect;
@@ -615,14 +665,15 @@ public class NetworkGameScene {
             boolean isItem = symbol.matches("[CLWGS]");
             boolean isGhost = blockClass.equals("block-ghost");
 
-            if ((settings.isColorBlindMode() && !isItem) || isGhost)
+            if ((settings.isColorBlindMode() && !isItem) || isGhost) {
                 label.setText(" ");
-            else
+            } else {
                 label.setText(symbol);
+            }
 
-            if (settings.isColorBlindMode())
+            if (settings.isColorBlindMode()) {
                 applyPattern(blockClass);
-            else {
+            } else {
                 currentPattern = null;
                 clearCanvas();
             }

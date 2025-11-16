@@ -83,10 +83,23 @@ public class SceneManager {
     }
 
     public void showHostOrJoin(Settings settings) {
+        restoreWindowSize();
         changeScene(new HostOrJoinScene(this, settings).getScene());
     }
 
     public void showNetworkLobby(Settings settings, boolean isHost, String serverIP) {
+        // "SMALL" 크기일 때만 창 크기를 10% 늘림
+        if ("SMALL".equals(settings.getWindowSize())) {
+            // 현재 창 크기 저장 (다른 특수 크기 모드가 아닐 때만)
+            if (previousWidth == 0 && previousHeight == 0) {
+                previousWidth = stage.getWidth();
+                previousHeight = stage.getHeight();
+                stage.setWidth(previousWidth * 1.1);
+                stage.setHeight(previousHeight * 1.1);
+            }
+        }
+        // windowSizeClass는 의도적으로 변경하지 않음 (UI 요소 크기 유지를 위해)
+
         NetworkGameController controller = new NetworkGameController(this, settings, isHost, serverIP);
         controller.initializeLobby();
     }
@@ -148,29 +161,30 @@ public class SceneManager {
 
     // 2P 대전 모드 (타이머 모드, 아이템 모드 옵션)
     public void show2PGame(Settings settings, boolean timerMode, boolean itemMode) {
+        applyVersusWindowSize(settings);
         showVersusGame(settings, timerMode, itemMode);
     }
 
-    private void showVersusGame(Settings settings, boolean timerMode, boolean itemMode) {
+    public void applyVersusWindowSize(Settings settings) {
         // 현재 창 크기 저장
         previousWidth = stage.getWidth();
         previousHeight = stage.getHeight();
         
-        // 창 크기를 대전 모드용으로 확장 (가로 2배)
+        // 창 크기를 대전 모드용으로 확장
         int versusWidth;
         int versusHeight;
         
         switch (settings.getWindowSize()) {
             case "SMALL" -> {
-                versusWidth = 950;   // 400 × 2
+                versusWidth = 950;
                 versusHeight = 500;
             }
             case "LARGE" -> {
-                versusWidth = 1600;  // 800 × 2
+                versusWidth = 1600;
                 versusHeight = 900;
             }
             default -> {  // MEDIUM
-                versusWidth = 1200;  // 600 × 2
+                versusWidth = 1200;
                 versusHeight = 700;
             }
         }
@@ -184,11 +198,20 @@ public class SceneManager {
             case "LARGE" -> windowSizeClass = "window-large";
             default -> windowSizeClass = "window-medium";
         }
-        
+    }
+
+    private void showVersusGame(Settings settings, boolean timerMode, boolean itemMode) {
         // Player 1 설정 (아이템 모드 여부에 따라 Mode 설정)
         Board board1 = new Board(10, 20);
         CompositeGameStateListener composite1 = new CompositeGameStateListener();
-        ScoreBoard.ScoreEntry.Mode mode = itemMode ? ScoreBoard.ScoreEntry.Mode.ITEM : ScoreBoard.ScoreEntry.Mode.NORMAL;
+        ScoreBoard.ScoreEntry.Mode mode;
+        if (timerMode) {
+            mode = ScoreBoard.ScoreEntry.Mode.TIMER;
+        } else if (itemMode) {
+            mode = ScoreBoard.ScoreEntry.Mode.ITEM;
+        } else {
+            mode = ScoreBoard.ScoreEntry.Mode.NORMAL;
+        }
         GameEngine engine1 = new GameEngine(board1, composite1, mode);
         
         // Player 2 설정
@@ -239,7 +262,7 @@ public class SceneManager {
             this, settings, winner, winnerScore, loserScore, timerMode, itemMode).getScene());
     }
     
-    private void restoreWindowSize() {
+    public void restoreWindowSize() {
         if (previousWidth > 0 && previousHeight > 0) {
             stage.setWidth(previousWidth);
             stage.setHeight(previousHeight);
