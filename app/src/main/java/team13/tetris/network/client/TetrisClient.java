@@ -9,7 +9,6 @@ import java.util.concurrent.*;
 // Socket을 통해 서버에 접속하여 게임 플레이
 public class TetrisClient {
     private static final int DEFAULT_PORT = 12345;
-    private static final String DEFAULT_HOST = "localhost";
     
     private final String serverHost;
     private final int serverPort;
@@ -35,11 +34,6 @@ public class TetrisClient {
     public TetrisClient(String playerId, String serverHost) {
         this(playerId, serverHost, DEFAULT_PORT);
     }
-    
-    public TetrisClient(String playerId) {
-        this(playerId, DEFAULT_HOST, DEFAULT_PORT);
-    }
-    
     
     // 메시지 리스너 설정
     public void setMessageListener(ClientMessageListener listener) {
