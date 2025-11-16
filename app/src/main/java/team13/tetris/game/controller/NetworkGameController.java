@@ -1,7 +1,8 @@
 package team13.tetris.game.controller;
 
 import javafx.application.Platform;
-import javafx.scene.input.KeyCode;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyEvent;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -82,12 +83,15 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 준비 버튼 핸들러
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
         
+        // Cancel 버튼 핸들러
+        lobbyScene.setOnCancelCallback(this::disconnect);
+        
         manager.changeScene(lobbyScene.getScene());
     }
     
     // 클라이언트에서 서버로 접속
     private void connectToServer() {
-        client = new TetrisClient(myPlayerId, serverIP != null ? serverIP : "127.0.0.1");
+        client = new TetrisClient(myPlayerId, serverIP);
         client.setMessageListener(this);
         
         Platform.runLater(() -> {
@@ -205,7 +209,6 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (!gameStarted || myEngine == null) return;
 
         String keyText = event.getText();
-        KeyCode code = event.getCode();
         
         String leftKey = settings.getKeyLeft();
         String rightKey = settings.getKeyRight();
@@ -482,6 +485,16 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         System.err.println("Network error: " + error);
     }
     
+    @Override
+    public void onServerDisconnected(String reason) {
+        Platform.runLater(() -> {
+            // 서버 연결 종료 알림 팝업 표시
+            showDisconnectionAlert("Server Disconnected", reason);
+            // 네트워크 정리 및 메인 메뉴로 복귀
+            cleanupAndReturnToMenu();
+        });
+    }
+    
     // ServerMessageListener 구현
     
     @Override
@@ -495,9 +508,15 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     @Override
     public void onClientDisconnected(String clientId) {
         Platform.runLater(() -> {
-            lobbyScene.setStatusText("Client disconnected");
+            if (lobbyScene != null) {
+                lobbyScene.setStatusText("Client disconnected");
+                // 상대 Ready 상태 초기화
+                lobbyScene.setOpponentReady(false);
+            }
         });
-        handleRemoteGameOver("Opponent disconnected");
+        if (gameStarted) {
+            handleRemoteGameOver("Opponent disconnected");
+        }
     }
 
     // Garbage 라인 생성 (공격 처리)
@@ -527,7 +546,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     }
 
     // 정리 / 종료
-     public void disconnect() {
+    public void disconnect() {
         gameStarted = false;
 
         if (myEngine != null) {
@@ -543,6 +562,21 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 client.disconnect();
             }
         }
+    }
+    
+    // 연결 종료 알림 팝업 표시
+    private void showDisconnectionAlert(String title, String message) {
+        Alert alert = new Alert(AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    // 네트워크 정리 및 메인 메뉴로 복귀
+    private void cleanupAndReturnToMenu() {
+        disconnect();
+        manager.showMainMenu(settings);
     }
 }
 
