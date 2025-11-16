@@ -161,15 +161,16 @@ public class SceneManager {
 
     // 2P 대전 모드 (타이머 모드, 아이템 모드 옵션)
     public void show2PGame(Settings settings, boolean timerMode, boolean itemMode) {
+        applyVersusWindowSize(settings);
         showVersusGame(settings, timerMode, itemMode);
     }
 
-    private void showVersusGame(Settings settings, boolean timerMode, boolean itemMode) {
+    public void applyVersusWindowSize(Settings settings) {
         // 현재 창 크기 저장
         previousWidth = stage.getWidth();
         previousHeight = stage.getHeight();
         
-        // 창 크기를 대전 모드용으로 확장 (가로 2배)
+        // 창 크기를 대전 모드용으로 확장
         int versusWidth;
         int versusHeight;
         
@@ -197,7 +198,9 @@ public class SceneManager {
             case "LARGE" -> windowSizeClass = "window-large";
             default -> windowSizeClass = "window-medium";
         }
-        
+    }
+
+    private void showVersusGame(Settings settings, boolean timerMode, boolean itemMode) {
         // Player 1 설정 (아이템 모드 여부에 따라 Mode 설정)
         Board board1 = new Board(10, 20);
         CompositeGameStateListener composite1 = new CompositeGameStateListener();

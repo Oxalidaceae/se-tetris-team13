@@ -25,6 +25,9 @@ import team13.tetris.scenes.NetworkLobbyScene;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NetworkGameController implements ClientMessageListener, ServerMessageListener {
     private final SceneManager manager;
@@ -55,6 +58,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     // 카운트다운
     private Timeline countdownTimeline;
     private final IntegerProperty countdownSeconds = new SimpleIntegerProperty();
+
+    // 타이머 모드
+    private ScheduledExecutorService timerExecutor;
+    private int remainingSeconds = 120;
     
     // 공격 큐(선택사항: 필요 시 incomingBlocks로 변환용)
     private final Queue<Integer> incomingAttacks = new LinkedList<>();
@@ -220,15 +227,16 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             manager, 
             settings, 
             myEngine,
-            isHost ? "You (Host)" : "You (Client)",
-            isHost ? "Opponent (Client)" : "Opponent (Host)"
+            isHost ? "You\n(Host)" : "You\n(Client)",
+            isHost ? "Opponent\n(Client)" : "Opponent\n(Host)",
+            timerMode
         );
         
         // 키 입력 핸들러
         gameScene.getScene().setOnKeyPressed(this::handleKeyPress);
         
-        // 화면 전환 전에 창 크기 복원
-        manager.restoreWindowSize();
+        // 화면 전환 전에 대전 모드 창 크기 적용
+        manager.applyVersusWindowSize(settings);
         manager.changeScene(gameScene.getScene());
         gameScene.requestFocus();
         gameScene.setConnected(true);
@@ -236,6 +244,19 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 게임 시작
         myEngine.startNewGame();
         gameScene.updateLocalGrid();
+    }
+
+    private void startTimer() {
+        timerExecutor = Executors.newSingleThreadScheduledExecutor();
+        timerExecutor.scheduleAtFixedRate(() -> {
+            remainingSeconds--;
+            gameScene.updateTimer(remainingSeconds);
+            
+            if (remainingSeconds <= 0) {
+                timerExecutor.shutdown();
+                Platform.runLater(() -> handleLocalGameOver("Time's Up!"));
+            }
+        }, 1, 1, TimeUnit.SECONDS);
     }
     
     // 키 입력 처리
@@ -358,6 +379,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (myEngine != null) {
             myEngine.stopAutoDrop();
         }
+        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
+        }
         // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
     }
 
@@ -366,6 +390,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         paused = false;
         if (myEngine != null) {
             myEngine.startAutoDrop();
+        }
+        if (timerMode) {
+            startTimer();
         }
     }
 
@@ -388,9 +415,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 게임 오버 처리 (네트워크 동기화)
     private void handleLocalGameOver(String reason) {
+        if (!gameStarted) return;
         gameStarted = false;
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         // 네트워크로 GAME_OVER 알림
@@ -410,9 +441,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // 상대/서버로부터 GAME_OVER 받았을 때 처리
     private void handleRemoteGameOver(String reason) {
+        if (!gameStarted) return;
         gameStarted = false;
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         Platform.runLater(() -> {
@@ -464,6 +499,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 countdownTimeline.stop();
             }
             startGame();
+            if (timerMode) {
+                startTimer();
+            }
         });
     }
 
@@ -629,6 +667,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         if (isHost) {

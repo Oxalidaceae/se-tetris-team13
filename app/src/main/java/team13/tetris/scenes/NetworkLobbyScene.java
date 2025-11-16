@@ -15,7 +15,9 @@ import javafx.scene.text.TextAlignment;
 
 // 대기 화면
 public class NetworkLobbyScene {
+    @SuppressWarnings("unused")
     private final SceneManager manager;
+    @SuppressWarnings("unused")
     private final Settings settings;
     private final boolean isHost;
 
