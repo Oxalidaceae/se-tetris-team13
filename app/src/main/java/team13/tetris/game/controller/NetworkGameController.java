@@ -97,7 +97,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         new Thread(() -> {
             if (client.connect()) {
                 Platform.runLater(() -> {
-                    lobbyScene.setStatusText("Connected to server!");
+                    lobbyScene.setStatusText("Connected to server!\nBoth players must be ready to start the game.");
                 });
             }
         }).start();
@@ -488,7 +488,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     public void onClientConnected(String clientId) {
         opponentPlayerId = clientId;
         Platform.runLater(() -> {
-            lobbyScene.setStatusText("Client connected! Both players ready to start.");
+            lobbyScene.setStatusText("Client connected!\nBoth players must be ready to start the game.");
         });
     }
     

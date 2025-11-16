@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
+import javafx.scene.text.TextAlignment;
 
 // 대기 화면
 public class NetworkLobbyScene {
@@ -52,11 +53,11 @@ public class NetworkLobbyScene {
         Label titleLabel = new Label("Game Lobby");
         titleLabel.getStyleClass().add("label-title");
         titleLabel.setStyle("-fx-font-size: 36px;");
-        
-        // 연결 상태
+
         statusLabel = new Label(/* 컨트롤러에서 글씨 설정*/);
         statusLabel.getStyleClass().add("label");
         statusLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: yellow;");
+        statusLabel.setTextAlignment(TextAlignment.CENTER);
         
         // 게임 모드 선택 (서버만)
         VBox gameModeBox = new VBox(10);
