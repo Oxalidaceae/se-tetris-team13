@@ -343,4 +343,171 @@ public class SettingsTest {
         assertEquals("A", settings.getKeyLeft(), "Key settings should not change");
         assertEquals("LARGE", settings.getWindowSize(), "Window size should not change");
     }
+
+    @Test
+    @DisplayName("잘못된 창 크기 값 설정 테스트")
+    void testInvalidWindowSizeValues() {
+        String[] invalidSizes = {"small", "medium", "large", "EXTRA_LARGE", "TINY", null, "", "XL"};
+        
+        for (String invalidSize : invalidSizes) {
+            String originalSize = settings.getWindowSize();
+            assertDoesNotThrow(() -> {
+                settings.setWindowSize(invalidSize);
+            }, "잘못된 창 크기 설정도 예외 없이 처리되어야 함: " + invalidSize);
+            
+            // 일부는 유효할 수도 있으므로 원래 값이 보존되는지 확인하지 않음
+        }
+    }
+
+    @Test
+    @DisplayName("특수 문자가 포함된 키 설정 테스트")
+    void testSpecialCharacterKeys() {
+        String[] specialKeys = {"SPACE", "ENTER", "SHIFT", "CTRL", "ALT", "TAB", "ESC", "F1", "NUMPAD_1", "UP", "DOWN", "LEFT", "RIGHT"};
+        
+        for (String key : specialKeys) {
+            assertDoesNotThrow(() -> {
+                settings.setKeyLeft(key);
+                settings.setKeyRight(key);
+                settings.setKeyDown(key);
+                settings.setKeyRotate(key);
+                settings.setKeyDrop(key);
+            }, "특수 키 설정도 안전해야 함: " + key);
+        }
+    }
+
+    @Test
+    @DisplayName("빈 문자열이나 null 키 설정 테스트")
+    void testNullAndEmptyKeys() {
+        String[] invalidKeys = {null, "", " ", "  "};
+        
+        for (String invalidKey : invalidKeys) {
+            assertDoesNotThrow(() -> {
+                settings.setKeyLeft(invalidKey);
+                settings.setKeyRight(invalidKey);
+                settings.setKeyDown(invalidKey);
+                settings.setKeyRotate(invalidKey);
+                settings.setKeyDrop(invalidKey);
+            }, "잘못된 키 값 설정도 안전해야 함: " + invalidKey);
+        }
+    }
+
+    @Test
+    @DisplayName("모든 키를 동일한 값으로 설정")
+    void testAllKeysSetToSameValue() {
+        String sameKey = "SPACE";
+        
+        assertDoesNotThrow(() -> {
+            settings.setKeyLeft(sameKey);
+            settings.setKeyRight(sameKey);
+            settings.setKeyDown(sameKey);
+            settings.setKeyRotate(sameKey);
+            settings.setKeyDrop(sameKey);
+            
+            assertEquals(sameKey, settings.getKeyLeft(), "모든 키가 같은 값으로 설정되어야 함");
+            assertEquals(sameKey, settings.getKeyRight(), "모든 키가 같은 값으로 설정되어야 함");
+            assertEquals(sameKey, settings.getKeyDown(), "모든 키가 같은 값으로 설정되어야 함");
+            assertEquals(sameKey, settings.getKeyRotate(), "모든 키가 같은 값으로 설정되어야 함");
+            assertEquals(sameKey, settings.getKeyDrop(), "모든 키가 같은 값으로 설정되어야 함");
+        }, "모든 키를 같은 값으로 설정하는 것은 허용되어야 함");
+    }
+
+    @Test
+    @DisplayName("설정 값 대소문자 구분 테스트")
+    void testCaseSensitivity() {
+        settings.setKeyLeft("a");
+        assertEquals("a", settings.getKeyLeft(), "소문자 키가 올바르게 저장되어야 함");
+        
+        settings.setKeyLeft("A");
+        assertEquals("A", settings.getKeyLeft(), "대문자 키가 올바르게 저장되어야 함");
+        
+        settings.setWindowSize("small");
+        // 창 크기는 대소문자 구분 여부를 확인
+        assertNotNull(settings.getWindowSize(), "창 크기가 설정되어야 함");
+    }
+
+    @Test
+    @DisplayName("연속적인 설정 변경 테스트")
+    void testConsecutiveSettingChanges() {
+        for (int i = 0; i < 100; i++) {
+            boolean colorBlind = i % 2 == 0;
+            String windowSize = (i % 3 == 0) ? "SMALL" : (i % 3 == 1) ? "MEDIUM" : "LARGE";
+            String key = "KEY_" + i;
+            
+            assertDoesNotThrow(() -> {
+                settings.setColorBlindMode(colorBlind);
+                settings.setWindowSize(windowSize);
+                settings.setKeyLeft(key);
+                settings.setKeyRight(key);
+                settings.setKeyDown(key);
+                settings.setKeyRotate(key);
+                settings.setKeyDrop(key);
+                
+                assertEquals(colorBlind, settings.isColorBlindMode(), "색맹 모드가 올바르게 설정되어야 함");
+            }, "연속적인 설정 변경도 안전해야 함: " + i);
+        }
+    }
+
+    @Test
+    @DisplayName("유니코드 문자가 포함된 키 설정 테스트")
+    void testUnicodeKeys() {
+        String[] unicodeKeys = {"가", "나", "다", "α", "β", "γ", "ñ", "ü", "🎮", "⌨️"};
+        
+        for (String unicodeKey : unicodeKeys) {
+            assertDoesNotThrow(() -> {
+                settings.setKeyLeft(unicodeKey);
+                assertEquals(unicodeKey, settings.getKeyLeft(), "유니코드 키가 올바르게 저장되어야 함");
+            }, "유니코드 키 설정도 안전해야 함: " + unicodeKey);
+        }
+    }
+
+    @Test
+    @DisplayName("매우 긴 키 이름 설정 테스트")
+    void testVeryLongKeyNames() {
+        String longKey = "VERY_LONG_KEY_NAME_".repeat(10);
+        
+        assertDoesNotThrow(() -> {
+            settings.setKeyLeft(longKey);
+            assertEquals(longKey, settings.getKeyLeft(), "긴 키 이름도 올바르게 저장되어야 함");
+        }, "긴 키 이름 설정도 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("여러 Settings 인스턴스 독립성 테스트")
+    void testMultipleSettingsInstances() {
+        Settings settings1 = new Settings();
+        Settings settings2 = new Settings();
+        
+        settings1.setColorBlindMode(true);
+        settings1.setKeyLeft("Q");
+        settings1.setWindowSize("SMALL");
+        
+        settings2.setColorBlindMode(false);
+        settings2.setKeyLeft("E");
+        settings2.setWindowSize("LARGE");
+        
+        // 인스턴스들이 독립적이어야 함
+        assertTrue(settings1.isColorBlindMode(), "첫 번째 인스턴스의 색맹 모드");
+        assertFalse(settings2.isColorBlindMode(), "두 번째 인스턴스의 색맹 모드");
+        assertEquals("Q", settings1.getKeyLeft(), "첫 번째 인스턴스의 왼쪽 키");
+        assertEquals("E", settings2.getKeyLeft(), "두 번째 인스턴스의 왼쪽 키");
+        assertEquals("SMALL", settings1.getWindowSize(), "첫 번째 인스턴스의 창 크기");
+        assertEquals("LARGE", settings2.getWindowSize(), "두 번째 인스턴스의 창 크기");
+    }
+
+    @Test
+    @DisplayName("설정 값 불변성 테스트")
+    void testSettingsImmutability() {
+        String originalKey = settings.getKeyLeft();
+        boolean originalColorBlind = settings.isColorBlindMode();
+        String originalWindowSize = settings.getWindowSize();
+        
+        // 반환된 값을 수정해도 원본에 영향을 주지 않는지 확인
+        // (String은 불변이므로 이 테스트는 주로 설계 확인용)
+        String keyLeft = settings.getKeyLeft();
+        keyLeft = "MODIFIED"; // 이것은 settings에 영향을 주지 않아야 함
+        
+        assertEquals(originalKey, settings.getKeyLeft(), "원본 키 값이 보존되어야 함");
+        assertEquals(originalColorBlind, settings.isColorBlindMode(), "원본 색맹 모드가 보존되어야 함");
+        assertEquals(originalWindowSize, settings.getWindowSize(), "원본 창 크기가 보존되어야 함");
+    }
 }

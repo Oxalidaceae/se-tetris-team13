@@ -232,11 +232,24 @@ public class SceneManager {
         boolean timerMode,
         boolean itemMode
     ) {
+        showVersusGameOver(settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false);
+    }
+    
+    public void showVersusGameOver(
+        Settings settings,
+        String winner,
+        int winnerScore,
+        int loserScore,
+        boolean timerMode,
+        boolean itemMode,
+        String currentPlayer,
+        boolean isNetworkMode
+    ) {
         // 창 크기를 원래대로 복원
         restoreWindowSize();
         
         changeScene(new team13.tetris.scenes.VersusGameOverScene(
-            this, settings, winner, winnerScore, loserScore, timerMode, itemMode).getScene());
+            this, settings, winner, winnerScore, loserScore, timerMode, itemMode, currentPlayer, isNetworkMode).getScene());
     }
     
     private void restoreWindowSize() {

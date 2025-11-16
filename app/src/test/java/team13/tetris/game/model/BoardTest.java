@@ -523,4 +523,192 @@ public class BoardTest {
         latch.await();
         assertFalse(failed.get(), "동시 접근 시 데이터 불일치가 발생하지 않아야 함");
     }
+
+    @Test
+    @DisplayName("극단적인 보드 크기에서도 정상 동작해야 함")
+    void testExtremeBoardSizes() {
+        // 최소 크기
+        Board minBoard = new Board(1, 1);
+        assertEquals(1, minBoard.getWidth());
+        assertEquals(1, minBoard.getHeight());
+        minBoard.setCell(0, 0, 5);
+        assertEquals(5, minBoard.getCell(0, 0));
+        
+        // 큰 크기
+        Board largeBoard = new Board(50, 100);
+        assertEquals(50, largeBoard.getWidth());
+        assertEquals(100, largeBoard.getHeight());
+        largeBoard.setCell(49, 99, 7);
+        assertEquals(7, largeBoard.getCell(49, 99));
+    }
+
+    @Test
+    @DisplayName("보드 상태가 올바르게 변경되어야 함")
+    void testSequentialModification() {
+        board.setCell(0, 0, 1);
+        assertEquals(1, board.getCell(0, 0));
+        assertEquals(0, board.getCell(1, 1));
+        
+        board.setCell(1, 1, 2);
+        assertEquals(1, board.getCell(0, 0)); // 이전 값 유지
+        assertEquals(2, board.getCell(1, 1)); // 새 값 설정
+    }
+
+    @Test
+    @DisplayName("applyGravity 후 블록이 올바른 순서로 쌓여야 함")
+    void testApplyGravityOrder() {
+        // 위에서부터 1, 2, 3으로 배치 (중간에 빈 공간 있음)
+        board.setCell(0, 5, 1);
+        board.setCell(0, 10, 2);
+        board.setCell(0, 15, 3);
+        
+        board.applyGravity();
+        
+        // 아래부터 위에서 아래로 내려온 순서대로 쌓여야 함: 3(가장 아래), 2, 1 순서
+        assertEquals(3, board.getCell(0, 19)); // 15에서 내려온 블록 (가장 아래)
+        assertEquals(2, board.getCell(0, 18)); // 10에서 내려온 블록
+        assertEquals(1, board.getCell(0, 17)); // 5에서 내려온 블록
+        
+        // 위쪽은 모두 비어있어야 함
+        for (int y = 0; y < 17; y++) {
+            assertEquals(0, board.getCell(0, y));
+        }
+    }
+
+    @Test
+    @DisplayName("여러 열에서 서로 다른 높이의 블록 중력 적용")
+    void testComplexGravityScenario() {
+        // 패턴 생성: 각 열마다 다른 개수의 블록
+        for (int col = 0; col < board.getWidth(); col++) {
+            for (int i = 0; i < col + 1; i++) {
+                board.setCell(col, i * 2, col + 1); // 간격을 두고 배치
+            }
+        }
+        
+        board.applyGravity();
+        
+        // 각 열의 바닥부터 블록이 쌓여있어야 함
+        for (int col = 0; col < board.getWidth(); col++) {
+            int expectedBlocks = col + 1;
+            
+            // 바닥부터 예상 개수만큼 블록이 있어야 함
+            for (int i = 0; i < expectedBlocks; i++) {
+                int y = board.getHeight() - 1 - i;
+                assertEquals(col + 1, board.getCell(col, y), 
+                    "열 " + col + ", 행 " + y + "에 블록이 없음");
+            }
+            
+            // 나머지는 비어있어야 함
+            for (int y = 0; y < board.getHeight() - expectedBlocks; y++) {
+                assertEquals(0, board.getCell(col, y), 
+                    "열 " + col + ", 행 " + y + "가 비어있지 않음");
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("중력 적용 시 블록 값이 보존되어야 함")
+    void testGravityPreservesBlockValues() {
+        int[] testValues = {1, 2, 3, 4, 5, 6, 7};
+        int col = 3;
+        
+        // 다양한 값의 블록을 여러 높이에 배치
+        for (int i = 0; i < testValues.length; i++) {
+            board.setCell(col, i * 3, testValues[i]);
+        }
+        
+        board.applyGravity();
+        
+        // 바닥부터 역순으로 값이 보존되어야 함 (위에서 아래로 내려오는 순서)
+        for (int i = 0; i < testValues.length; i++) {
+            int y = board.getHeight() - 1 - i;
+            int expectedValue = testValues[testValues.length - 1 - i]; // 역순
+            assertEquals(expectedValue, board.getCell(col, y), 
+                "블록 값이 보존되지 않음: 예상 " + expectedValue + ", 실제 " + board.getCell(col, y));
+        }
+    }
+
+    @Test
+    @DisplayName("빈 보드에서 중력 적용해도 변화가 없어야 함")
+    void testGravityOnEmptyBoard() {
+        // 빈 보드 확인
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+        
+        board.applyGravity();
+        
+        // 여전히 빈 보드여야 함
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("이미 바닥에 있는 블록은 중력 적용 후에도 그대로 있어야 함")
+    void testGravityOnBottomBlocks() {
+        // 바닥 줄에 블록 배치
+        for (int x = 0; x < board.getWidth(); x++) {
+            board.setCell(x, board.getHeight() - 1, x + 1);
+        }
+        
+        board.applyGravity();
+        
+        // 바닥 줄 블록은 그대로 있어야 함
+        for (int x = 0; x < board.getWidth(); x++) {
+            assertEquals(x + 1, board.getCell(x, board.getHeight() - 1));
+        }
+        
+        // 다른 줄은 모두 비어있어야 함
+        for (int y = 0; y < board.getHeight() - 1; y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("보드 크기 속성이 올바르게 설정되어야 함")
+    void testBoardDimensions() {
+        assertEquals(10, board.getWidth(), "보드 너비가 올바르지 않음");
+        assertEquals(20, board.getHeight(), "보드 높이가 올바르지 않음");
+        
+        // 다양한 크기의 보드 테스트
+        Board smallBoard = new Board(5, 8);
+        assertEquals(5, smallBoard.getWidth());
+        assertEquals(8, smallBoard.getHeight());
+        
+        Board largeBoard = new Board(15, 25);
+        assertEquals(15, largeBoard.getWidth());
+        assertEquals(25, largeBoard.getHeight());
+    }
+
+    @Test
+    @DisplayName("연속적인 중력 적용이 idempotent해야 함")
+    void testMultipleGravityApplications() {
+        // 블록 배치
+        board.setCell(2, 5, 1);
+        board.setCell(2, 10, 2);
+        board.setCell(7, 8, 3);
+        
+        // 첫 번째 중력 적용
+        board.applyGravity();
+        
+        // 첫 번째 적용 후 상태 저장
+        int col2_19_first = board.getCell(2, 19);
+        int col2_18_first = board.getCell(2, 18);
+        int col7_19_first = board.getCell(7, 19);
+        
+        // 두 번째 중력 적용
+        board.applyGravity();
+        
+        // 결과가 같아야 함
+        assertEquals(col2_19_first, board.getCell(2, 19), "연속 중력 적용 후 결과가 다름");
+        assertEquals(col2_18_first, board.getCell(2, 18), "연속 중력 적용 후 결과가 다름");
+        assertEquals(col7_19_first, board.getCell(7, 19), "연속 중력 적용 후 결과가 다름");
+    }
 }

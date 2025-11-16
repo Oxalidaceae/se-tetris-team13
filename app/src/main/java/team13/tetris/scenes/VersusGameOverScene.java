@@ -15,6 +15,8 @@ public class VersusGameOverScene {
     private final int loserScore;
     private final boolean timerMode;
     private final boolean itemMode;
+    private final String currentPlayer; // 현재 플레이어 ("Player 1" 또는 "Player 2")
+    private final boolean isNetworkMode; // 네트워크 모드 여부
 
     public VersusGameOverScene(
             SceneManager manager,
@@ -24,6 +26,19 @@ public class VersusGameOverScene {
             int loserScore,
             boolean timerMode,
             boolean itemMode) {
+        this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false);
+    }
+
+    public VersusGameOverScene(
+            SceneManager manager,
+            Settings settings,
+            String winner,
+            int winnerScore,
+            int loserScore,
+            boolean timerMode,
+            boolean itemMode,
+            String currentPlayer,
+            boolean isNetworkMode) {
         this.manager = manager;
         this.settings = settings;
         this.winner = winner;
@@ -31,20 +46,58 @@ public class VersusGameOverScene {
         this.loserScore = loserScore;
         this.timerMode = timerMode;
         this.itemMode = itemMode;
+        this.currentPlayer = currentPlayer != null ? currentPlayer : "Player 1";
+        this.isNetworkMode = isNetworkMode;
     }
 
     public Scene getScene() {
         Label titleLabel = new Label("Game Over");
         titleLabel.getStyleClass().add("label-title");
 
-        Label winnerLabel = new Label(winner + " Wins!");
-        winnerLabel.getStyleClass().add("label-title");
-        winnerLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 32px;"); // 금색
-
-        Label scoreLabel = new Label(
-            winner + " Score: " + winnerScore + "\n" +
-            (winner.equals("Player 1") ? "Player 2" : "Player 1") + " Score: " + loserScore
-        );
+        // 게임 모드에 따라 다른 결과 메시지 생성
+        Label resultLabel;
+        Label scoreLabel;
+        
+        if (isNetworkMode) {
+            // 네트워크 모드: 플레이어 관점에서 표시
+            if (winner.equals("Draw")) {
+                resultLabel = new Label("Draw!");
+                resultLabel.setStyle("-fx-text-fill: #FFA500; -fx-font-size: 32px;"); // 주황색
+            } else if (winner.equals(currentPlayer) || winner.contains("You")) {
+                resultLabel = new Label("You Win!");
+                resultLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 32px;"); // 금색
+            } else {
+                resultLabel = new Label("You Lose!");
+                resultLabel.setStyle("-fx-text-fill: #FF6B6B; -fx-font-size: 32px;"); // 빨간색
+            }
+            
+            // 네트워크 모드 점수 표시
+            scoreLabel = new Label(
+                "Your Score: " + (winner.equals(currentPlayer) || winner.contains("You") ? winnerScore : loserScore) + "\n" +
+                "Opponent Score: " + (winner.equals(currentPlayer) || winner.contains("You") ? loserScore : winnerScore)
+            );
+        } else {
+            // 로컬 모드: 기존 방식 (Player # Wins!)
+            resultLabel = new Label(winner + " Wins!");
+            resultLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 32px;"); // 금색
+            
+            // 로컬 모드 점수 표시 (항상 Player 1, Player 2 순서)
+            int player1Score, player2Score;
+            if (winner.equals("Player 1")) {
+                player1Score = winnerScore;
+                player2Score = loserScore;
+            } else {
+                player1Score = loserScore;
+                player2Score = winnerScore;
+            }
+            
+            scoreLabel = new Label(
+                "Player 1 Score: " + player1Score + "\n" +
+                "Player 2 Score: " + player2Score
+            );
+        }
+        
+        resultLabel.getStyleClass().add("label-title");
         scoreLabel.getStyleClass().add("label");
         scoreLabel.setStyle("-fx-font-size: 20px;");
 
@@ -59,7 +112,7 @@ public class VersusGameOverScene {
             manager.showMainMenu(settings);
         });
 
-        VBox layout = new VBox(20, titleLabel, winnerLabel, scoreLabel, retryBtn, mainMenuBtn);
+        VBox layout = new VBox(20, titleLabel, resultLabel, scoreLabel, retryBtn, mainMenuBtn);
         layout.setStyle("-fx-alignment: center; -fx-padding: 20;");
 
         Scene scene = new Scene(layout, 600, 700);

@@ -35,21 +35,29 @@ public class TestServerMessageListener implements ServerMessageListener {
     
     @Override
     public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
-        System.out.println("Client board updated - Score: " + boardUpdate.getScore());
+        if (boardUpdate != null) {
+            System.out.println("Client board updated - Score: " + boardUpdate.getScore());
+        } else {
+            System.out.println("Client board updated - Score: null");
+        }
     }
     
     @Override
     public void onAttackReceived(AttackMessage attackMessage) {
-        System.out.println("Attack received: " + attackMessage.getAttackLines() + " lines!");
+        if (attackMessage != null) {
+            System.out.println("Attack received: " + attackMessage.getAttackLines() + " lines!");
+        } else {
+            System.out.println("Attack received: null lines!");
+        }
     }
     
     @Override
     public void onGamePaused() {
-        System.out.println("⏸Client paused the game");
+        System.out.println("[PAUSE]Client paused the game");
     }
     
     @Override
     public void onGameResumed() {
-        System.out.println("▶Client resumed the game");
+        System.out.println("[PLAY]Client resumed the game");
     }
 }
