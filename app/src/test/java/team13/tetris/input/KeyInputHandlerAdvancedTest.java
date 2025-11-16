@@ -7,7 +7,6 @@ import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import team13.tetris.config.Settings;
 
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled("JavaFX Toolkit dependency issues in test environment")
 @DisplayName("KeyInputHandler 고급 기능 테스트")
 class KeyInputHandlerAdvancedTest {
 
