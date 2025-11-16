@@ -12,6 +12,9 @@ public interface ClientMessageListener {
     // 서버 연결이 거절되었을 때 호출
     void onConnectionRejected(String reason);
     
+    // 서버 연결이 끊겼을 때 호출
+    void onServerDisconnected(String reason);
+    
     // 플레이어(호스트 또는 다른 클라이언트)가 준비 완료했을 때 호출
     void onPlayerReady(String playerId);
     

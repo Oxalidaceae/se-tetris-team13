@@ -367,4 +367,9 @@ public class SceneManager {
             }
         });
     }
+    
+    // 애플리케이션 종료 시 모든 리소스 정리
+    public void cleanup() {
+        System.exit(0);
+    }
 }

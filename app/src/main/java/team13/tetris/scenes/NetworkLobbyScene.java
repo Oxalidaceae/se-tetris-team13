@@ -24,12 +24,12 @@ public class NetworkLobbyScene {
     private final VBox root;
     
     private Label statusLabel;
+    
+    // Cancel 버튼 콜백
+    private Runnable onCancelCallback;
 
     private Label myReadyLabel;
     private Label opponentReadyLabel;
-
-    // private final Label myNameLabel;
-    // private final Label opponentNameLabel;
 
     private Button readyButton;
 
@@ -118,7 +118,9 @@ public class NetworkLobbyScene {
         backButton.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
         
         backButton.setOnAction(e -> {
-            // TODO: 연결 종료 로직 추가
+            if (onCancelCallback != null) {
+                onCancelCallback.run();
+            }
             manager.showMainMenu(settings);
         });
         
@@ -182,5 +184,9 @@ public class NetworkLobbyScene {
     
     public boolean areBothReady() {
         return myReady && opponentReady;
+    }
+    
+    public void setOnCancelCallback(Runnable callback) {
+        this.onCancelCallback = callback;
     }
 }
