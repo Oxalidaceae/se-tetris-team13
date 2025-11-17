@@ -629,10 +629,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 // 상대 Ready 상태 초기화
                 lobbyScene.setOpponentReady(false);
             }
+  
+            if (gameStarted) {
+                showDisconnectionAlert("Client Disconnected", "The opponent has left the game.");
+                cleanupAndReturnToMenu();
+            }
         });
-        if (gameStarted) {
-            handleRemoteGameOver("Opponent disconnected");
-        }
     }
 
     // Garbage 라인 생성 (공격 처리)
@@ -677,7 +679,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 server.stop();
             }
         } else {
-            if (client != null && client.isConnected()) {
+            if (client != null) {
                 client.disconnect();
             }
         }
