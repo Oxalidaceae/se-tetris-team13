@@ -267,6 +267,11 @@ class TetrisServerTest {
         }
 
         @Override
+        public void onCountdownStart() {
+            // 테스트용 구현
+        }
+
+        @Override
         public void onGameOver(String reason) {
             // 테스트용 구현
         }
@@ -297,6 +302,11 @@ class TetrisServerTest {
 
         public boolean isGameStarted() {
             return gameStarted;
+        }
+
+        @Override
+        public void onPlayerUnready(String playerId) {
+            // Test implementation
         }
     }
 }

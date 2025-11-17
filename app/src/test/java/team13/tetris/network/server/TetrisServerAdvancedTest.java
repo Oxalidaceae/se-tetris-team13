@@ -371,6 +371,16 @@ class TetrisServerAdvancedTest {
         public String getLastDisconnectedClientId() {
             return lastDisconnectedClientId;
         }
+
+        @Override
+        public void onCountdownStart() {
+            // Test implementation
+        }
+
+        @Override
+        public void onPlayerUnready(String playerId) {
+            // Test implementation
+        }
     }
 
     // 테스트용 클라이언트 리스너
@@ -402,6 +412,11 @@ class TetrisServerAdvancedTest {
         @Override
         public void onGameStart() {
             gameStart.countDown();
+        }
+
+        @Override
+        public void onCountdownStart() {
+            // 테스트용 구현
         }
 
         @Override
@@ -467,6 +482,16 @@ class TetrisServerAdvancedTest {
 
         public GameModeMessage.GameMode getSelectedGameMode() {
             return selectedGameMode;
+        }
+
+        @Override
+        public void onPlayerUnready(String playerId) {
+            // Test implementation
+        }
+
+        @Override
+        public void onServerDisconnected(String reason) {
+            // Test implementation
         }
     }
 }

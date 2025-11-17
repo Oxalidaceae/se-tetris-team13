@@ -300,6 +300,11 @@ class TetrisClientAdvancedTest {
         }
 
         @Override
+        public void onCountdownStart() {
+            // 필요시 구현
+        }
+
+        @Override
         public void onGameStart() {
             gameStarted.countDown();
         }
@@ -374,6 +379,16 @@ class TetrisClientAdvancedTest {
 
         public GameModeMessage.GameMode getSelectedGameMode() {
             return selectedGameMode;
+        }
+
+        @Override
+        public void onPlayerUnready(String playerId) {
+            // Test implementation
+        }
+
+        @Override
+        public void onServerDisconnected(String reason) {
+            // Test implementation
         }
     }
 }

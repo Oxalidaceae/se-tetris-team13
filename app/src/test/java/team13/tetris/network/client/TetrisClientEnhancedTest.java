@@ -39,7 +39,7 @@ class TetrisClientEnhancedTest {
         assertFalse(hostClient.isConnected(), "초기 상태는 연결되지 않음");
         
         // 플레이어 ID만 지정
-        TetrisClient defaultClient = new TetrisClient("Player3");
+        TetrisClient defaultClient = new TetrisClient("Player3", "localhost", 12345);
         assertNotNull(defaultClient, "플레이어 ID만으로 클라이언트 생성 가능");
         assertFalse(defaultClient.isConnected(), "초기 상태는 연결되지 않음");
     }
@@ -59,7 +59,7 @@ class TetrisClientEnhancedTest {
         
         for (String playerId : playerIds) {
             assertDoesNotThrow(() -> {
-                TetrisClient testClient = new TetrisClient(playerId);
+                TetrisClient testClient = new TetrisClient(playerId, "localhost", 12345);
                 assertNotNull(testClient, "다양한 플레이어 ID로 클라이언트 생성 가능: " + playerId);
                 assertFalse(testClient.isConnected(), "초기 상태는 연결되지 않음");
             }, "플레이어 ID: " + playerId + "가 안전하게 처리되어야 함");
@@ -250,7 +250,7 @@ class TetrisClientEnhancedTest {
     void testNullParameterHandling() {
         assertDoesNotThrow(() -> {
             // null 플레이어 ID
-            TetrisClient nullPlayerClient = new TetrisClient(null);
+            TetrisClient nullPlayerClient = new TetrisClient(null, "localhost", 12345);
             assertNotNull(nullPlayerClient, "null 플레이어 ID로도 클라이언트 생성 가능");
             
             // null 호스트

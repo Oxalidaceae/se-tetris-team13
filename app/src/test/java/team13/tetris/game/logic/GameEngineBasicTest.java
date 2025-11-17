@@ -210,19 +210,7 @@ public class GameEngineBasicTest {
         assertTrue(listener.pieceSpawnedCount > 0, "새 조각이 생성되어야 함");
     }
 
-    @Test
-    @DisplayName("null 리스너로 엔진 생성 및 동작 테스트")
-    void testNullListenerHandling() {
-        GameEngine engineWithNullListener = new GameEngine(board, null);
-
-        // 이제 null 리스너로도 정상 동작해야 함
-        assertDoesNotThrow(() -> {
-            engineWithNullListener.startNewGame();
-            // 기본 동작이 정상적으로 수행되어야 함
-            assertNotNull(engineWithNullListener.getCurrent(), "current가 설정되어야 함");
-            assertNotNull(engineWithNullListener.getNext(), "next가 설정되어야 함");
-        }, "null 리스너로도 엔진이 정상 동작해야 함");
-    }
+    // Removed: null listener test - GameEngine no longer accepts null listeners
 
     @Test
     @DisplayName("ITEM 모드로 생성 시 itemModeEnabled가 true여야 함")
@@ -399,18 +387,7 @@ public class GameEngineBasicTest {
         assertTrue(listener.scoreChangedCount > firstScoreCount, "scoreChanged 콜백이 누적되지 않음");
     }
 
-    @Test
-    @DisplayName("null 리스너로 엔진 생성 테스트")
-    void testGameEngineWithNullListener() {
-        // null listener로 엔진을 생성할 수 있어야 함
-        assertDoesNotThrow(() -> {
-            GameEngine nullListenerEngine = new GameEngine(board, null);
-            nullListenerEngine.startNewGame();
-            // null listener이어도 정상 동작해야 함
-            assertNotNull(nullListenerEngine.getCurrent());
-            assertNotNull(nullListenerEngine.getNext());
-        }, "null listener로도 엔진이 정상 생성되고 동작해야 함");
-    }
+    // Removed: null listener test - GameEngine no longer accepts null listeners
 
     @Test
     @DisplayName("다양한 보드 크기 테스트")
@@ -522,20 +499,7 @@ public class GameEngineBasicTest {
         assertNotNull(engine.getGameTimer(), "게임 시작 후에도 타이머가 null이면 안됨");
     }
 
-    @Test
-    @DisplayName("리스너 없이 게임 시작 테스트")
-    void testStartGameWithoutListener() {
-        GameEngine noListenerEngine = new GameEngine(board, null);
-        
-        assertDoesNotThrow(() -> {
-            noListenerEngine.startNewGame();
-            
-            // 리스너가 없어도 기본 동작은 수행되어야 함
-            assertNotNull(noListenerEngine.getCurrent(), "리스너가 없어도 current가 설정되어야 함");
-            assertNotNull(noListenerEngine.getNext(), "리스너가 없어도 next가 설정되어야 함");
-            assertEquals(0, noListenerEngine.getScore(), "리스너가 없어도 점수가 초기화되어야 함");
-        }, "리스너가 없어도 게임이 시작되어야 함");
-    }
+    // Removed: null listener test - GameEngine no longer accepts null listeners
 
     @Test
     @DisplayName("연속 게임 시작 메모리 누수 테스트")

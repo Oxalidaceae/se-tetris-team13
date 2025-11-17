@@ -32,9 +32,10 @@ class GameModeMessageTest {
     @Test
     @DisplayName("GameMode enum 값 테스트")
     void testGameModeEnum() {
-        assertEquals(2, GameModeMessage.GameMode.values().length, "GameMode enum은 2개의 값을 가져야 함");
+        assertEquals(3, GameModeMessage.GameMode.values().length, "GameMode enum은 3개의 값을 가져야 함");
         assertNotNull(GameModeMessage.GameMode.NORMAL, "NORMAL 모드가 존재해야 함");
         assertNotNull(GameModeMessage.GameMode.ITEM, "ITEM 모드가 존재해야 함");
+        assertNotNull(GameModeMessage.GameMode.TIMER, "TIMER 모드가 존재해야 함");
     }
 
     @Test

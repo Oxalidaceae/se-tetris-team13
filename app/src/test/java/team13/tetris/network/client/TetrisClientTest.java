@@ -29,7 +29,7 @@ class TetrisClientTest {
     @Test
     @DisplayName("기본 호스트로 클라이언트 생성")
     void testClientWithDefaultHost() {
-        TetrisClient defaultClient = new TetrisClient("TestPlayer");
+        TetrisClient defaultClient = new TetrisClient("TestPlayer", "localhost", 12345);
         assertNotNull(defaultClient, "기본 호스트로 클라이언트 생성 가능");
         assertFalse(defaultClient.isConnected(), "초기 상태에서는 연결되어 있지 않아야 함");
     }
@@ -37,7 +37,7 @@ class TetrisClientTest {
     @Test
     @DisplayName("호스트만 지정하여 클라이언트 생성")
     void testClientWithHostOnly() {
-        TetrisClient hostOnlyClient = new TetrisClient("TestPlayer", "127.0.0.1");
+        TetrisClient hostOnlyClient = new TetrisClient("TestPlayer", "127.0.0.1", 12345);
         assertNotNull(hostOnlyClient, "호스트만 지정하여 클라이언트 생성 가능");
         assertFalse(hostOnlyClient.isConnected(), "초기 상태에서는 연결되어 있지 않아야 함");
     }
@@ -142,7 +142,7 @@ class TetrisClientTest {
         String[] testIds = {"Player1", "한글플레이어", "Player_123", "P", "VeryLongPlayerNameForTesting"};
         
         for (String playerId : testIds) {
-            TetrisClient testClient = new TetrisClient(playerId);
+            TetrisClient testClient = new TetrisClient(playerId, "localhost", 12345);
             assertNotNull(testClient, "플레이어 ID: " + playerId + "로 클라이언트 생성 가능");
             assertEquals(playerId, testClient.getPlayerId(), "플레이어 ID가 올바르게 설정됨");
             assertFalse(testClient.isConnected(), "초기 상태는 연결되지 않음");
@@ -155,7 +155,7 @@ class TetrisClientTest {
         String[] hostAddresses = {"localhost", "127.0.0.1", "192.168.1.1", "example.com"};
         
         for (String host : hostAddresses) {
-            TetrisClient testClient = new TetrisClient("TestPlayer", host);
+            TetrisClient testClient = new TetrisClient("TestPlayer", host, 12345);
             assertNotNull(testClient, "호스트: " + host + "로 클라이언트 생성 가능");
             assertFalse(testClient.isConnected(), "초기 상태는 연결되지 않음");
         }
@@ -231,7 +231,7 @@ class TetrisClientTest {
         
         for (String id : specialIds) {
             assertDoesNotThrow(() -> {
-                TetrisClient specialClient = new TetrisClient(id);
+                TetrisClient specialClient = new TetrisClient(id, "localhost", 12345);
                 assertNotNull(specialClient, "특수 ID로도 클라이언트 생성 가능: " + id);
                 assertEquals(id, specialClient.getPlayerId(), "특수 ID도 올바르게 저장됨");
             }, "특수 문자 ID 처리는 안전해야 함: " + id);
@@ -263,6 +263,11 @@ class TetrisClientTest {
         @Override
         public void onGameStart() {
             gameStarted = true;
+        }
+
+        @Override
+        public void onCountdownStart() {
+            // 테스트용 구현
         }
 
         @Override
@@ -314,6 +319,16 @@ class TetrisClientTest {
 
         public String getLastError() {
             return lastError;
+        }
+
+        @Override
+        public void onPlayerUnready(String playerId) {
+            // Test implementation
+        }
+
+        @Override
+        public void onServerDisconnected(String reason) {
+            // Test implementation
         }
     }
 }
