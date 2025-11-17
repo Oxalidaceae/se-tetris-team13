@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.TimerTask;
 
 public class TetrisServer {
     private static final int MAX_PLAYERS = 1;  // 서버 자신(호스트) + 클라이언트 1명
@@ -83,7 +84,7 @@ public class TetrisServer {
         serverSocket = new ServerSocket(port);
         isRunning = true;
         
-        System.out.println("Tetris Server started on port " + port);
+        System.out.println("Tetris Server started");
         System.out.println("waiting for players to connect...");
         
         // 클라이언트 접속 대기 스레드
@@ -159,6 +160,27 @@ public class TetrisServer {
         return true;
     }
     
+    // 클라이언트에게 현재 서버 상태 전송 (CONNECTION_ACCEPTED 이후 호출)
+    public void sendInitialStateToClient(String playerId) {
+        ClientHandler handler = connectedClients.get(playerId);
+        if (handler == null) return;
+        
+        try {
+            // 게임 모드가 선택되어 있으면 전송
+            if (selectedGameMode != null) {
+                GameModeMessage gameModeMsg = new GameModeMessage("server", selectedGameMode);
+                handler.sendMessage(gameModeMsg);
+            }
+            
+            // 호스트가 이미 Ready 상태면 알림
+            if (playerReadyStates.getOrDefault(hostPlayerId, false)) {
+                ConnectionMessage hostReadyMsg = ConnectionMessage.createPlayerReady(hostPlayerId);
+                handler.sendMessage(hostReadyMsg);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to send initial state to client: " + e.getMessage());
+        }
+    }
     
     // 클라이언트 연결 해제    
     public synchronized void unregisterClient(String playerId) {
@@ -211,17 +233,14 @@ public class TetrisServer {
         info.setReady(ready);
 
         if (ready) {
-            System.out.println("Player " + playerId + " is ready!");
+            System.out.println(playerId + " is ready!");
         } else {
-            System.out.println("Player " + playerId + " is not ready!");
+            System.out.println(playerId + " is not ready!");
         }
-
-        // 모든 플레이어가 준비되었는지 확인
-        checkAllReady();
     }
     
     // 모든 플레이어가 준비되었는지 확인
-    private void checkAllReady() {
+    public void checkAllReady() {
         // 게임모드가 선택되지 않았으면 시작 불가
         if (selectedGameMode == null) {
             return;
@@ -242,13 +261,23 @@ public class TetrisServer {
             }
         }
         
-        // 모든 조건 만족 시 게임 시작
-        System.out.println("All players ready! Starting game...");
-        startGame();
+        // 모든 조건 만족 시 카운트다운 시작 메시지 전송 후 5초 뒤 게임 시작
+        System.out.println("All players ready! Starting countdown...");
+        broadcastMessage(ConnectionMessage.createCountdownStart("server"));
+        if (hostMessageListener != null) {
+            hostMessageListener.onCountdownStart();
+        }
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                startGame();
+            }
+        }, 5000);
     }
     
     // 현재 서버의 IP 주소 반환
-    public String getServerIP() {
+    public static String getServerIP() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         } catch (Exception e) {
@@ -366,17 +395,30 @@ public class TetrisServer {
         }
     }
     
-    // 모든 플레이어에게 READY 이벤트 전달 (호스트 포함)
+    // 모든 플레이어에게 READY 이벤트 전달 (호스트 포함, 발신자 제외)
     public void broadcastPlayerReady(String playerId) {
         ConnectionMessage msg = ConnectionMessage.createPlayerReady(playerId);
 
-        // Host에도 전달
-        if (hostMessageListener != null) {
+        // Host에도 전달 (호스트가 발신자가 아닌 경우만)
+        if (hostMessageListener != null && !playerId.equals(hostPlayerId)) {
             hostMessageListener.onPlayerReady(playerId);
         }
 
-        // 클라이언트에게 전달
-        broadcastMessage(msg);
+        // 발신자 제외 클라이언트들에게 전달
+        broadcastToOthers(playerId, msg);
+    }
+
+    // 모든 플레이어에게 UNREADY 이벤트 전달 (호스트 포함, 발신자 제외)
+    public void broadcastPlayerUnready(String playerId) {
+        ConnectionMessage msg = ConnectionMessage.createPlayerUnready(playerId);
+
+        // Host에도 전달 (호스트가 발신자가 아닌 경우만)
+        if (hostMessageListener != null && !playerId.equals(hostPlayerId)) {
+            hostMessageListener.onPlayerUnready(playerId);
+        }
+
+        // 발신자 제외 클라이언트들에게 전달
+        broadcastToOthers(playerId, msg);
     }
 
     // 발신자를 제외한 모든 플레이어에게 보드 업데이트 전달
@@ -487,11 +529,19 @@ public class TetrisServer {
     
     // 호스트가 준비 완료
     public void setHostReady() {
-        System.out.println("Host " + hostPlayerId + " is ready!");
+        // 먼저 준비 상태 설정
         setPlayerReady(hostPlayerId, true);
         
         // 모든 클라이언트에게 호스트 준비 알림
         broadcastPlayerReady(hostPlayerId);
+        
+        // 모든 플레이어가 준비되었는지 확인 (게임 시작)
+        checkAllReady();
+    }
+
+    public void setHostUnready() {
+        setPlayerReady(hostPlayerId, false);
+        broadcastPlayerUnready(hostPlayerId);
     }
     
     // 서버 중지

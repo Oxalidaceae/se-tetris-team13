@@ -28,7 +28,9 @@ public class ConnectionMessage extends NetworkMessage {
             case CONNECTION_REJECTED:
             case DISCONNECT:
             case PLAYER_READY:
+            case PLAYER_UNREADY:
             case GAME_START:
+            case COUNTDOWN_START:
             case PAUSE:
             case RESUME:
             case GAME_OVER:
@@ -54,8 +56,16 @@ public class ConnectionMessage extends NetworkMessage {
         return new ConnectionMessage(MessageType.PLAYER_READY, playerId, playerId + " is ready!");
     }
     
+    public static ConnectionMessage createPlayerUnready(String playerId) {
+        return new ConnectionMessage(MessageType.PLAYER_UNREADY, playerId, playerId + " is not ready.");
+    }
+    
     public static ConnectionMessage createGameStart(String senderId) {
         return new ConnectionMessage(MessageType.GAME_START, senderId, "Game starting!");
+    }
+
+    public static ConnectionMessage createCountdownStart(String senderId) {
+        return new ConnectionMessage(MessageType.COUNTDOWN_START, senderId, "Countdown starting!");
     }
     
     public static ConnectionMessage createGamePause(String senderId, String reason) {

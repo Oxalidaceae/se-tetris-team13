@@ -35,6 +35,12 @@
     -fx-border-width: 3;
 }
 
+/* Style for the selected role button */
+.button.selected {
+    -fx-background-color: rgb(231, 152, 50);
+    -fx-text-fill: black;
+}
+
 .button:focused {
     -fx-background-color: #0072B2;
     -fx-text-fill: #FFFFFF;

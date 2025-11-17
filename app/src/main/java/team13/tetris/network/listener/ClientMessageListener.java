@@ -12,11 +12,20 @@ public interface ClientMessageListener {
     // 서버 연결이 거절되었을 때 호출
     void onConnectionRejected(String reason);
     
+    // 서버 연결이 끊겼을 때 호출
+    void onServerDisconnected(String reason);
+    
     // 플레이어(호스트 또는 다른 클라이언트)가 준비 완료했을 때 호출
     void onPlayerReady(String playerId);
     
+    // 플레이어가 준비를 취소했을 때 호출
+    void onPlayerUnready(String playerId);
+    
     // 게임이 시작되었을 때 호출
     void onGameStart();
+    
+    // 카운트다운이 시작되었을 때 호출
+    void onCountdownStart();
     
     // 게임이 종료되었을 때 호출
     void onGameOver(String reason);

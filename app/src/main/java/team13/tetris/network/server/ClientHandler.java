@@ -61,6 +61,10 @@ public class ClientHandler implements Runnable {
 
             // Accept 메시지 전송
             sendMessage(ConnectionMessage.createConnectionAccepted("server", playerId));
+            
+            // 클라이언트에게 현재 서버 상태 전송
+            server.sendInitialStateToClient(playerId);
+            
             return true;
 
         } catch (Exception e) {
@@ -91,14 +95,22 @@ public class ClientHandler implements Runnable {
     
     
     // 수신한 메시지 처리(메시지를 서버로 위임)
-    private void handleMessage(NetworkMessage message) {    
-        System.out.println("Received from client: " + message.getType());    
+    private void handleMessage(NetworkMessage message) {      
+        System.out.println("Received from client: " + message.getType());
         switch (message.getType()) {
             case PLAYER_READY -> {
-                System.out.println("[" + playerId + "] is READY");
                 server.setPlayerReady(playerId, true);
                 server.broadcastPlayerReady(playerId);
+
+                // 모든 플레이어가 준비되었는지 확인 (게임 시작)
+                server.checkAllReady();
             }
+            
+            case PLAYER_UNREADY -> {
+                server.setPlayerReady(playerId, false);
+                server.broadcastPlayerUnready(playerId);
+            }
+
             case BOARD_UPDATE -> {
                 if (message instanceof BoardUpdateMessage boardMsg) {
                     server.notifyHostBoardUpdate(boardMsg);

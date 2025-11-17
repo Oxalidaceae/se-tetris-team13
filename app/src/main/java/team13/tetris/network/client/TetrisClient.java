@@ -9,7 +9,6 @@ import java.util.concurrent.*;
 // Socket을 통해 서버에 접속하여 게임 플레이
 public class TetrisClient {
     private static final int DEFAULT_PORT = 12345;
-    private static final String DEFAULT_HOST = "localhost";
     
     private final String serverHost;
     private final int serverPort;
@@ -36,11 +35,6 @@ public class TetrisClient {
         this(playerId, serverHost, DEFAULT_PORT);
     }
     
-    public TetrisClient(String playerId) {
-        this(playerId, DEFAULT_HOST, DEFAULT_PORT);
-    }
-    
-    
     // 메시지 리스너 설정
     public void setMessageListener(ClientMessageListener listener) {
         this.messageListener = listener;
@@ -49,10 +43,11 @@ public class TetrisClient {
     // 서버에 접속
     public boolean connect() {
         try {
-            System.out.println("Connecting to server " + serverHost + ":" + serverPort + "...");
+            System.out.println("Connecting to server " + serverHost);
             
-            // 서버에 소켓 연결
-            socket = new Socket(serverHost, serverPort);
+            // 서버에 소켓 연결 (10초 타임아웃)
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(serverHost, serverPort), 10000);
             
             // 입출력 스트림 설정
             output = new ObjectOutputStream(socket.getOutputStream());
@@ -61,14 +56,13 @@ public class TetrisClient {
             
             // 연결 요청 메시지 전송
             ConnectionMessage connectionRequest = ConnectionMessage.createConnectionRequest(playerId, playerId);
-            System.out.println("Sending connection request...");
             
             // 직접 전송 (sendMessage를 사용하지 않음)
             synchronized (output) {
                 output.writeObject(connectionRequest);
                 output.flush();
             }
-            System.out.println("Connection request sent!");
+            System.out.println("Sending connection request...");
             
             // 연결 응답 대기
             Object response = input.readObject();
@@ -94,6 +88,9 @@ public class TetrisClient {
                 messageListener.onConnectionRejected(msg.getMessage());
             }
             return false;
+        } catch (SocketTimeoutException e) {
+            notifyError("Connection timed out. Please check the server IP.");
+            return false;
         } catch (Exception e) {
             notifyError("Connection failed: " + e.getMessage());
             return false;
@@ -112,6 +109,10 @@ public class TetrisClient {
             } catch (IOException e) {
                 if (isConnected) {
                     notifyError("Connection lost: " + e.getMessage());
+                    // 서버 연결 종료 알림
+                    if (messageListener != null) {
+                        messageListener.onServerDisconnected("Server disconnected");
+                    }
                 }
                 break;
             } catch (ClassNotFoundException e) {
@@ -139,10 +140,20 @@ public class TetrisClient {
                     messageListener.onPlayerReady(connMsg.getSenderId());
                 }
             }
+
+            case PLAYER_UNREADY -> {
+                if (message instanceof ConnectionMessage connMsg) {
+                    messageListener.onPlayerUnready(connMsg.getSenderId());
+                }
+            }
             
             case GAME_START -> {
                 gameStarted = true;
                 messageListener.onGameStart();
+            }
+
+            case COUNTDOWN_START -> {
+                messageListener.onCountdownStart();
             }
             
             case GAME_OVER -> {
@@ -217,8 +228,12 @@ public class TetrisClient {
         boolean result = sendMessage(ConnectionMessage.createPlayerReady(playerId));
         return result;
     }
+
+    public boolean requestUnready() {
+        return sendMessage(ConnectionMessage.createPlayerUnready(playerId));
+    }
     
-    // 보드 상태 업데이트 전송ming blocks 포함)
+    // 보드 상태 업데이트 전송
     public boolean sendBoardUpdate(int[][] board, int pieceX, int pieceY,
                                   int pieceType, int pieceRotation, int nextPieceType,
                                   java.util.Queue<int[][]> incomingBlocks,
@@ -276,6 +291,8 @@ public class TetrisClient {
         try { if (output != null) output.close(); } catch (IOException ignore) {}
         try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException ignore) {}
 
+        System.out.println("Client disconnected");
+
         // 메시지 핸들러 종료
         if (messageHandler != null && !messageHandler.isShutdown()) {
             messageHandler.shutdown();
@@ -285,7 +302,6 @@ public class TetrisClient {
     }
 
     private void notifyError(String msg) {
-        System.err.println(msg);
         if (messageListener != null) messageListener.onError(msg);
     }
     

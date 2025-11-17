@@ -1,14 +1,21 @@
 package team13.tetris.game.controller;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
@@ -25,6 +32,9 @@ import team13.tetris.scenes.NetworkLobbyScene;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NetworkGameController implements ClientMessageListener, ServerMessageListener {
     private final SceneManager manager;
@@ -49,6 +59,16 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     private boolean gameStarted = false;
     private boolean paused = false;
     private boolean itemMode = false;
+    private boolean timerMode = false;
+    private boolean myReady = false;
+
+    // 카운트다운
+    private Timeline countdownTimeline;
+    private final IntegerProperty countdownSeconds = new SimpleIntegerProperty();
+
+    // 타이머 모드
+    private ScheduledExecutorService timerExecutor;
+    private int remainingSeconds = 120;
     
     // 공격 큐(선택사항: 필요 시 incomingBlocks로 변환용)
     private final Queue<Integer> incomingAttacks = new LinkedList<>();
@@ -73,7 +93,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 server.setHostMessageListener(this);
                 server.start();
                 
-                lobbyScene.setStatusText("Server started. Waiting for client...");
+                lobbyScene.setStatusText("Server started. Waiting for client...\nYour IP: " + TetrisServer.getServerIP());
             } catch (IOException e) {
                 lobbyScene.setStatusText("Failed to start server: " + e.getMessage());
                 e.printStackTrace();
@@ -88,12 +108,15 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 준비 버튼 핸들러
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
         
+        // Cancel 버튼 핸들러
+        lobbyScene.setOnCancelCallback(this::disconnect);
+        
         manager.changeScene(lobbyScene.getScene());
     }
     
     // 클라이언트에서 서버로 접속
     private void connectToServer() {
-        client = new TetrisClient(myPlayerId, serverIP != null ? serverIP : "127.0.0.1");
+        client = new TetrisClient(myPlayerId, serverIP);
         client.setMessageListener(this);
         
         Platform.runLater(() -> {
@@ -103,7 +126,16 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         new Thread(() -> {
             if (client.connect()) {
                 Platform.runLater(() -> {
-                    lobbyScene.setStatusText("Connected to server!");
+                    lobbyScene.setStatusText("Connected to server!\nBoth players must be ready to start the game.");
+                });
+            } else {
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Connection Failed");
+                    alert.setHeaderText("Could not connect to the server.");
+                    alert.setContentText("Please check the IP address and make sure the host is ready.");
+                    alert.showAndWait();
+                    manager.showHostOrJoin(settings);
                 });
             }
         }).start();
@@ -112,22 +144,35 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 준비 버튼 클릭 처리
     private void handleReadyButton() {
-        lobbyScene.setMyReady(true);
+        myReady = !myReady;
+        lobbyScene.setMyReady(myReady);
         
-        if (isHost) {
-            // 서버는 게임 모드 선택 전송
-            itemMode = lobbyScene.isItemMode();
-            GameModeMessage.GameMode mode = itemMode ? 
-                GameModeMessage.GameMode.ITEM : GameModeMessage.GameMode.NORMAL;
-            server.selectGameMode(mode);
-            
-            // 호스트 자신의 게임 모드도 UI에 반영
-            lobbyScene.setGameMode(itemMode ? "Item Mode" : "Normal Mode");
-            
-            server.setHostReady();
+        if (myReady) {
+            lobbyScene.setModeSelectionDisabled(true);
+            if (isHost) {
+                // 서버는 게임 모드 선택 전송
+                GameModeMessage.GameMode mode = lobbyScene.getSelectedGameMode();
+                this.itemMode = (mode == GameModeMessage.GameMode.ITEM);
+                this.timerMode = (mode == GameModeMessage.GameMode.TIMER);
+                server.selectGameMode(mode);
+
+                String modeStr = "Normal Mode";
+                if (itemMode) modeStr = "Item Mode";
+                if (timerMode) modeStr = "Timer Mode";
+                lobbyScene.setGameMode(modeStr);
+                
+                server.setHostReady();
+            } else {
+                // 클라이언트는 준비 상태만 전송
+                client.requestReady();
+            }
         } else {
-            // 클라이언트는 준비 상태만 전송
-            client.requestReady();
+            lobbyScene.setModeSelectionDisabled(false);
+            if (isHost) {
+                server.setHostUnready();
+            } else {
+                client.requestUnready();
+            }
         }
     }
     
@@ -189,14 +234,16 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             manager, 
             settings, 
             myEngine,
-            isHost ? "You (Host)" : "You (Client)",
-            isHost ? "Opponent (Client)" : "Opponent (Host)"
+            isHost ? "You\n(Host)" : "You\n(Client)",
+            isHost ? "Opponent\n(Client)" : "Opponent\n(Host)",
+            timerMode
         );
         
         // 키 입력 핸들러
         gameScene.getScene().setOnKeyPressed(this::handleKeyPress);
         
-        // 화면 전환
+        // 화면 전환 전에 대전 모드 창 크기 적용
+        manager.applyVersusWindowSize(settings);
         manager.changeScene(gameScene.getScene());
         gameScene.requestFocus();
         gameScene.setConnected(true);
@@ -205,13 +252,25 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         myEngine.startNewGame();
         gameScene.updateLocalGrid();
     }
+
+    private void startTimer() {
+        timerExecutor = Executors.newSingleThreadScheduledExecutor();
+        timerExecutor.scheduleAtFixedRate(() -> {
+            remainingSeconds--;
+            gameScene.updateTimer(remainingSeconds);
+            
+            if (remainingSeconds <= 0) {
+                timerExecutor.shutdown();
+                Platform.runLater(() -> handleLocalGameOver("Time's Up!"));
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
     
     // 키 입력 처리
     private void handleKeyPress(KeyEvent event) {
         if (!gameStarted || myEngine == null) return;
 
         String keyText = event.getText();
-        KeyCode code = event.getCode();
         
         String leftKey = settings.getKeyLeft();
         String rightKey = settings.getKeyRight();
@@ -327,7 +386,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (myEngine != null) {
             myEngine.stopAutoDrop();
         }
-        showPauseWindow();
+        if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
+        }
+        // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
     }
 
     private void applyLocalResume() {
@@ -335,6 +397,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         paused = false;
         if (myEngine != null) {
             myEngine.startAutoDrop();
+        }
+        if (timerMode) {
+            startTimer();
         }
     }
 
@@ -357,9 +422,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     // 게임 오버 처리 (네트워크 동기화)
     private void handleLocalGameOver(String reason) {
+        if (!gameStarted) return;
         gameStarted = false;
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         // 네트워크로 GAME_OVER 알림
@@ -389,9 +458,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // 상대/서버로부터 GAME_OVER 받았을 때 처리
     private void handleRemoteGameOver(String reason) {
+        if (!gameStarted) return;
         gameStarted = false;
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         Platform.runLater(() -> {
@@ -435,12 +508,49 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             });
         }
     }
+
+    @Override
+    public void onPlayerUnready(String playerId) {
+        if (!playerId.equals(myPlayerId)) {
+            Platform.runLater(() -> {
+                lobbyScene.setOpponentReady(false);
+            });
+        }
+    }
     
     @Override
     public void onGameStart() {
         // 서버에서 GAME_START 방송 → 클라이언트/호스트 모두 여기로 옴
         Platform.runLater(() -> {
+            if (countdownTimeline != null) {
+                countdownTimeline.stop();
+            }
             startGame();
+            if (timerMode) {
+                startTimer();
+            }
+        });
+    }
+
+    @Override
+    public void onCountdownStart() {
+        Platform.runLater(() -> {
+            lobbyScene.setControlsDisabled(true);
+            lobbyScene.setStatusText("Start soon...");
+            countdownSeconds.set(5);
+
+            // 버튼 텍스트를 카운트다운에 바인딩
+            lobbyScene.getReadyButton().textProperty().bind(countdownSeconds.asString());
+
+            countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                countdownSeconds.set(countdownSeconds.get() - 1);
+            }));
+            countdownTimeline.setCycleCount(5);
+            countdownTimeline.setOnFinished(e -> {
+                lobbyScene.getReadyButton().textProperty().unbind();
+                lobbyScene.getReadyButton().setText("Starting...");
+            });
+            countdownTimeline.play();
         });
     }
     
@@ -498,14 +608,34 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     @Override
     public void onGameModeSelected(GameModeMessage.GameMode gameMode) {
         this.itemMode = (gameMode == GameModeMessage.GameMode.ITEM);
+        this.timerMode = (gameMode == GameModeMessage.GameMode.TIMER);
         Platform.runLater(() -> {
-            lobbyScene.setGameMode(itemMode ? "Item Mode" : "Normal Mode");
+            String modeStr = "Normal Mode";
+            if (itemMode) {
+                modeStr = "Item Mode";
+            } else if (timerMode) {
+                modeStr = "Timer Mode";
+            }
+            lobbyScene.setGameMode(modeStr);
         });
     }
     
     @Override
     public void onError(String error) {
         System.err.println("Network error: " + error);
+        if (lobbyScene != null) {
+            lobbyScene.setStatusText(error);
+        }
+    }
+    
+    @Override
+    public void onServerDisconnected(String reason) {
+        Platform.runLater(() -> {
+            // 서버 연결 종료 알림 팝업 표시
+            showDisconnectionAlert("Server Disconnected", reason);
+            // 네트워크 정리 및 메인 메뉴로 복귀
+            cleanupAndReturnToMenu();
+        });
     }
     
     // ServerMessageListener 구현
@@ -514,16 +644,24 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     public void onClientConnected(String clientId) {
         opponentPlayerId = clientId;
         Platform.runLater(() -> {
-            lobbyScene.setStatusText("Client connected! Both players ready to start.");
+            lobbyScene.setStatusText("Client connected!\nBoth players must be ready to start the game.");
         });
     }
     
     @Override
     public void onClientDisconnected(String clientId) {
         Platform.runLater(() -> {
-            lobbyScene.setStatusText("Client disconnected");
+            if (lobbyScene != null) {
+                lobbyScene.setStatusText("Client disconnected");
+                // 상대 Ready 상태 초기화
+                lobbyScene.setOpponentReady(false);
+            }
+  
+            if (gameStarted) {
+                showDisconnectionAlert("Client Disconnected", "The opponent has left the game.");
+                cleanupAndReturnToMenu();
+            }
         });
-        handleRemoteGameOver("Opponent disconnected");
     }
 
     // Garbage 라인 생성 (공격 처리)
@@ -656,11 +794,14 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     }
 
     // 정리 / 종료
-     public void disconnect() {
+    public void disconnect() {
         gameStarted = false;
 
         if (myEngine != null) {
             myEngine.stopAutoDrop();
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
         }
 
         if (isHost) {
@@ -668,10 +809,24 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 server.stop();
             }
         } else {
-            if (client != null && client.isConnected()) {
+            if (client != null) {
                 client.disconnect();
             }
         }
     }
+    
+    // 연결 종료 알림 팝업 표시
+    private void showDisconnectionAlert(String title, String message) {
+        Alert alert = new Alert(AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    // 네트워크 정리 및 메인 메뉴로 복귀
+    private void cleanupAndReturnToMenu() {
+        disconnect();
+        manager.showMainMenu(settings);
+    }
 }
-

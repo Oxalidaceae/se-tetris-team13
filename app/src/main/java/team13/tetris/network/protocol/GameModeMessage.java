@@ -8,7 +8,8 @@ public class GameModeMessage extends NetworkMessage {
     
     public enum GameMode {
         NORMAL,     
-        ITEM        
+        ITEM,
+        TIMER
     }
     
     private final GameMode gameMode;
@@ -28,6 +29,10 @@ public class GameModeMessage extends NetworkMessage {
 
     public boolean isItemMode() {
         return gameMode == GameMode.ITEM;
+    }
+
+    public boolean isTimerMode() {
+        return gameMode == GameMode.TIMER;
     }
     
     @Override
