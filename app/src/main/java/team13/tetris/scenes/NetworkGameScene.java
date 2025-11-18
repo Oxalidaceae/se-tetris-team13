@@ -6,10 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -20,10 +16,9 @@ import team13.tetris.game.model.Tetromino;
 import java.util.*;
 
 // 네트워크 대전 게임 화면 (VersusGameScene과 동일한 디자인 유지)
-public class NetworkGameScene {
+public class NetworkGameScene extends BaseGameScene {
     @SuppressWarnings("unused")
     private final SceneManager manager;
-    private final Settings settings;
     private final GameEngine localEngine;   // 실제 엔진
 
     private Scene scene;
@@ -79,9 +74,9 @@ public class NetworkGameScene {
                             String localName,
                             String remoteName,
                             boolean timerMode) {
-
+        super(settings);
+        
         this.manager = manager;
-        this.settings = settings;
         this.localEngine = localEngine;
         this.localName = localName;
         this.remoteName = remoteName;
@@ -262,13 +257,13 @@ public class NetworkGameScene {
             }
         }
 
-        // 2) 현재 떨어지는 미노 표시
+        // 2) 고스트 미노 표시 (먼저 그림)
+        drawGhostPiece(cache, localEngine, w, h);
+
+        // 3) 현재 떨어지는 미노 표시 (고스트 위에 그림)
         Tetromino cur = localEngine.getCurrent();
         if (cur != null)
             drawFallingPiece(cache, cur, localEngine.getPieceX(), localEngine.getPieceY(), w, h);
-
-        // 3) 고스트 미노 표시
-        drawGhostPiece(cache, localEngine, w, h);
 
         // 4) Next 업데이트
         drawNext(previewCacheLocal, localEngine.getNext());
@@ -351,14 +346,14 @@ public class NetworkGameScene {
     // 공통 그리기 로직 (Local/Remote 공용)
     private void applyCellValue(CellView cell, int v) {
         if (v == 0) {
-            cell.setEmpty();
+            applyCellEmpty(cell);
         } else if (v == 1000) {
-            cell.setBlock(" ", "block-gray", "tetris-gray-text");
+            fillCell(cell, " ", "block-gray", "tetris-gray-text");
         } else if (v >= 1 && v <= 7) {
             Tetromino.Kind k = Tetromino.kindForId(v);
-            cell.setBlock("O", k.getBlockStyleClass(), k.getTextStyleClass());
+            fillCell(cell, "O", blockClassForKind(k), textClassForKind(k));
         } else if (v < 0) {
-            cell.setBlock("O", "block-flash", "tetris-flash-text");
+            fillCell(cell, "O", "block-flash", "tetris-flash-text");
         }
     }
 
@@ -377,7 +372,7 @@ public class NetworkGameScene {
                     if (bx >= 0 && bx < w && by >= 0 && by < h) {
                         CellView cell = cache.get((by + 1) + "," + (bx + 1));
                         if (cell != null)
-                            cell.setBlock("O", blockClass, textClass);
+                            fillCell(cell, "O", blockClass, textClass);
                     }
                 }
             }
@@ -386,7 +381,6 @@ public class NetworkGameScene {
 
     private void drawGhostPiece(Map<String, CellView> cache,
                                 GameEngine engine, int w, int h) {
-
         Tetromino cur = engine.getCurrent();
         if (cur == null) return;
 
@@ -401,11 +395,10 @@ public class NetworkGameScene {
                 if (shape[r][c] != 0) {
                     int bx = px + c;
                     int by = ghostY + r;
-
                     if (bx >= 0 && bx < w && by >= 0 && by < h) {
                         CellView cell = cache.get((by + 1) + "," + (bx + 1));
                         if (cell != null)
-                            cell.setBlock("O", "block-ghost", "tetris-ghost-text");
+                            fillCell(cell, "O", "block-ghost", "tetris-ghost-text");
                     }
                 }
             }
@@ -417,14 +410,13 @@ public class NetworkGameScene {
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
                 CellView cell = cache.get(r + "," + c);
-                if (cell != null) cell.setEmpty();
+                if (cell != null) applyCellEmpty(cell);
             }
         }
         if (next == null) return;
 
         int[][] shape = next.getShape();
-        int minR = 4, maxR = -1;
-        int minC = 4, maxC = -1;
+        int minR = 4, maxR = -1, minC = 4, maxC = -1;
 
         for (int r = 0; r < shape.length; r++) {
             for (int c = 0; c < shape[r].length; c++) {
@@ -439,7 +431,6 @@ public class NetworkGameScene {
 
         int h = maxR - minR + 1;
         int w = maxC - minC + 1;
-
         int offR = (4 - h) / 2;
         int offC = (4 - w) / 2;
 
@@ -448,12 +439,11 @@ public class NetworkGameScene {
                 if (shape[r][c] != 0) {
                     int rr = r - minR + offR;
                     int cc = c - minC + offC;
-
                     CellView cell = cache.get(rr + "," + cc);
                     if (cell != null)
-                        cell.setBlock("O",
-                                next.getBlockStyleClass(),
-                                next.getTextStyleClass());
+                        fillCell(cell, "O",
+                                blockClassForKind(next.getKind()),
+                                textClassForKind(next.getKind()));
                 }
             }
         }
@@ -578,162 +568,6 @@ public class NetworkGameScene {
         return grid;
     }
 
-    // CellView 내부 클래스
-    private static final class CellView extends StackPane {
-
-        private final Rectangle rect;
-        private final Canvas patternCanvas;
-        private final Label label;
-        private final Settings settings;
-
-        private String currentPattern = null;
-
-        public CellView(double size, Settings settings) {
-            this.settings = settings;
-
-            setMinSize(size, size);
-            setPrefSize(size, size);
-            setMaxSize(size, size);
-
-            setAlignment(Pos.CENTER);
-
-            rect = new Rectangle(size, size);
-            rect.getStyleClass().add("cell-rect");
-            rect.widthProperty().bind(widthProperty());
-            rect.heightProperty().bind(heightProperty());
-
-            patternCanvas = new Canvas(size, size);
-            patternCanvas.widthProperty().bind(widthProperty());
-            patternCanvas.heightProperty().bind(heightProperty());
-            patternCanvas.widthProperty().addListener((a,b,c) -> redrawPattern());
-            patternCanvas.heightProperty().addListener((a,b,c) -> redrawPattern());
-
-            label = new Label(" ");
-            label.setAlignment(Pos.CENTER);
-            label.getStyleClass().add("cell-text");
-
-            getChildren().addAll(rect, patternCanvas, label);
-
-            setEmpty();
-        }
-
-        private void clearDynamicStyles() {
-            rect.getStyleClass().removeIf(x ->
-                    x.startsWith("block-") || x.startsWith("item-") ||
-                            x.equals("cell-empty") || x.equals("cell-border")
-            );
-            label.getStyleClass().removeIf(x ->
-                    x.startsWith("tetris-") || x.startsWith("item-") ||
-                            x.equals("cell-empty") || x.equals("cell-border")
-            );
-        }
-
-        public void setEmpty() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-
-            if (!rect.getStyleClass().contains("cell-empty"))
-                rect.getStyleClass().add("cell-empty");
-
-            if (!label.getStyleClass().contains("cell-empty"))
-                label.getStyleClass().add("cell-empty");
-
-            label.setText(" ");
-        }
-
-        public void setBorder() {
-            clearDynamicStyles();
-            currentPattern = null;
-            clearCanvas();
-
-            rect.getStyleClass().add("cell-border");
-            label.getStyleClass().add("cell-border");
-
-            label.setText("X");
-        }
-
-        public void setBlock(String symbol, String blockClass, String textClass) {
-            clearDynamicStyles();
-
-            if (blockClass != null && !blockClass.isBlank())
-                rect.getStyleClass().add(blockClass);
-
-            if (textClass != null && !textClass.isBlank())
-                label.getStyleClass().add(textClass);
-
-            boolean isItem = symbol.matches("[CLWGS]");
-            boolean isGhost = blockClass.equals("block-ghost");
-
-            if ((settings.isColorBlindMode() && !isItem) || isGhost) {
-                label.setText(" ");
-            } else {
-                label.setText(symbol);
-            }
-
-            if (settings.isColorBlindMode()) {
-                applyPattern(blockClass);
-            } else {
-                currentPattern = null;
-                clearCanvas();
-            }
-        }
-
-        private void applyPattern(String blockClass) {
-
-            switch (blockClass) {
-                case "block-I": currentPattern = "diagR"; break;
-                case "block-T": currentPattern = "diagL"; break;
-                case "block-S": currentPattern = "hori"; break;
-                case "block-Z": currentPattern = "diagRwide"; break;
-                case "block-J": currentPattern = "vert"; break;
-                case "block-L": currentPattern = "diagLwide"; break;
-                default: currentPattern = null;
-            }
-            redrawPattern();
-        }
-
-        private void redrawPattern() {
-            if (currentPattern == null) {
-                clearCanvas();
-                return;
-            }
-            double w = patternCanvas.getWidth();
-            double h = patternCanvas.getHeight();
-            GraphicsContext gc = patternCanvas.getGraphicsContext2D();
-            gc.clearRect(0,0,w,h);
-            gc.setStroke(Color.rgb(0,0,0,0.7));
-            gc.setLineWidth(1);
-
-            switch (currentPattern) {
-                case "hori":
-                    for (double y=0; y<h; y+=5) gc.strokeLine(0,y,w,y);
-                    break;
-                case "vert":
-                    for (double x=0; x<w; x+=5) gc.strokeLine(x,0,x,h);
-                    break;
-                case "diagR":
-                    for (double o=-h; o<w+h; o+=5) gc.strokeLine(o,h,o+h,0);
-                    break;
-                case "diagL":
-                    for (double o=-h; o<w+h; o+=5) gc.strokeLine(o,0,o+h,h);
-                    break;
-                case "diagRwide":
-                    for (double o=-h; o<w+h; o+=7) gc.strokeLine(o,h,o+h,0);
-                    break;
-                case "diagLwide":
-                    for (double o=-h; o<w+h; o+=7) gc.strokeLine(o,0,o+h,h);
-                    break;
-            }
-        }
-
-        private void clearCanvas() {
-            patternCanvas.getGraphicsContext2D()
-                    .clearRect(0,0,
-                            patternCanvas.getWidth(), patternCanvas.getHeight());
-        }
-    }
-    
     // 상대방 점수 반환 (게임 오버 시 사용)
     public int getOpponentScore() {
         return remoteScore;
