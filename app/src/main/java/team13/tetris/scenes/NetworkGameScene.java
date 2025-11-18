@@ -360,6 +360,34 @@ public class NetworkGameScene {
             cell.setEmpty();
         } else if (v == 1000) {
             cell.setBlock(" ", "block-gray", "tetris-gray-text");
+        } else if (v >= 100 && v < 200) {
+            // COPY 아이템: C 표시
+            Tetromino.Kind kind = Tetromino.kindForId(v - 100);
+            String blockClass = (kind != null) ? "block-" + kind.name() : "block-item";
+            cell.setBlock("C", blockClass, "item-copy-block");
+        } else if (v >= 200 && v < 300) {
+            // LINE_CLEAR 아이템: L 표시
+            Tetromino.Kind kind = Tetromino.kindForId(v - 200);
+            String blockClass = (kind != null) ? "block-" + kind.name() : "block-item";
+            cell.setBlock("L", blockClass, "item-copy-block");
+        } else if (v >= 300 && v < 400) {
+            // WEIGHT 아이템: W 표시
+            Tetromino.Kind kind = Tetromino.kindForId(v - 300);
+            String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
+            String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+            cell.setBlock("W", blockClass, textClass);
+        } else if (v >= 400 && v < 500) {
+            // GRAVITY 아이템: G 표시
+            Tetromino.Kind kind = Tetromino.kindForId(v - 400);
+            String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
+            String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+            cell.setBlock("G", blockClass, textClass);
+        } else if (v >= 500 && v < 600) {
+            // SPLIT 아이템: S 표시
+            Tetromino.Kind kind = Tetromino.kindForId(v - 500);
+            String blockClass = (kind != null) ? kind.getBlockStyleClass() : "block-generic";
+            String textClass = (kind != null) ? kind.getTextStyleClass() : "tetris-generic-text";
+            cell.setBlock("S", blockClass, textClass);
         } else if (v >= 1 && v <= 7) {
             Tetromino.Kind k = Tetromino.kindForId(v);
             cell.setBlock("O", k.getBlockStyleClass(), k.getTextStyleClass());
@@ -374,6 +402,7 @@ public class NetworkGameScene {
         String blockClass = cur.getBlockStyleClass();
         String textClass = cur.getTextStyleClass();
 
+        int blockIndex = 0;
         for (int r = 0; r < shape.length; r++) {
             for (int c = 0; c < shape[r].length; c++) {
                 if (shape[r][c] != 0) {
@@ -382,9 +411,12 @@ public class NetworkGameScene {
 
                     if (bx >= 0 && bx < w && by >= 0 && by < h) {
                         CellView cell = cache.get((by + 1) + "," + (bx + 1));
-                        if (cell != null)
-                            cell.setBlock("O", blockClass, textClass);
+                        if (cell != null) {
+                            // 아이템 블록 표시 지원
+                            applyItemMinoDisplay(cell, cur, blockIndex, blockClass, textClass);
+                        }
                     }
+                    blockIndex++;
                 }
             }
         }
@@ -449,6 +481,7 @@ public class NetworkGameScene {
         int offR = (4 - h) / 2;
         int offC = (4 - w) / 2;
 
+        int blockIndex = 0;
         for (int r = 0; r < shape.length; r++) {
             for (int c = 0; c < shape[r].length; c++) {
                 if (shape[r][c] != 0) {
@@ -456,12 +489,45 @@ public class NetworkGameScene {
                     int cc = c - minC + offC;
 
                     CellView cell = cache.get(rr + "," + cc);
-                    if (cell != null)
-                        cell.setBlock("O",
+                    if (cell != null) {
+                        // 아이템 블록 표시 지원
+                        applyItemMinoDisplay(cell, next, blockIndex,
                                 next.getBlockStyleClass(),
                                 next.getTextStyleClass());
+                    }
+                    blockIndex++;
                 }
             }
+        }
+    }
+
+    // 아이템 미노 표시 로직 (VersusGameScene과 동일)
+    private void applyItemMinoDisplay(CellView cell, Tetromino tetromino, int blockIndex, String blockClass, String textClass) {
+        if (tetromino.isItemPiece()) {
+            if (tetromino.getItemType() == Tetromino.ItemType.COPY
+                    && blockIndex == tetromino.getCopyBlockIndex()) {
+                // COPY 아이템: 특정 블록만 C 표시, 원래 블록 색상 유지
+                cell.setBlock("C", blockClass, "item-copy-block");
+            } else if (tetromino.getItemType() == Tetromino.ItemType.LINE_CLEAR
+                    && blockIndex == tetromino.getLineClearBlockIndex()) {
+                // LINE_CLEAR 아이템: 특정 블록만 L 표시, 원래 블록 색상 유지
+                cell.setBlock("L", blockClass, "item-copy-block");
+            } else if (tetromino.getItemType() == Tetromino.ItemType.WEIGHT) {
+                // WEIGHT 아이템: 모든 블록 W 표시
+                cell.setBlock("W", blockClass, textClass);
+            } else if (tetromino.getItemType() == Tetromino.ItemType.GRAVITY) {
+                // GRAVITY 아이템: 모든 블록 G 표시
+                cell.setBlock("G", blockClass, textClass);
+            } else if (tetromino.getItemType() == Tetromino.ItemType.SPLIT) {
+                // SPLIT 아이템: 모든 블록 S 표시
+                cell.setBlock("S", blockClass, textClass);
+            } else {
+                // 기타 아이템 블록은 O 표시
+                cell.setBlock("O", blockClass, textClass);
+            }
+        } else {
+            // 일반 미노는 O 표시
+            cell.setBlock("O", blockClass, textClass);
         }
     }
 

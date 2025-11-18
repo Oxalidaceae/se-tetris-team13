@@ -242,9 +242,17 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             }
         };
         
-        // GameEngine 생성
+        // GameEngine 생성 (아이템 모드 지원)
         Board myBoard = new Board(10, 20);
-        myEngine = new GameEngine(myBoard, listener);
+        team13.tetris.data.ScoreBoard.ScoreEntry.Mode mode;
+        if (timerMode) {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.TIMER;
+        } else if (itemMode) {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM;
+        } else {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.NORMAL;
+        }
+        myEngine = new GameEngine(myBoard, listener, mode);
         
         // 게임 화면 생성
         gameScene = new NetworkGameScene(
