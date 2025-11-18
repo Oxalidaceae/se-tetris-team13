@@ -30,19 +30,6 @@ public class VersusGameOverScene {
         this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false, null);
     }
 
-    // public VersusGameOverScene(
-    //         SceneManager manager,
-    //         Settings settings,
-    //         String winner,
-    //         int winnerScore,
-    //         int loserScore,
-    //         boolean timerMode,
-    //         boolean itemMode,
-    //         String currentPlayer,
-    //         boolean isNetworkMode) {
-    //     this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, currentPlayer, isNetworkMode, null);
-    // }
-
     public VersusGameOverScene(
             SceneManager manager,
             Settings settings,
