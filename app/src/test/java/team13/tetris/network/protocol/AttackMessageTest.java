@@ -22,7 +22,7 @@ class AttackMessageTest {
     @Test
     @DisplayName("커스텀 공격 메시지 생성 테스트")
     void testCreateCustomAttack() {
-        AttackMessage message = new AttackMessage("TestPlayer", 3, 4);
+        AttackMessage message = new AttackMessage("TestPlayer", 3, 4, null);
         
         assertNotNull(message, "메시지가 생성되어야 함");
         assertEquals(MessageType.ATTACK_SENT, message.getType(), "메시지 타입이 ATTACK_SENT여야 함");
@@ -35,11 +35,11 @@ class AttackMessageTest {
     @DisplayName("잘못된 원본 라인 수로 생성 시 예외 발생")
     void testInvalidSourceLines() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new AttackMessage("TestPlayer", 0, 1);
+            new AttackMessage("TestPlayer", 0, 1, null);
         }, "원본 라인 수가 0 이하일 때 예외가 발생해야 함");
         
         assertThrows(IllegalArgumentException.class, () -> {
-            new AttackMessage("TestPlayer", 11, 1);
+            new AttackMessage("TestPlayer", 11, 1, null);
         }, "원본 라인 수가 10 초과일 때 예외가 발생해야 함");
     }
 
@@ -47,11 +47,11 @@ class AttackMessageTest {
     @DisplayName("잘못된 공격 라인 수로 생성 시 예외 발생")
     void testInvalidAttackLines() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new AttackMessage("TestPlayer", 2, -1);
+            new AttackMessage("TestPlayer", 2, -1, null);
         }, "공격 라인 수가 음수일 때 예외가 발생해야 함");
         
         assertThrows(IllegalArgumentException.class, () -> {
-            new AttackMessage("TestPlayer", 2, 11);
+            new AttackMessage("TestPlayer", 2, 11, null);
         }, "공격 라인 수가 10 초과일 때 예외가 발생해야 함");
     }
 
@@ -78,7 +78,7 @@ class AttackMessageTest {
     @Test
     @DisplayName("toString 메서드 테스트")
     void testToString() {
-        AttackMessage message = new AttackMessage("TestPlayer", 3, 4);
+        AttackMessage message = new AttackMessage("TestPlayer", 3, 4, null);
         String toString = message.toString();
         
         assertNotNull(toString, "toString 결과가 null이 아니어야 함");

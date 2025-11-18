@@ -123,9 +123,9 @@ class NetworkGameControllerLogicTest {
     @DisplayName("공격 메시지 처리 테스트")
     void testAttackMessageHandling() {
         // 다양한 공격 메시지 테스트
-        AttackMessage singleLineAttack = new AttackMessage("Attacker1", 1, 1);
-        AttackMessage multiLineAttack = new AttackMessage("Attacker2", 4, 4);
-        AttackMessage maxLineAttack = new AttackMessage("Attacker3", 10, 10);
+        AttackMessage singleLineAttack = new AttackMessage("Attacker1", 1, 1, null);
+        AttackMessage multiLineAttack = new AttackMessage("Attacker2", 4, 4, null);
+        AttackMessage maxLineAttack = new AttackMessage("Attacker3", 10, 10, null);
         AttackMessage specialAttack = AttackMessage.createStandardAttack("Attacker4", 2);
 
         assertDoesNotThrow(() -> {
@@ -188,7 +188,7 @@ class NetworkGameControllerLogicTest {
                     hostController.onGameResumed();
                     hostController.onGameOver("Thread " + index + " game over");
                     
-                    AttackMessage attack = new AttackMessage("Thread" + index, index % 4 + 1, index % 4 + 1);
+                    AttackMessage attack = new AttackMessage("Thread" + index, index % 4 + 1, index % 4 + 1, null);
                     hostController.onAttackReceived(attack);
                     
                     hostController.onError("Thread " + index + " error");
@@ -264,7 +264,7 @@ class NetworkGameControllerLogicTest {
                 clientController.onBoardUpdate(boardMsg);
                 
                 if (i % 3 == 0) {
-                    AttackMessage attackMsg = new AttackMessage("Attacker" + i, i % 4 + 1, i % 4 + 1);
+                    AttackMessage attackMsg = new AttackMessage("Attacker" + i, i % 4 + 1, i % 4 + 1, null);
                     hostController.onAttackReceived(attackMsg);
                     clientController.onAttackReceived(attackMsg);
                 }
@@ -304,7 +304,7 @@ class NetworkGameControllerLogicTest {
             
             // 대량의 공격 메시지 처리 (반복 횟수 줄임)
             for (int i = 0; i < 100; i++) {
-                AttackMessage attackMsg = new AttackMessage("Attacker" + (i % 5), i % 4 + 1, i % 4 + 1);
+                AttackMessage attackMsg = new AttackMessage("Attacker" + (i % 5), i % 4 + 1, i % 4 + 1, null);
                 hostController.onAttackReceived(attackMsg);
             }
             
