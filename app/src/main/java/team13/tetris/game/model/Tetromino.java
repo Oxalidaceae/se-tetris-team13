@@ -274,7 +274,6 @@ public class Tetromino {
     public boolean isLocked() { return isLocked; }
 
     public void setLocked(boolean locked) { this.isLocked = locked; }
-
     // LINE_CLEAR 아이템 전용 getter 메소드들 (COPY와 분리)
     public int getLineClearBlockIndex() { return lineClearBlockIndex; }
     

@@ -5,9 +5,16 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -432,10 +439,20 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             client.sendMessage(msg);
         }
 
-        // 로컬 UI 처리
+        // 로컬 UI 처리 - 네트워크 모드로 VersusGameOverScene 호출
         Platform.runLater(() -> {
-            // TODO: 별도 네트워크 대전 GameOverScene 이 있다면 여기서 호출
-            manager.showMainMenu(settings);
+            int myScore = myEngine != null ? myEngine.getScore() : 0;
+            int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
+            manager.showVersusGameOver(
+                settings, 
+                "Opponent", // 진 경우이므로 상대가 이겼음
+                opponentScore, // winner score
+                myScore, // loser score  
+                false, // timerMode
+                itemMode,
+                "You", // currentPlayer (나는 진 사람)
+                true // isNetworkMode
+            );
         });
     }
 
@@ -451,8 +468,18 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         }
 
         Platform.runLater(() -> {
-            // TODO: 승패/메시지 표시 후 메인메뉴 등으로 이동
-            manager.showMainMenu(settings);
+            int myScore = myEngine != null ? myEngine.getScore() : 0;
+            int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
+            manager.showVersusGameOver(
+                settings,
+                "You", // 상대가 진 경우이므로 내가 이겼음
+                myScore, // winner score
+                opponentScore, // loser score
+                false, // timerMode
+                itemMode,
+                "Opponent", // currentPlayer (상대는 진 사람)
+                true // isNetworkMode
+            );
         });
     }
     
@@ -660,6 +687,109 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             } else {
                 board.setCell(x, height - 1, 1000);
             }
+        }
+    }
+
+    private void showPauseWindow() {
+        Platform.runLater(() -> {
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(gameScene.getScene().getWindow());
+
+            Label resume = new Label("Resume");
+            Label mainMenu = new Label("Main Menu");
+            Label quit = new Label("Quit");
+
+            // CSS 클래스 부여
+            resume.getStyleClass().add("pause-option");
+            mainMenu.getStyleClass().add("pause-option");
+            quit.getStyleClass().add("pause-option");
+
+            VBox box = new VBox(8, resume, mainMenu, quit);
+            box.getStyleClass().add("pause-box");
+            box.setAlignment(Pos.CENTER);
+
+            Scene dialogScene = new Scene(box);
+            dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+
+            // 선택 상태 관리
+            final int[] selected = new int[]{0}; // 기본 Resume 선택
+            applySelection(resume, mainMenu, quit, selected[0]);
+
+            dialogScene.setOnKeyPressed(ev -> {
+                if (ev.getCode() == KeyCode.UP) {
+                    selected[0] = (selected[0] == 0) ? 0 : selected[0] - 1;
+                    applySelection(resume, mainMenu, quit, selected[0]);
+                } else if (ev.getCode() == KeyCode.DOWN) {
+                    selected[0] = (selected[0] == 2) ? 2 : selected[0] + 1;
+                    applySelection(resume, mainMenu, quit, selected[0]);
+                } else if (ev.getCode() == KeyCode.ENTER) {
+                    dialog.close();
+
+                    if (selected[0] == 0) {
+                        // Resume 선택
+                        applyLocalResume();
+                        sendResumeToNetwork();
+                    } else if (selected[0] == 1) {
+                        // Main Menu 선택
+                        manager.showConfirmScene(
+                            settings,
+                            "Return to Main Menu?",
+                            () -> {
+                                disconnect();
+                                manager.showMainMenu(settings);
+                            },
+                            () -> {
+                                manager.restorePreviousScene();
+                                paused = true;
+                                showPauseWindow();
+                            }
+                        );
+                    } else {
+                        // Quit 선택
+                        manager.showConfirmScene(
+                            settings,
+                            "Exit Game?",
+                            () -> {
+                                disconnect();
+                                manager.exitWithSave(settings);
+                            },
+                            () -> {
+                                manager.restorePreviousScene();
+                                paused = true;
+                                showPauseWindow();
+                            }
+                        );
+                    }
+                } else if (ev.getCode() == KeyCode.ESCAPE) {
+                    // ESC로 Resume
+                    dialog.close();
+                    applyLocalResume();
+                    sendResumeToNetwork();
+                }
+            });
+
+            dialog.setScene(dialogScene);
+            dialog.setTitle("Paused");
+            dialog.setWidth(220);
+            dialog.setHeight(150);
+            dialog.showAndWait();
+        });
+    }
+
+    private void applySelection(Label resume, Label mainMenu, Label quit, int selectedIndex) {
+        // 모든 라벨에서 selected 클래스 제거
+        resume.getStyleClass().remove("selected");
+        mainMenu.getStyleClass().remove("selected");
+        quit.getStyleClass().remove("selected");
+        
+        // 선택된 라벨에만 selected 클래스 추가
+        if (selectedIndex == 0) {
+            resume.getStyleClass().add("selected");
+        } else if (selectedIndex == 1) {
+            mainMenu.getStyleClass().add("selected");
+        } else {
+            quit.getStyleClass().add("selected");
         }
     }
 

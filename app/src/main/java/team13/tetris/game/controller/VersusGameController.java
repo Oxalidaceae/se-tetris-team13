@@ -130,13 +130,15 @@ public class VersusGameController {
             dialog.initOwner(gameScene.getScene().getWindow());
 
             Label resumeLabel = new Label("Resume");
+            Label mainMenu = new Label("Main Menu");
             Label quit = new Label("Quit");
 
             // CSS 클래스 부여
             resumeLabel.getStyleClass().add("pause-option");
+            mainMenu.getStyleClass().add("pause-option");
             quit.getStyleClass().add("pause-option");
 
-            VBox box = new VBox(8, resumeLabel, quit);
+            VBox box = new VBox(8, resumeLabel, mainMenu, quit);
             box.getStyleClass().add("pause-box");
             box.setAlignment(Pos.CENTER);
 
@@ -145,24 +147,46 @@ public class VersusGameController {
 
             // 선택 상태 관리
             final int[] selected = new int[]{0}; // 기본 Resume 선택
-            applySelection(resumeLabel, quit, selected[0]);
+            applySelection(resumeLabel, mainMenu, quit, selected[0]);
 
             dialogScene.setOnKeyPressed(ev -> {
-                if (ev.getCode() == KeyCode.UP || ev.getCode() == KeyCode.DOWN) {
-                    selected[0] = (selected[0] == 0) ? 1 : 0;
-                    applySelection(resumeLabel, quit, selected[0]);
+                if (ev.getCode() == KeyCode.UP) {
+                    selected[0] = (selected[0] == 0) ? 0 : selected[0] - 1;
+                    applySelection(resumeLabel, mainMenu, quit, selected[0]);
+                } else if (ev.getCode() == KeyCode.DOWN) {
+                    selected[0] = (selected[0] == 2) ? 2 : selected[0] + 1;
+                    applySelection(resumeLabel, mainMenu, quit, selected[0]);
                 } else if (ev.getCode() == KeyCode.ENTER) {
                     dialog.close();
 
-                    if (selected[0] == 0) resume();
-
-                    //else {
-                    //    // Quit 선택 시 ExitScene으로 이동
-                    //    sceneManager.showExitScene(settings, () -> {
-                    //        paused = true;
-                    //        showPauseWindow();
-                    //    });
-                    //}
+                    if (selected[0] == 0) {
+                        // Resume 선택
+                        resume();
+                    } else if (selected[0] == 1) {
+                        // Main Menu 선택
+                        sceneManager.showConfirmScene(
+                            settings,
+                            "Return to Main Menu?",
+                            () -> sceneManager.showMainMenu(settings),
+                            () -> {
+                                sceneManager.restorePreviousScene();
+                                paused = true;
+                                showPauseWindow();
+                            }
+                        );
+                    } else {
+                        // Quit 선택 - 확인 화면 표시
+                        sceneManager.showConfirmScene(
+                            settings,
+                            "Exit Game?",
+                            () -> sceneManager.exitWithSave(settings),
+                            () -> {
+                                sceneManager.restorePreviousScene();
+                                paused = true;
+                                showPauseWindow();
+                            }
+                        );
+                    }
                 } else if (ev.getCode() == KeyCode.ESCAPE) {
                     // ESC로 Resume
                     dialog.close();
@@ -178,14 +202,18 @@ public class VersusGameController {
         });
     }
     
-    private void applySelection(Label resume, Label quit, int selectedIndex) {
+    private void applySelection(Label resume, Label mainMenu, Label quit, int selectedIndex) {
+        // 모든 라벨에서 selected 클래스 제거
+        resume.getStyleClass().remove("selected");
+        mainMenu.getStyleClass().remove("selected");
+        quit.getStyleClass().remove("selected");
+        
+        // 선택된 라벨에만 selected 클래스 추가
         if (selectedIndex == 0) {
-            resume.getStyleClass().remove("selected");
-            quit.getStyleClass().remove("selected");
             resume.getStyleClass().add("selected");
+        } else if (selectedIndex == 1) {
+            mainMenu.getStyleClass().add("selected");
         } else {
-            resume.getStyleClass().remove("selected");
-            quit.getStyleClass().remove("selected");
             quit.getStyleClass().add("selected");
         }
     }

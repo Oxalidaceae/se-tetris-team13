@@ -733,4 +733,9 @@ public class NetworkGameScene {
                             patternCanvas.getWidth(), patternCanvas.getHeight());
         }
     }
+    
+    // 상대방 점수 반환 (게임 오버 시 사용)
+    public int getOpponentScore() {
+        return remoteScore;
+    }
 }
