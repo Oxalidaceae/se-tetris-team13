@@ -300,12 +300,21 @@ public class TetrisServer {
     // 서버(호스트) 준비 상태 반환
     public boolean isServerReady() {
         return playerReadyStates.getOrDefault(hostPlayerId, false);
-    }    
+    }
+    
+    // 클라이언트 준비 상태 반환
+    public boolean isClientReady(String clientId) {
+        if (clientId == null) {
+            return false;
+        }
+        return playerReadyStates.getOrDefault(clientId, false);
+    }
     
     // P2P 준비 상태 초기화
     public void resetReadyStates() {
         playerReadyStates.clear();
         selectedGameMode = null;
+        gameInProgress = false; 
     }
     
     // 게임 시작
