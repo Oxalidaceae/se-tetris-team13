@@ -73,6 +73,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     // 공격 큐(선택사항: 필요 시 incomingBlocks로 변환용)
     private final Queue<Integer> incomingAttacks = new LinkedList<>();
     
+    // 로비 복귀 전에 받은 상대방 Ready 상태 저장
+    private Boolean pendingOpponentReady = null;
+    
     public NetworkGameController(SceneManager manager, Settings settings, boolean isHost, String serverIP) {
         this.manager = manager;
         this.settings = settings;
@@ -182,7 +185,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             return;
         }
         gameStarted = true;
-         paused = false;
+        paused = false;
+        lobbyScene = null;
         
         // 게임 리스너 생성
         GameStateListener listener = new GameStateListener() {
@@ -420,7 +424,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     }
     
     
-    // 게임 오버 처리 (네트워크 동기화)
+    // 게임 오버 처리 
     private void handleLocalGameOver(String reason) {
         if (!gameStarted) return;
         gameStarted = false;
@@ -434,10 +438,15 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 네트워크로 GAME_OVER 알림
         if (isHost && server != null) {
             server.broadcastGameOverToOthers(myPlayerId, reason);
+            server.resetReadyStates();
         } else if (!isHost && client != null) {
             ConnectionMessage msg = ConnectionMessage.createGameOver(myPlayerId, reason);
             client.sendMessage(msg);
+            client.requestUnready();
         }
+        
+        // 로컬 ready 상태 초기화
+        myReady = false;
 
         // 로컬 UI 처리 - 네트워크 모드로 VersusGameOverScene 호출
         Platform.runLater(() -> {
@@ -451,7 +460,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 false, // timerMode
                 itemMode,
                 "You", // currentPlayer (나는 진 사람)
-                true // isNetworkMode
+                true, // isNetworkMode
+                this::returnToLobby // Play Again 콜백
             );
         });
     }
@@ -467,6 +477,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             timerExecutor.shutdownNow();
         }
 
+        myReady = false;
+
         Platform.runLater(() -> {
             int myScore = myEngine != null ? myEngine.getScore() : 0;
             int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
@@ -478,7 +490,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 false, // timerMode
                 itemMode,
                 "Opponent", // currentPlayer (상대는 진 사람)
-                true // isNetworkMode
+                true, // isNetworkMode
+                this::returnToLobby // Play Again 콜백
             );
         });
     }
@@ -504,7 +517,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (!playerId.equals(myPlayerId)) {
             opponentPlayerId = playerId;
             Platform.runLater(() -> {
-                lobbyScene.setOpponentReady(true);
+                if (lobbyScene != null) {
+                    lobbyScene.setOpponentReady(true);
+                } else {
+                    // 로비 씬이 아직 없으면 pending 상태로 저장
+                    pendingOpponentReady = true;
+                }
             });
         }
     }
@@ -513,7 +531,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     public void onPlayerUnready(String playerId) {
         if (!playerId.equals(myPlayerId)) {
             Platform.runLater(() -> {
-                lobbyScene.setOpponentReady(false);
+                if (lobbyScene != null) {
+                    lobbyScene.setOpponentReady(false);
+                } else {
+                    // 로비 씬이 아직 없으면 pending 상태로 저장
+                    pendingOpponentReady = false;
+                }
             });
         }
     }
@@ -813,6 +836,67 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 client.disconnect();
             }
         }
+    }
+    
+    // 게임 오버 후 로비로 복귀 (네트워크 연결 유지)
+    private void returnToLobby() {
+        // 게임 상태만 리셋
+        gameStarted = false;
+        paused = false;
+        myReady = false;
+        
+        if (myEngine != null) {
+            myEngine.stopAutoDrop();
+            myEngine = null;
+        }
+        
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
+        }
+        
+        gameScene = null;
+        
+        // 로비 씬 재생성
+        Platform.runLater(() -> {
+            lobbyScene = new NetworkLobbyScene(manager, settings, isHost);
+            lobbyScene.setStatusText("Connected. Ready for next game!");
+            
+            // 내 Ready 상태 초기화
+            lobbyScene.setMyReady(false);
+            
+            // 상대방 Ready 상태 확인
+            if (isHost && server != null) {
+                // 호스트: 클라이언트의 Ready 상태 확인
+                boolean clientReady = server.isClientReady(opponentPlayerId);
+                lobbyScene.setOpponentReady(clientReady);
+            } else if (pendingOpponentReady != null) {
+                // 클라이언트: 로비 복귀 전에 받은 Ready 상태 적용
+                lobbyScene.setOpponentReady(pendingOpponentReady);
+                pendingOpponentReady = null; 
+            } else {
+                lobbyScene.setOpponentReady(false);
+            }
+            
+            // 게임 모드 선택 다시 활성화 (호스트만)
+            if (isHost) {
+                lobbyScene.setModeSelectionDisabled(false);
+            }
+            
+            // 게임 모드 표시 복원
+            if (itemMode) {
+                lobbyScene.setGameMode("Item Mode");
+            } else if (timerMode) {
+                lobbyScene.setGameMode("Timer Mode");
+            } else {
+                lobbyScene.setGameMode("Normal Mode");
+            }
+            
+            // 버튼 핸들러 재설정
+            lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
+            lobbyScene.setOnCancelCallback(this::disconnect);
+            
+            manager.changeScene(lobbyScene.getScene());
+        });
     }
     
     // 연결 종료 알림 팝업 표시

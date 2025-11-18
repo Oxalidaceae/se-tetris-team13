@@ -17,6 +17,7 @@ public class VersusGameOverScene {
     private final boolean itemMode;
     private final String currentPlayer; // 현재 플레이어 ("Player 1" 또는 "Player 2")
     private final boolean isNetworkMode; // 네트워크 모드 여부
+    private final Runnable onPlayAgain; // 네트워크 모드에서 Play Again 시 실행할 콜백
 
     public VersusGameOverScene(
             SceneManager manager,
@@ -26,7 +27,7 @@ public class VersusGameOverScene {
             int loserScore,
             boolean timerMode,
             boolean itemMode) {
-        this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false);
+        this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false, null);
     }
 
     public VersusGameOverScene(
@@ -38,7 +39,8 @@ public class VersusGameOverScene {
             boolean timerMode,
             boolean itemMode,
             String currentPlayer,
-            boolean isNetworkMode) {
+            boolean isNetworkMode,
+            Runnable onPlayAgain) {
         this.manager = manager;
         this.settings = settings;
         this.winner = winner;
@@ -48,6 +50,7 @@ public class VersusGameOverScene {
         this.itemMode = itemMode;
         this.currentPlayer = currentPlayer != null ? currentPlayer : "Player 1";
         this.isNetworkMode = isNetworkMode;
+        this.onPlayAgain = onPlayAgain;
     }
 
     public Scene getScene() {
@@ -104,15 +107,27 @@ public class VersusGameOverScene {
         Button retryBtn = new Button("Play Again");
         Button mainMenuBtn = new Button("Main Menu");
 
-        retryBtn.setOnAction(e -> {
-            manager.show2PGame(settings, timerMode, itemMode);
-        });
+        if (isNetworkMode && onPlayAgain != null) {
+            // 네트워크 모드: Play Again은 로비로 복귀
+            retryBtn.setOnAction(e -> onPlayAgain.run());
+        } else {
+            // 로컬 모드: 기존 동작 유지
+            retryBtn.setOnAction(e -> {
+                manager.show2PGame(settings, timerMode, itemMode);
+            });
+        }
 
         mainMenuBtn.setOnAction(e -> {
             manager.showMainMenu(settings);
         });
 
-        VBox layout = new VBox(20, titleLabel, resultLabel, scoreLabel, retryBtn, mainMenuBtn);
+        // 네트워크 모드에서는 Main Menu 버튼 숨김
+        VBox layout;
+        if (isNetworkMode) {
+            layout = new VBox(20, titleLabel, resultLabel, scoreLabel, retryBtn);
+        } else {
+            layout = new VBox(20, titleLabel, resultLabel, scoreLabel, retryBtn, mainMenuBtn);
+        }
         layout.setStyle("-fx-alignment: center; -fx-padding: 20;");
 
         Scene scene = new Scene(layout, 600, 700);
