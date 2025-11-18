@@ -5,9 +5,10 @@ public class AttackMessage extends NetworkMessage {
     private static final long serialVersionUID = 1L;
     
     private final int attackLines;              // 공격할 줄 수
-    private final int sourceLines;              // 원인이 된 삭제 줄 수 
+    private final int sourceLines;              // 원인이 된 삭제 줄 수
+    private final int[][] attackPattern;        // 공격 패턴 (2D 배열)
     
-    public AttackMessage(String attackerPlayerId, int sourceLines, int attackLines) {
+    public AttackMessage(String attackerPlayerId, int sourceLines, int attackLines, int[][] attackPattern) {
         super(MessageType.ATTACK_SENT, attackerPlayerId);
         
         if (sourceLines < 1 || sourceLines > 10) {
@@ -22,6 +23,7 @@ public class AttackMessage extends NetworkMessage {
         
         this.sourceLines = sourceLines;
         this.attackLines = attackLines;
+        this.attackPattern = attackPattern;
     }
     
     public static AttackMessage createStandardAttack(String attackerPlayerId, int clearedLines) {
@@ -39,7 +41,11 @@ public class AttackMessage extends NetworkMessage {
             default -> 0;
         };
         
-        return new AttackMessage(attackerPlayerId, clearedLines, attackLines);
+        return new AttackMessage(attackerPlayerId, clearedLines, attackLines, null);
+    }
+    
+    public int[][] getAttackPattern() {
+        return attackPattern;
     }
     
     public int getAttackLines() {

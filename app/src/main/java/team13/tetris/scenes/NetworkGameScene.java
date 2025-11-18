@@ -276,8 +276,14 @@ public class NetworkGameScene {
         // 5) 점수
         scoreLabelLocal.setText(localName + "\nScore:\n" + localEngine.getScore());
 
-        // 6) Incoming - GameEngine에 getIncomingQueue()가 없으므로 빈 큐 사용
-        updateIncoming(incomingCacheLocal, new LinkedList<>());
+        // 6) Incoming - 외부에서 updateLocalIncomingGrid 호출로 업데이트
+    }
+    
+    // Local Player의 incoming grid 업데이트 (NetworkGameController에서 호출)
+    public void updateLocalIncomingGrid(Queue<int[][]> incomingQueue) {
+        Platform.runLater(() -> {
+            updateIncoming(incomingCacheLocal, incomingQueue);
+        });
     }
 
     // Remote Player UI Update
