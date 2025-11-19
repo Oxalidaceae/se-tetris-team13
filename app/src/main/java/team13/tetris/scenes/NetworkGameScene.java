@@ -622,7 +622,10 @@ public class NetworkGameScene extends BaseGameScene {
 
     private GridPane createIncomingGrid(Map<String, Label> cache) {
         GridPane grid = new GridPane();
-        grid.setStyle("-fx-border-color: gray; -fx-background-color: #1a1a1a;");
+        grid.getStyleClass().add("incoming-grid");
+        grid.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-background-color: #1a1a1a;");
+        grid.setHgap(0);
+        grid.setVgap(0);
 
         double cellSize = ("LARGE".equals(settings.getWindowSize()) ? 22 :
                 "MEDIUM".equals(settings.getWindowSize()) ? 17 : 13);
@@ -632,6 +635,8 @@ public class NetworkGameScene extends BaseGameScene {
                 Label cell = new Label(" ");
                 cell.setAlignment(Pos.CENTER);
                 cell.setPrefSize(cellSize, cellSize);
+                cell.setMinSize(cellSize, cellSize);
+                cell.setMaxSize(cellSize, cellSize);
                 cell.setStyle("-fx-border-color: #333; -fx-border-width: 0.3;");
                 grid.add(cell, c, r);
                 cache.put(r + "," + c, cell);
