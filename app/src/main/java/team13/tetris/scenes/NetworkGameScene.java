@@ -100,7 +100,7 @@ public class NetworkGameScene extends BaseGameScene {
         timerLabelLocal.getStyleClass().add("label-title");
         
         // 네트워크 지연 상태 표시 라벨 생성
-        networkLagLabel = new Label("게임 지연 중");
+        networkLagLabel = new Label("The game is being delayed");
         networkLagLabel.getStyleClass().add("label");
         networkLagLabel.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold;");
         networkLagLabel.setVisible(false);  // 초기에는 숨김
