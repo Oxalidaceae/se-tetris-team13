@@ -8,7 +8,7 @@ import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
-public class confirmScene {
+public class ConfirmScene {
     // 사용하지 않는 필드이지만 향후 확장을 위해 보존
     @SuppressWarnings("unused")
     private final SceneManager manager;
@@ -18,7 +18,7 @@ public class confirmScene {
     private final Runnable onConfirm;
     private final Runnable onCancel;
 
-    public confirmScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
+    public ConfirmScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         this.manager = manager;
         this.settings = settings;
         this.title = title;

@@ -10,7 +10,7 @@ import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.input.KeyInputHandler;
 import team13.tetris.scenes.DifficultySelectionScene;
-import team13.tetris.scenes.confirmScene;
+import team13.tetris.scenes.ConfirmScene;
 import team13.tetris.scenes.GameOverScene;
 import team13.tetris.scenes.GameScene;
 import team13.tetris.scenes.KeySettingsScene;
@@ -291,7 +291,7 @@ public class SceneManager {
 
     public void showConfirmScene(Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
         previousScene = stage.getScene();
-        changeScene(new confirmScene(this, settings, title, onConfirm, onCancel).getScene());
+        changeScene(new ConfirmScene(this, settings, title, onConfirm, onCancel).getScene());
     }
     
     public void restorePreviousScene() {

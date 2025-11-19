@@ -402,6 +402,72 @@ public class SceneManagerTest {
     }
 
     @Test
+    @DisplayName("VERSUS 모드 게임을 시작할 수 있는지 확인")
+    void testShowGameVersusMode() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showGame(settings, ScoreBoard.ScoreEntry.Mode.VERSUS);
+            assertNotNull(stage.getScene(), "Versus game scene should be created");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("TIMER 모드 게임을 시작할 수 있는지 확인")
+    void testShowGameTimerMode() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showGame(settings, ScoreBoard.ScoreEntry.Mode.TIMER);
+            assertNotNull(stage.getScene(), "Timer game scene should be created");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("2P 게임 (일반 모드)을 시작할 수 있는지 확인")
+    void testShow2PGameNormal() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.show2PGame(settings, false, false);
+            assertNotNull(stage.getScene(), "2P game scene should be created");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("2P 게임 (타이머 모드)을 시작할 수 있는지 확인")
+    void testShow2PGameTimer() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.show2PGame(settings, true, false);
+            assertNotNull(stage.getScene(), "2P timer game scene should be created");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("2P 게임 (아이템 모드)을 시작할 수 있는지 확인")
+    void testShow2PGameItem() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.show2PGame(settings, false, true);
+            assertNotNull(stage.getScene(), "2P item game scene should be created");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("구현되지 않은 기능 팝업을 표시할 수 있는지 확인")
+    void testShowNotImplemented() {
+        javafx.application.Platform.runLater(() -> {
+            assertDoesNotThrow(() -> sceneManager.showNotImplemented(),
+                    "showNotImplemented should not throw exception");
+        });
+
+        waitForFX();
+    }
+
+    @Test
     @DisplayName("enableArrowAsTab이 씬에 이벤트 필터를 추가하는지 확인")
     void testEnableArrowAsTab() {
         javafx.application.Platform.runLater(() -> {
@@ -617,6 +683,71 @@ public class SceneManagerTest {
             assertFalse(confirmScene.getStylesheets().isEmpty(), "Confirm scene should have stylesheets");
             assertTrue(confirmScene.getStylesheets().get(0).contains("colorblind.css"),
                     "Confirm scene should use colorblind.css when color blind mode is enabled");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("게임 모드 선택 씬으로 전환할 수 있는지 확인")
+    void testShowGameModeSelection() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showGameModeSelection(settings);
+
+            assertNotNull(stage.getScene(), "Stage should have a scene after showing game mode selection");
+            assertNotNull(stage.getScene().getRoot(), "Scene should have a root node");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("솔로 모드 선택 씬으로 전환할 수 있는지 확인")
+    void testShowSoloModeSelection() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showSoloModeSelection(settings);
+
+            assertNotNull(stage.getScene(), "Stage should have a scene after showing solo mode selection");
+            assertNotNull(stage.getScene().getRoot(), "Scene should have a root node");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("멀티 모드 선택 씬으로 전환할 수 있는지 확인")
+    void testShowMultiModeSelection() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showMultiModeSelection(settings);
+
+            assertNotNull(stage.getScene(), "Stage should have a scene after showing multi mode selection");
+            assertNotNull(stage.getScene().getRoot(), "Scene should have a root node");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("로컬 멀티 모드 선택 씬으로 전환할 수 있는지 확인")
+    void testShowLocalMultiModeSelection() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showLocalMultiModeSelection(settings);
+
+            assertNotNull(stage.getScene(), "Stage should have a scene after showing local multi mode selection");
+            assertNotNull(stage.getScene().getRoot(), "Scene should have a root node");
+        });
+
+        waitForFX();
+    }
+
+    @Test
+    @DisplayName("호스트 또는 참가 씬으로 전환할 수 있는지 확인")
+    void testShowHostOrJoin() {
+        javafx.application.Platform.runLater(() -> {
+            sceneManager.showHostOrJoin(settings);
+
+            assertNotNull(stage.getScene(), "Stage should have a scene after showing host or join");
+            assertNotNull(stage.getScene().getRoot(), "Scene should have a root node");
         });
 
         waitForFX();

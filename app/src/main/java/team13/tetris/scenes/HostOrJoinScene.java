@@ -136,7 +136,7 @@ public class HostOrJoinScene {
     }
     
     // IP 주소 유효성 검증
-    private boolean isValidIPAddress(String ip) {
+    public boolean isValidIPAddress(String ip) {
         // localhost 허용
         if (ip.equalsIgnoreCase("localhost")) {
             return true;

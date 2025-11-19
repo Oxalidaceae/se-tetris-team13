@@ -16,7 +16,7 @@ public class ConfirmSceneTest {
     private Settings testSettings;
     private TestRunnable testOnConfirm;
     private TestRunnable testOnCancel;
-    private confirmScene confirmScene;
+    private ConfirmScene confirmScene;
 
     // Test용 SceneManager 구현
     static class TestSceneManager extends SceneManager {
@@ -53,14 +53,14 @@ public class ConfirmSceneTest {
         testOnCancel = new TestRunnable();
 
         // confirmScene 인스턴스 생성
-        confirmScene = new confirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
+        confirmScene = new ConfirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
     }
 
     @Test
     @DisplayName("생성자: 정상적인 매개변수로 객체 생성")
     void testConstructor() {
         // 정상적인 매개변수로 생성
-        confirmScene scene = new confirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
+        ConfirmScene scene = new ConfirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
         assertNotNull(scene);
     }
 
@@ -68,7 +68,7 @@ public class ConfirmSceneTest {
     @DisplayName("생성자: null onCancel로 객체 생성")
     void testConstructorWithNullOnCancel() {
         // onCancel이 null이어도 정상 생성되어야 함
-        confirmScene scene = new confirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, null);
+        ConfirmScene scene = new ConfirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, null);
         assertNotNull(scene);
     }
 
@@ -82,7 +82,7 @@ public class ConfirmSceneTest {
         TestRunnable customOnConfirm = new TestRunnable();
         TestRunnable customOnCancel = new TestRunnable();
 
-        confirmScene scene = new confirmScene(customManager, customSettings, "Custom Title", customOnConfirm, customOnCancel);
+        ConfirmScene scene = new ConfirmScene(customManager, customSettings, "Custom Title", customOnConfirm, customOnCancel);
         assertNotNull(scene);
     }
 
@@ -98,8 +98,8 @@ public class ConfirmSceneTest {
         TestRunnable cancel1 = new TestRunnable();
         TestRunnable cancel2 = new TestRunnable();
 
-        confirmScene scene1 = new confirmScene(manager1, settings1, "Title 1", confirm1, cancel1);
-        confirmScene scene2 = new confirmScene(manager2, settings2, "Title 2", confirm2, cancel2);
+        ConfirmScene scene1 = new ConfirmScene(manager1, settings1, "Title 1", confirm1, cancel1);
+        ConfirmScene scene2 = new ConfirmScene(manager2, settings2, "Title 2", confirm2, cancel2);
 
         // 각각 독립적인 객체여야 함
         assertNotSame(scene1, scene2);
@@ -112,7 +112,7 @@ public class ConfirmSceneTest {
     void testNullSceneManager() {
         // null SceneManager로도 생성할 수 있어야 함 (실제 사용에서는 문제가 될 수 있지만)
         assertDoesNotThrow(() -> {
-            confirmScene scene = new confirmScene(null, testSettings, "Test Title", testOnConfirm, testOnCancel);
+            ConfirmScene scene = new ConfirmScene(null, testSettings, "Test Title", testOnConfirm, testOnCancel);
             assertNotNull(scene);
         });
     }
@@ -122,7 +122,7 @@ public class ConfirmSceneTest {
     void testNullSettings() {
         // null Settings로도 생성할 수 있어야 함
         assertDoesNotThrow(() -> {
-            confirmScene scene = new confirmScene(testSceneManager, null, "Test Title", testOnConfirm, testOnCancel);
+            ConfirmScene scene = new ConfirmScene(testSceneManager, null, "Test Title", testOnConfirm, testOnCancel);
             assertNotNull(scene);
         });
     }
@@ -132,7 +132,7 @@ public class ConfirmSceneTest {
     void testAllNullParameters() {
         // 모든 매개변수가 null이어도 생성할 수 있어야 함
         assertDoesNotThrow(() -> {
-            confirmScene scene = new confirmScene(null, null, null, null, null);
+            ConfirmScene scene = new ConfirmScene(null, null, null, null, null);
             assertNotNull(scene);
         });
     }
@@ -226,8 +226,8 @@ public class ConfirmSceneTest {
         assertNotSame(settings1, settings2);
 
         // 각각 독립적으로 사용 가능해야 함
-        confirmScene scene1 = new confirmScene(testSceneManager, settings1, "Title 1", testOnConfirm, testOnCancel);
-        confirmScene scene2 = new confirmScene(testSceneManager, settings2, "Title 2", testOnConfirm, testOnCancel);
+        ConfirmScene scene1 = new ConfirmScene(testSceneManager, settings1, "Title 1", testOnConfirm, testOnCancel);
+        ConfirmScene scene2 = new ConfirmScene(testSceneManager, settings2, "Title 2", testOnConfirm, testOnCancel);
 
         assertNotNull(scene1);
         assertNotNull(scene2);
