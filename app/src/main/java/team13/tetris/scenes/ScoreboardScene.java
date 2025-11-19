@@ -47,8 +47,9 @@ public class ScoreboardScene {
 
         VBox layout;
         
+        Button exitBtn = null;
         if (highlightName != null && highlightScore != null && highlightMode != null) {
-            Button exitBtn = new Button("Exit");
+            exitBtn = new Button("Exit");
             exitBtn.setOnAction(e -> manager.showConfirmScene(settings,"Exit Game?", () -> manager.exitWithSave(settings), () -> manager.showScoreboard(settings, highlightName, highlightScore, highlightMode)));
             layout = new VBox(15, title, scoreList, backBtn, exitBtn);
         } 
@@ -60,42 +61,86 @@ public class ScoreboardScene {
 
         Scene scene = new Scene(layout, 600, 700);
 
-        setupListNavigation(scoreList, backBtn);
+        setupListNavigation(scoreList, backBtn, exitBtn);
         applyHighlight(scoreList);
+        
+        // 초기 포커스 설정: 스코어보드가 비어있으면 Back 버튼, 아니면 첫 번째 엔트리
+        if (scoreList.getItems().isEmpty()) {
+            backBtn.requestFocus();
+        } else {
+            scoreList.requestFocus();
+            scoreList.getSelectionModel().select(0);
+        }
 
         return scene;
     }
 
-    private void setupListNavigation(ListView<String> scoreList, Button backBtn) {
+    private void setupListNavigation(ListView<String> scoreList, Button backBtn, Button exitBtn) {
         scoreList.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             int selected = scoreList.getSelectionModel().getSelectedIndex();
             int lastIndex = scoreList.getItems().size() - 1;
 
-            // 마지막 항목에서 아래 방향키 → Back 버튼 이동
-            if (e.getCode() == javafx.scene.input.KeyCode.DOWN && selected == lastIndex ) {
+            // 아래 방향키로 Back 버튼 이동: 마지막 항목이 선택된 경우
+            if (e.getCode() == javafx.scene.input.KeyCode.DOWN && 
+                (selected >= 0 && selected == lastIndex)) {
                 scoreList.getSelectionModel().clearSelection();
                 backBtn.requestFocus();
                 e.consume();
-                
             }
 
-            // 첫번째 항목에서 위 방향키 → Back 버튼 이동
+            // 첫번째 항목에서 위 방향키 → Exit 버튼 (하이라이트 모드) 또는 Back 버튼 이동
             if (e.getCode() == javafx.scene.input.KeyCode.UP && (selected == -1 || selected == 0)) {
                 scoreList.getSelectionModel().clearSelection();
-                backBtn.requestFocus();
+                if (exitBtn != null) {
+                    exitBtn.requestFocus();
+                } else {
+                    backBtn.requestFocus();
+                }
                 e.consume();
             }
         });
 
-        // Back 버튼에서 위 방향키 → 리스트의 마지막 항목으로 이동
-        backBtn.setOnKeyPressed(e -> {
+        // Back 버튼에 이벤트 필터 추가하여 키 네비게이션 제어
+        backBtn.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == javafx.scene.input.KeyCode.UP) {
-                scoreList.requestFocus();
-                scoreList.getSelectionModel().select(scoreList.getItems().size() - 1);
-                scoreList.scrollTo(scoreList.getItems().size() - 1);
-                e.consume();
+                if (!scoreList.getItems().isEmpty()) {
+                    // 위 방향키 → 리스트의 마지막 항목으로 이동
+                    scoreList.requestFocus();
+                    scoreList.getSelectionModel().select(scoreList.getItems().size() - 1);
+                    scoreList.scrollTo(scoreList.getItems().size() - 1);
+                }
+                e.consume(); // 리스트가 비어있어도 이벤트 소비하여 포커스 유지
+            } else if (e.getCode() == javafx.scene.input.KeyCode.DOWN) {
+                if (exitBtn != null) {
+                    // Exit 버튼이 있으면 Exit 버튼으로 이동
+                    exitBtn.requestFocus();
+                    e.consume();
+                } else if (!scoreList.getItems().isEmpty()) {
+                    // Exit 버튼이 없고 리스트에 항목이 있으면 첫 번째 항목으로 이동
+                    scoreList.requestFocus();
+                    scoreList.getSelectionModel().select(0);
+                    scoreList.scrollTo(0);
+                    e.consume();
+                }
             }
         });
+
+        // Exit 버튼에서 키 네비게이션 (Exit 버튼이 있을 때만)
+        if (exitBtn != null) {
+            exitBtn.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
+                if (e.getCode() == javafx.scene.input.KeyCode.UP) {
+                    // 위 방향키 → Back 버튼으로 이동
+                    backBtn.requestFocus();
+                    e.consume();
+                } else if (e.getCode() == javafx.scene.input.KeyCode.DOWN) {
+                    // 아래 방향키 → 리스트의 첫 번째 항목으로 이동 (하이라이트 모드에서는 항상 엔트리 존재)
+                    scoreList.requestFocus();
+                    scoreList.getSelectionModel().select(0);
+                    scoreList.scrollTo(0);
+                    e.consume();
+                }
+            });
+        }
     }
 
     private void applyHighlight(ListView<String> scoreList) {
