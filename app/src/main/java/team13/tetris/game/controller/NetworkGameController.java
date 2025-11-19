@@ -70,8 +70,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     private ScheduledExecutorService timerExecutor;
     private int remainingSeconds = 120;
     
-    // 공격 큐(선택사항: 필요 시 incomingBlocks로 변환용)
-    private final Queue<Integer> incomingAttacks = new LinkedList<>();
+    // 내 incoming 공격 큐 (내가 받은 공격이 여기 저장됨)
+    private final Queue<int[][]> myIncomingBlocks = new LinkedList<>();
     
     // 로비 복귀 전에 받은 상대방 Ready 상태 저장
     private Boolean pendingOpponentReady = null;
@@ -203,13 +203,30 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             
             @Override
             public void onPieceSpawned(Tetromino tetromino, int px, int py) {
-                // 필요하다면 공격 큐 적용 등을 여기에 (현재는 사용 X)
+                // 로컬 대전과 동일: 새 블록 생성 시 큐에 있는 모든 공격을 한 번에 적용 (FIFO)
+                while (!myIncomingBlocks.isEmpty()) {
+                    int[][] attackPattern = myIncomingBlocks.poll();
+                    addIncomingBlockToBoard(myEngine, attackPattern);
+                }
+                
+                // 큐를 비운 후 incoming 그리드 업데이트 (VersusGameController와 동일)
+                if (gameScene != null) {
+                    gameScene.updateLocalIncomingGrid(myIncomingBlocks);
+                    gameScene.updateLocalGrid();
+                }
+                
+                // 보드 상태 전송
+                sendMyBoardState();
             }
             
             @Override
             public void onLinesCleared(int linesCleared) {
-                if (linesCleared > 0) {
-                    sendAttack(linesCleared);
+                if (linesCleared >= 2) {
+                    // 2줄 이상 지웠을 때 로컬 대전과 동일하게 정확한 공격 패턴 생성
+                    int[][] attackPattern = createAttackPattern(linesCleared, myEngine);
+                    
+                    // 네트워크로 공격 패턴 전송 (상대방이 onAttackReceived에서 받음)
+                    sendAttackPattern(attackPattern);
                 }
             }
             
@@ -229,9 +246,17 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             }
         };
         
-        // GameEngine 생성
+        // GameEngine 생성 (아이템 모드 지원)
         Board myBoard = new Board(10, 20);
-        myEngine = new GameEngine(myBoard, listener);
+        team13.tetris.data.ScoreBoard.ScoreEntry.Mode mode;
+        if (timerMode) {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.TIMER;
+        } else if (itemMode) {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM;
+        } else {
+            mode = team13.tetris.data.ScoreBoard.ScoreEntry.Mode.NORMAL;
+        }
+        myEngine = new GameEngine(myBoard, listener, mode);
         
         // 게임 화면 생성
         gameScene = new NetworkGameScene(
@@ -274,7 +299,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     private void handleKeyPress(KeyEvent event) {
         if (!gameStarted || myEngine == null) return;
 
-        String keyText = event.getText();
+        KeyCode code = event.getCode();
+        String keyString = code.toString();
         
         String leftKey = settings.getKeyLeft();
         String rightKey = settings.getKeyRight();
@@ -283,17 +309,18 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         String dropKey = settings.getKeyDrop();
         String pauseKey = settings.getPause();
         
-        if (keyText.equals(leftKey)) {
+        // Player 1 키로 내 보드 조작
+        if (keyString.equals(leftKey)) {
             myEngine.moveLeft();
-        } else if (keyText.equals(rightKey)) {
+        } else if (keyString.equals(rightKey)) {
             myEngine.moveRight();
-        } else if (keyText.equals(downKey)) {
+        } else if (keyString.equals(downKey)) {
             myEngine.softDrop();
-        } else if (keyText.equals(rotateKey)) {
+        } else if (keyString.equals(rotateKey)) {
             myEngine.rotateCW();
-        } else if (keyText.equals(dropKey)) {
+        } else if (keyString.equals(dropKey)) {
             myEngine.hardDrop();
-        } else if (keyText.equals(pauseKey)) {
+        } else if (keyString.equals(pauseKey) || code == KeyCode.ESCAPE) {
             togglePause();
         }
     }
@@ -326,8 +353,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             nextPieceType = next.getKind().getId();
         }
         
-        // 현재 구현에서는 incomingBlocks를 사용하지 않으므로 빈 큐 전송
-        Queue<int[][]> incomingBlocks = new LinkedList<>();
+        // 내 incoming 블록 큐를 전송 (상대방 화면에서 "내가 받을 공격" 표시용)
+        Queue<int[][]> incomingBlocks = new LinkedList<>(myIncomingBlocks);
         
          if (isHost && server != null) {
             server.sendHostBoardUpdate(
@@ -358,7 +385,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         }
     }
 
-    // 내가 줄을 지웠을 때 공격 전송
+    // 내가 줄을 지웠을 때 상대에게 전송 (더 이상 사용 안 함 - sendAttackPattern 사용)
+    @Deprecated
     private void sendAttack(int clearedLines) {
         if (!gameStarted || clearedLines <= 0) return;
 
@@ -367,6 +395,23 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         } else if (!isHost && client != null) {
             // targetPlayerId는 서버에서 무시됨(브로드캐스트)
             client.sendAttack(opponentPlayerId != null ? opponentPlayerId : "Opponent", clearedLines);
+        }
+    }
+    
+    // 공격 패턴을 상대방에게 전송 (로컬 대전과 동일하게)
+    private void sendAttackPattern(int[][] attackPattern) {
+        if (!gameStarted || attackPattern == null || attackPattern.length == 0) return;
+        
+        int lines = attackPattern.length;
+        
+        if (isHost && server != null) {
+            // 서버는 AttackMessage를 직접 생성하여 전송
+            AttackMessage attackMsg = new AttackMessage(myPlayerId, lines, lines, attackPattern);
+            server.broadcastMessage(attackMsg);
+        } else if (!isHost && client != null) {
+            // 클라이언트도 AttackMessage 생성하여 전송
+            AttackMessage attackMsg = new AttackMessage(myPlayerId, lines, lines, attackPattern);
+            client.sendMessage(attackMsg);
         }
     }
 
@@ -604,17 +649,21 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     
     @Override
     public void onAttackReceived(AttackMessage attackMessage) {
-        int lines = attackMessage.getAttackLines();
-         if (lines <= 0 || myEngine == null) return;
+        // 상대방이 보낸 공격 패턴 수신
+        int[][] attackPattern = attackMessage.getAttackPattern();
+        if (attackPattern == null || attackPattern.length == 0 || myEngine == null) return;
         
-        // 공격 라인 추가 (즉시 적용)
+        // 로컬 대전과 동일: 공격 패턴을 큐에 추가 (다음 블록 생성 시 적용)
         Platform.runLater(() -> {
-            for (int i = 0; i < lines; i++) {
-                addGarbageLine();
-            }
+            myIncomingBlocks.add(attackPattern);
+            
+            // UI 업데이트: 내 incoming 그리드 표시
             if (gameScene != null) {
-                gameScene.updateLocalGrid();
+                gameScene.updateLocalIncomingGrid(myIncomingBlocks);
             }
+            
+            // 내 보드 상태 전송 (상대방이 내 incoming을 볼 수 있도록)
+            sendMyBoardState();
         });
     }
     
@@ -687,28 +736,77 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         });
     }
 
-    // Garbage 라인 생성 (공격 처리)
-    private void addGarbageLine() {
-        if (myEngine == null) return;
-
-        Board board = myEngine.getBoard();
+    // 공격 패턴 생성 (VersusGameController와 동일한 로직)
+    private int[][] createAttackPattern(int lines, GameEngine engine) {
+        Board board = engine.getBoard();
         int width = board.getWidth();
-        int height = board.getHeight();
-
-        // 기존 줄 모두 위로 한 칸씩 밀기
-        for (int y = 0; y < height - 1; y++) {
-            for (int x = 0; x < width; x++) {
-                board.setCell(x, y, board.getCell(x, y + 1));
+        
+        // 중력/스플릿 블록으로 인한 라인클리어인지 확인
+        boolean isGravityOrSplitClear = engine.isLastClearByGravityOrSplit();
+        
+        // 회색 블록으로 채운 패턴 생성
+        int[][] pattern = new int[lines][width];
+        
+        // 일단 모두 회색 블록으로 채움
+        for (int r = 0; r < lines; r++) {
+            for (int c = 0; c < width; c++) {
+                pattern[r][c] = 1000; // 회색 블록
             }
         }
+        
+        if (isGravityOrSplitClear) {
+            // 중력/스플릿 블록: 각 줄마다 랜덤한 한 칸을 빈 공간으로
+            java.util.Random random = new java.util.Random();
+            for (int r = 0; r < lines; r++) {
+                int randomCol = random.nextInt(width); // 0 ~ width-1 랜덤 선택
+                pattern[r][randomCol] = 0; // 빈 공간
+            }
+        } else {
+            // 일반 블록: 마지막 블록의 정확한 위치만 제외
+            java.util.List<int[]> lockedCells = engine.getLastLockedCells();
+            java.util.List<Integer> clearedLineIndices = engine.getClearedLineIndices();
+            
+            // 마지막 블록이 삭제된 줄에 있는 경우, 해당 위치만 비움
+            if (clearedLineIndices != null) {
+                for (int[] cell : lockedCells) {
+                    int cellX = cell[0];
+                    int cellY = cell[1];
+                    
+                    // 이 셀이 삭제된 줄에 있는지 확인
+                    for (int i = 0; i < clearedLineIndices.size(); i++) {
+                        if (clearedLineIndices.get(i) == cellY) {
+                            // 삭제된 줄의 몇 번째 줄인지 찾아서 패턴에 반영
+                            pattern[i][cellX] = 0; // 빈 공간
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return pattern;
+    }
+    
+    // 넘어온 블록을 보드에 추가 (VersusGameController와 동일한 로직)
+    private void addIncomingBlockToBoard(GameEngine engine, int[][] pattern) {
+        Board board = engine.getBoard();
+        int width = board.getWidth();
+        int height = board.getHeight();
+        int lines = pattern.length;
+        
+        // 기존 블록들을 위로 올림
+        for (int y = 0; y < height - lines; y++) {
+            for (int x = 0; x < width; x++) {
+                board.setCell(x, y, board.getCell(x, y + lines));
+            }
+        }
+        
+        // 맨 아래에 넘어온 블록 추가
+        for (int i = 0; i < lines; i++) {
+            int targetRow = height - lines + i;
 
-        // 맨 아래 줄: 한 칸은 구멍, 나머지는 회색 블록(1000)
-        int hole = (int) (Math.random() * width);
-        for (int x = 0; x < width; x++) {
-            if (x == hole) {
-                board.setCell(x, height - 1, 0);
-            } else {
-                board.setCell(x, height - 1, 1000);
+            for (int x = 0; x < width; x++) {
+                board.setCell(x, targetRow, pattern[i][x]);
             }
         }
     }

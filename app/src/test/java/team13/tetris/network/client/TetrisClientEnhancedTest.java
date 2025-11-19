@@ -149,7 +149,7 @@ class TetrisClientEnhancedTest {
                    "연결되지 않은 상태에서 보드 업데이트 전송 실패");
         
         // 공격 메시지 전송 (일반 메시지로 전송)
-        AttackMessage attack = new AttackMessage("TestPlayer", 2, 2);
+        AttackMessage attack = new AttackMessage("TestPlayer", 2, 2, null);
         assertFalse(client.sendMessage(attack), "연결되지 않은 상태에서 공격 메시지 전송 실패");
         
         // 연결 해제 (이미 연결되지 않은 상태)

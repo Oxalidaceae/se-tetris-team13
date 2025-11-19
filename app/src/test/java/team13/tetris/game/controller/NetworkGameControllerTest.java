@@ -100,7 +100,7 @@ class NetworkGameControllerTest {
     @Test
     @DisplayName("공격 메시지 처리 테스트")
     void testAttackMessage() {
-        AttackMessage message = new AttackMessage("TestPlayer", 2, 2);
+        AttackMessage message = new AttackMessage("TestPlayer", 2, 2, null);
         
         assertDoesNotThrow(() -> {
             controller.onAttackReceived(message);
