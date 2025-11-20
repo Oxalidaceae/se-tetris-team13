@@ -135,6 +135,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         
         new Thread(() -> {
             if (client.connect()) {
+                // 연결 성공 시 IP 주소 저장
+                settings.setRecentIP(serverIP);
+                
                 Platform.runLater(() -> {
                     lobbyScene.setStatusText("Connected to server!\nBoth players must be ready to start the game.");
                 });

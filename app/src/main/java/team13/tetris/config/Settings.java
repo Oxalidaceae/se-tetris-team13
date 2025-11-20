@@ -17,6 +17,8 @@ public class Settings {
     private String keyRotateP2 = "UP";
     private String keyDropP2 = "SLASH";
 
+    private String recentIP = "";
+
     public boolean isColorBlindMode() {
         return colorBlindMode;
     }
@@ -120,6 +122,14 @@ public class Settings {
 
     public void setKeyDropP2(String keyDropP2) {
         this.keyDropP2 = keyDropP2;
+    }
+
+    public String getRecentIP() {
+        return recentIP;
+    }
+
+    public void setRecentIP(String recentIP) {
+        this.recentIP = recentIP;
     }
 
     public boolean isKeyAlreadyUsed(String key) {

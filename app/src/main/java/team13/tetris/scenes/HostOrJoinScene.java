@@ -52,6 +52,13 @@ public class HostOrJoinScene {
         ipInputLabel.getStyleClass().add("label");
         ipInputLabel.setVisible(false);
 
+        Label recentIPLabel = new Label();
+        recentIPLabel.getStyleClass().add("label");
+        if(!settings.getRecentIP().isEmpty()){
+            recentIPLabel.setText("Recently connected IP Address: " + settings.getRecentIP());
+            recentIPLabel.setVisible(false);
+        }
+        
         TextField ipTextField = new TextField();
         ipTextField.setPromptText("Enter IP address (e.g., 127.0.0.1)");
         ipTextField.getStyleClass().add("text-field");
@@ -64,6 +71,7 @@ public class HostOrJoinScene {
             hostButton.getStyleClass().add("selected");
             joinButton.getStyleClass().remove("selected");
             
+            recentIPLabel.setVisible(false);
             ipInputLabel.setVisible(false);
             ipTextField.setVisible(false);
             ipDisplayLabel.setVisible(true);
@@ -75,6 +83,7 @@ public class HostOrJoinScene {
             hostButton.getStyleClass().remove("selected");
 
             ipDisplayLabel.setVisible(false);
+            recentIPLabel.setVisible(true);
             ipInputLabel.setVisible(true);
             ipTextField.setVisible(true);
             Platform.runLater(ipTextField::requestFocus);
@@ -126,6 +135,7 @@ public class HostOrJoinScene {
             joinButton,
             new Label(),
             ipDisplayLabel, // IP for host
+            recentIPLabel,  // Recent IP for client
             ipInputLabel,   // Label for client
             ipTextField,    // Input for client
             new Label(),
