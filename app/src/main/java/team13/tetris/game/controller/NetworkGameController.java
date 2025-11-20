@@ -442,6 +442,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         }
     }
 
+    // Pause 창 참조를 저장할 필드 추가
+    private Stage pauseDialog = null;
+
     private void applyLocalPause() {
         if (paused) return;
         paused = true;
@@ -456,11 +459,20 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             networkCheckExecutor.shutdownNow();
         }
         // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
+        // Pause UI 표시
+        showPauseWindow();
     }
 
     private void applyLocalResume() {
         if (!paused) return;
         paused = false;
+        
+        // Pause 창이 열려있다면 닫기
+        if (pauseDialog != null && pauseDialog.isShowing()) {
+            pauseDialog.close();
+            pauseDialog = null;
+        }
+        
         if (myEngine != null) {
             myEngine.startAutoDrop();
         }
@@ -914,9 +926,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     private void showPauseWindow() {
         Platform.runLater(() -> {
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.initOwner(gameScene.getScene().getWindow());
+            pauseDialog = new Stage();
+            pauseDialog.initModality(Modality.APPLICATION_MODAL);
+            pauseDialog.initOwner(gameScene.getScene().getWindow());
 
             Label resume = new Label("Resume");
             Label mainMenu = new Label("Main Menu");
@@ -946,7 +958,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     selected[0] = (selected[0] == 2) ? 2 : selected[0] + 1;
                     applySelection(resume, mainMenu, quit, selected[0]);
                 } else if (ev.getCode() == KeyCode.ENTER) {
-                    dialog.close();
+                    pauseDialog.close();
+                    pauseDialog = null;
 
                     if (selected[0] == 0) {
                         // Resume 선택
@@ -958,6 +971,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                             settings,
                             "Return to Main Menu?",
                             () -> {
+                                // 메인 메뉴로 가기 전에 상대방 pause 창도 닫기
+                                sendResumeToNetwork();
                                 disconnect();
                                 manager.showMainMenu(settings);
                             },
@@ -973,6 +988,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                             settings,
                             "Exit Game?",
                             () -> {
+                                // 게임 종료 전에 상대방 pause 창도 닫기
+                                sendResumeToNetwork();
                                 disconnect();
                                 manager.exitWithSave(settings);
                             },
@@ -985,17 +1002,21 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     }
                 } else if (ev.getCode() == KeyCode.ESCAPE) {
                     // ESC로 Resume
-                    dialog.close();
+                    pauseDialog.close();
+                    pauseDialog = null;
                     applyLocalResume();
                     sendResumeToNetwork();
                 }
             });
 
-            dialog.setScene(dialogScene);
-            dialog.setTitle("Paused");
-            dialog.setWidth(220);
-            dialog.setHeight(150);
-            dialog.showAndWait();
+            // 창이 닫힐 때 참조 정리
+            pauseDialog.setOnCloseRequest(e -> pauseDialog = null);
+
+            pauseDialog.setScene(dialogScene);
+            pauseDialog.setTitle("Paused");
+            pauseDialog.setWidth(220);
+            pauseDialog.setHeight(150);
+            pauseDialog.showAndWait();
         });
     }
 
