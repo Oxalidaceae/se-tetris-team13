@@ -18,6 +18,7 @@ public class TetrisServer {
     private final Map<String, ClientHandler> connectedClients;
     private final Map<String, PlayerInfo> players; //플레이어 상태 관리(host 포함)
     private final ExecutorService threadPool;
+    private Future<?> acceptClientsFuture;  // acceptClients 작업 추적용
     private volatile boolean isRunning = false;
     
     // 게임 상태
@@ -89,8 +90,8 @@ public class TetrisServer {
         System.out.println("Tetris Server started");
         System.out.println("waiting for players to connect...");
         
-        // 클라이언트 접속 대기 스레드
-        threadPool.submit(this::acceptClients);
+        // 클라이언트 접속 대기 스레드 (Future 저장하여 나중에 취소 가능)
+        acceptClientsFuture = threadPool.submit(this::acceptClients);
     }
     
     
@@ -111,12 +112,21 @@ public class TetrisServer {
                 ClientHandler handler = new ClientHandler(clientSocket, this);
                 threadPool.submit(handler);
                 
+            } catch (SocketException e) {
+                // 서버 소켓이 닫힌 경우 (정상 종료)
+                if (isRunning) {
+                    System.err.println("Server socket closed unexpectedly: " + e.getMessage());
+                } else {
+                    System.out.println("Server socket closed - stopping accept loop");
+                }
+                break;
             } catch (IOException e) {
                 if (isRunning) {
                     System.err.println("Error accepting client: " + e.getMessage());
                 }
             }
         }
+        System.out.println("acceptClients loop ended");
     }
     
     
@@ -243,47 +253,36 @@ public class TetrisServer {
     
     // 모든 플레이어가 준비되었는지 확인
     public void checkAllReady() {
-        System.out.println("[DEBUG] checkAllReady() called");
         
         // 게임모드가 선택되지 않았으면 시작 불가
         if (selectedGameMode == null) {
-            System.out.println("[DEBUG] selectedGameMode is NULL - cannot start game");
             return;
         }
-        System.out.println("[DEBUG] selectedGameMode: " + selectedGameMode);
         
         // 최소 플레이어 수 확인 (호스트 + 클라이언트 최소 1명 = 2명)
         Set<String> activePlayerIds = getActivePlayerIds();
-        System.out.println("[DEBUG] Active players: " + activePlayerIds.size() + " - " + activePlayerIds);
         
         if (activePlayerIds.size() < 2) {
-            System.out.println("[DEBUG] Not enough players: " + activePlayerIds.size());
             return;
         }
         
         // 현재 게임에 참여하는 Host + 클라이언트 기준으로 체크
         for (String playerId : activePlayerIds) {
             boolean ready = playerReadyStates.getOrDefault(playerId, false);
-            System.out.println("[DEBUG] Player " + playerId + " ready: " + ready);
             if (!ready) {
-                System.out.println("[DEBUG] Not all players ready - waiting");
                 return;
             }
         }
         
         // 모든 조건 만족 시 카운트다운 시작 메시지 전송 후 5초 뒤 게임 시작
-        System.out.println("[DEBUG] All players ready! Starting countdown...");
-        
         // 기존 카운트다운 타이머가 있다면 취소
         if (countdownTimer != null) {
-            System.out.println("[DEBUG] Cancelling previous countdown timer");
             countdownTimer.cancel();
         }
         
         // 새로운 카운트다운 ID 생성
         currentCountdownId++;
         final long countdownId = currentCountdownId;
-        System.out.println("[DEBUG] Starting countdown with ID: " + countdownId);
         
         broadcastMessage(ConnectionMessage.createCountdownStart("server"));
         if (hostMessageListener != null) {
@@ -294,7 +293,6 @@ public class TetrisServer {
         countdownTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("[DEBUG] Countdown " + countdownId + " finished - calling startGame()");
                 startGame(countdownId);
             }
         }, 5000);
@@ -336,11 +334,9 @@ public class TetrisServer {
     
     // P2P 준비 상태 초기화
     public void resetReadyStates() {
-        System.out.println("[DEBUG] resetReadyStates() called - clearing ready states and setting gameInProgress to false");
         
         // 진행 중인 카운트다운 타이머 취소 및 ID 무효화
         if (countdownTimer != null) {
-            System.out.println("[DEBUG] Cancelling existing countdown timer and invalidating countdown ID");
             countdownTimer.cancel();
             countdownTimer = null;
         }
@@ -350,28 +346,23 @@ public class TetrisServer {
         playerReadyStates.clear();
         selectedGameMode = null;
         gameInProgress = false; 
-        System.out.println("[DEBUG] gameInProgress is now: " + gameInProgress);
     }
     
     // 게임 시작 (카운트다운 ID 검증 포함)
     private void startGame(long countdownId) {
-        System.out.println("[DEBUG] startGame() called with countdown ID: " + countdownId);
         
         // 카운트다운 ID가 현재 ID와 일치하는지 확인
         if (countdownId != currentCountdownId) {
-            System.out.println("[DEBUG] Countdown ID mismatch (" + countdownId + " vs " + currentCountdownId + ") - ignoring old countdown");
             return;
         }
         
         synchronized (gameLock) {
             if (gameInProgress) {
-                System.out.println("[DEBUG] Game already in progress - aborting");
                 return;
             }
             gameInProgress = true;
         }
         
-        System.out.println("[DEBUG] Game starting!");
         
         // 클라이언트에게 게임 시작 메시지 전송
         ConnectionMessage gameStart = ConnectionMessage.createGameStart(hostPlayerId);
@@ -379,7 +370,6 @@ public class TetrisServer {
         
         // 호스트에게 게임 시작 알림
         if (hostMessageListener != null) {
-            System.out.println("[DEBUG] Notifying host listener");
             hostMessageListener.onGameStart();
         }
     }
@@ -603,21 +593,18 @@ public class TetrisServer {
     public void stop() {
         isRunning = false;
         
-        // 모든 클라이언트에게 서버 종료 알림
-        if(gameInProgress) {
-            endGame("Server shutdown");
-        } else if (!connectedClients.isEmpty()) {
-            ConnectionMessage serverShutdown = ConnectionMessage.createGameOver("server", "Server shutdown");
-            broadcastMessage(serverShutdown);
+        // 0. 카운트다운 타이머 정리 (Timer는 non-daemon 스레드를 생성함)
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+            countdownTimer = null;
         }
         
-        // 모든 클라이언트 연결 종료
-        for (ClientHandler client : connectedClients.values()) {
-            client.close();
+        // 1. acceptClients 작업 취소 (가장 먼저 수행)
+        if (acceptClientsFuture != null && !acceptClientsFuture.isDone()) {
+            acceptClientsFuture.cancel(true);  // 인터럽트 발생
         }
-        connectedClients.clear();
         
-        // 서버 소켓 종료
+        // 2. 서버 소켓 종료 (accept() 블로킹 해제)
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
@@ -626,11 +613,28 @@ public class TetrisServer {
             System.err.println("Error closing server socket: " + e.getMessage());
         }
         
-        // 스레드 풀 종료
+        // 3. 모든 클라이언트에게 서버 종료 알림
+        if(gameInProgress) {
+            endGame("Server shutdown");
+        } else if (!connectedClients.isEmpty()) {
+            ConnectionMessage serverShutdown = ConnectionMessage.createGameOver("server", "Server shutdown");
+            broadcastMessage(serverShutdown);
+        }
+        
+        // 4. 모든 클라이언트 연결 종료
+        for (ClientHandler client : connectedClients.values()) {
+            client.close();
+        }
+        connectedClients.clear();
+        
+        // 5. 스레드 풀 종료 (타임아웃 2초로 단축)
         threadPool.shutdown();
         try {
-            if (!threadPool.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!threadPool.awaitTermination(2, TimeUnit.SECONDS)) {
                 threadPool.shutdownNow();
+                // 한 번 더 대기
+                if (!threadPool.awaitTermination(1, TimeUnit.SECONDS)) {
+                }
             }
         } catch (InterruptedException e) {
             threadPool.shutdownNow();

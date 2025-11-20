@@ -18,6 +18,7 @@ public class TetrisClient {
     private ObjectInputStream input;
     private ObjectOutputStream output;
     private ExecutorService messageHandler;
+    private Future<?> messageLoopFuture;  // messageLoop 작업 추적용
     
     private volatile boolean isConnected = false;
     private volatile boolean gameStarted = false;
@@ -76,8 +77,8 @@ public class TetrisClient {
                 System.out.println("Connected successfully!");
                 if (messageListener != null) messageListener.onConnectionAccepted();
 
-                // 메시지 수신 루프 스레드 시작
-                messageHandler.submit(this::messageLoop);
+                // 메시지 수신 루프 스레드 시작 (Future 저장하여 나중에 취소 가능)
+                messageLoopFuture = messageHandler.submit(this::messageLoop);
 
                 return true;
             }
@@ -283,19 +284,37 @@ public class TetrisClient {
     
     // 리소스 정리
     private void cleanup() {
+        System.out.println("Starting cleanup...");
         isConnected = false;
         gameStarted = false;
         
-        // 스트림 정리
+        // 1. messageLoop 작업 취소
+        if (messageLoopFuture != null && !messageLoopFuture.isDone()) {
+            messageLoopFuture.cancel(true);  // 인터럽트 발생
+        }
+        
+        // 2. 스트림 및 소켓 정리 (readObject() 블로킹 해제)
         try { if (input != null) input.close(); } catch (IOException ignore) {}
         try { if (output != null) output.close(); } catch (IOException ignore) {}
         try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException ignore) {}
 
         System.out.println("Client disconnected");
 
-        // 메시지 핸들러 종료
+        // 3. 메시지 핸들러 종료 (타임아웃 2초)
         if (messageHandler != null && !messageHandler.isShutdown()) {
             messageHandler.shutdown();
+            try {
+                if (!messageHandler.awaitTermination(2, TimeUnit.SECONDS)) {
+                    messageHandler.shutdownNow();
+                    // 한 번 더 대기
+                    if (!messageHandler.awaitTermination(1, TimeUnit.SECONDS)) {
+                        System.err.println("Message handler did not terminate after shutdownNow");
+                    }
+                }
+            } catch (InterruptedException e) {
+                messageHandler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
         
         System.out.println("Client cleanup completed");

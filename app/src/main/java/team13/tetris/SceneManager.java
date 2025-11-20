@@ -309,7 +309,9 @@ public class SceneManager {
     public void exitWithSave(Settings settings) {
         settings.setColorBlindMode(isColorBlindMode());
         SettingsRepository.save(settings);
+        javafx.application.Platform.exit();  // JavaFX 애플리케이션 스레드 종료
         stage.close();
+        System.exit(0);  // JVM 강제 종료
     }
 
     public boolean isColorBlindMode() {
@@ -407,6 +409,7 @@ public class SceneManager {
     
     // 애플리케이션 종료 시 모든 리소스 정리
     public void cleanup() {
+        javafx.application.Platform.exit();  // JavaFX 애플리케이션 스레드 종료
         System.exit(0);
     }
 }
