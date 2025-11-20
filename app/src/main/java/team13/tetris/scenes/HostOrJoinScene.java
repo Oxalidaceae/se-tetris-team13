@@ -138,7 +138,6 @@ public class HostOrJoinScene {
             recentIPLabel,  // Recent IP for client
             ipInputLabel,   // Label for client
             ipTextField,    // Input for client
-            new Label(),
             buttonBox
         );
 
