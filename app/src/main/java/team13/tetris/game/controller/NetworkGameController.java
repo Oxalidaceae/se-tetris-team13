@@ -555,6 +555,11 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             timerExecutor.shutdownNow();
         }
 
+        // 호스트인 경우 서버 상태도 리셋
+        if (isHost && server != null) {
+            server.resetReadyStates();
+        }
+
         myReady = false;
 
         Platform.runLater(() -> {
