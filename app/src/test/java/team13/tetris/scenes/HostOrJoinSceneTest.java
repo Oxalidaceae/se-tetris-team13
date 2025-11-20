@@ -29,6 +29,10 @@ public class HostOrJoinSceneTest {
     void setUp() {
         mockManager = mock(SceneManager.class);
         mockSettings = mock(Settings.class);
+
+        // NPE 방지: getRecentIP() 이 null이 아니라 빈 문자열을 리턴하도록 설정
+        when(mockSettings.getRecentIP()).thenReturn("");
+        
         scene = new HostOrJoinScene(mockManager, mockSettings);
     }
     
