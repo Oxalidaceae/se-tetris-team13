@@ -899,8 +899,8 @@ public class GameEngine {
             totalLinesCleared += cleared;
             
             int beforeClear = totalLinesCleared - cleared;
-            int currentGroup = totalLinesCleared / 2;
-            int previousGroup = beforeClear / 2;
+            int currentGroup = totalLinesCleared / 10;
+            int previousGroup = beforeClear / 10;
 
             if (currentGroup > previousGroup) generateItemPiece();
         }

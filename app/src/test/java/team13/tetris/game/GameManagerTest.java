@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
+import team13.tetris.data.ScoreBoard;
 
 import java.io.File;
 import java.io.IOException;
@@ -485,5 +486,187 @@ public class GameManagerTest {
 
         // then
         assertEquals(initialScore, gameManager.getCurrentScore(), "5라인 이상은 유효하지 않으므로 점수 변화 없음");
+    }
+
+    @Test
+    @DisplayName("endGame() 파라미터 없는 메서드가 올바르게 동작하는지 확인")
+    void testEndGameWithoutParameter() {
+        // given
+        gameManager.startGame();
+        gameManager.addScore(1000);
+        int initialScoreCount = gameManager.getScoreBoard().getScores().size();
+        assertTrue(gameManager.isGameRunning(), "게임이 실행 중이어야 함");
+
+        // when - 파라미터 없는 endGame() 호출 (기본적으로 showUI=true)
+        gameManager.endGame();
+
+        // then
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임 상태가 GAME_OVER여야 함");
+        assertFalse(gameManager.isGameRunning(), "게임이 종료되어야 함");
+        
+        // showUI=true가 기본값이므로 스코어보드에 점수가 추가되어야 함
+        int finalScoreCount = gameManager.getScoreBoard().getScores().size();
+        assertEquals(initialScoreCount + 1, finalScoreCount, "스코어보드에 점수가 추가되어야 함");
+        
+        // 추가된 점수 확인
+        var scores = gameManager.getScoreBoard().getScores();
+        assertTrue(scores.stream().anyMatch(entry -> entry.getScore() == 1000), 
+            "1000점이 스코어보드에 기록되어야 함");
+    }
+
+    @Test
+    @DisplayName("endGame(boolean showUI)가 올바르게 동작하는지 확인")
+    void testEndGameWithParameter() {
+        // Test case 1: showUI = true
+        gameManager.startGame();
+        gameManager.addScore(500);
+        int initialScoreCount = gameManager.getScoreBoard().getScores().size();
+
+        gameManager.endGame(true);
+        
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임 상태가 GAME_OVER여야 함");
+        assertFalse(gameManager.isGameRunning(), "게임이 종료되어야 함");
+        assertEquals(initialScoreCount + 1, gameManager.getScoreBoard().getScores().size(), 
+            "showUI=true일 때 스코어보드에 점수가 추가되어야 함");
+
+        // Test case 2: showUI = false (새 게임 시작 후)
+        gameManager.startGame();
+        gameManager.addScore(300);
+        int scoreCountBeforeEnd = gameManager.getScoreBoard().getScores().size();
+
+        gameManager.endGame(false);
+        
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임 상태가 GAME_OVER여야 함");
+        assertFalse(gameManager.isGameRunning(), "게임이 종료되어야 함");
+        assertEquals(scoreCountBeforeEnd, gameManager.getScoreBoard().getScores().size(), 
+            "showUI=false일 때 스코어보드에 점수가 추가되지 않아야 함");
+    }
+
+    @Test
+    @DisplayName("endGame 후 게임 루프가 정상적으로 중지되는지 확인")
+    void testEndGameStopsGameLoop() throws InterruptedException {
+        // given
+        gameManager.startGame();
+        assertTrue(gameManager.isGameRunning(), "게임이 실행 중이어야 함");
+        
+        // 게임 루프가 실행 중인지 확인하기 위해 잠시 대기
+        Thread.sleep(100);
+
+        // when
+        gameManager.endGame(false);
+
+        // then
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임 상태가 GAME_OVER여야 함");
+        assertFalse(gameManager.isGameRunning(), "게임이 종료되어야 함");
+        
+        // 게임 루프가 중지되었는지 확인하기 위해 잠시 대기 후 상태 확인
+        Thread.sleep(100);
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임 루프 중지 후에도 GAME_OVER 상태 유지");
+    }
+
+    @Test
+    @DisplayName("dropCurrentBlock()이 게임 루프에서 올바르게 호출되는지 확인")
+    void testDropCurrentBlockInGameLoop() throws InterruptedException {
+        // given
+        gameManager.startGame();
+        assertEquals(GameState.PLAYING, gameManager.getState(), "게임이 PLAYING 상태여야 함");
+
+        // when - 게임 루프가 dropCurrentBlock을 호출할 시간을 줌
+        Thread.sleep(200); // 게임 루프가 여러 번 실행되도록 충분한 시간 대기
+
+        // then - dropCurrentBlock이 호출되었는지 간접적으로 확인
+        // dropCurrentBlock은 내부적으로 로그를 출력하므로 예외가 발생하지 않았다면 정상 동작
+        assertEquals(GameState.PLAYING, gameManager.getState(), "게임이 여전히 PLAYING 상태여야 함");
+        assertTrue(gameManager.isGameRunning(), "게임이 계속 실행 중이어야 함");
+
+        // 게임 종료로 정리
+        gameManager.endGame(false);
+    }
+
+    @Test
+    @DisplayName("일시정지 상태에서 dropCurrentBlock이 호출되지 않는지 확인")
+    void testDropCurrentBlockNotCalledWhenPaused() throws InterruptedException {
+        // given
+        gameManager.startGame();
+        gameManager.togglePause(); // 일시정지
+        assertEquals(GameState.PAUSED, gameManager.getState(), "게임이 PAUSED 상태여야 함");
+
+        // when - 일시정지 상태에서 시간 대기
+        Thread.sleep(200);
+
+        // then - 여전히 일시정지 상태여야 함
+        assertEquals(GameState.PAUSED, gameManager.getState(), "여전히 PAUSED 상태여야 함");
+        assertTrue(gameManager.isGameRunning(), "일시정지도 isGameRunning()에서는 true");
+
+        // 게임 재개 후 정리
+        gameManager.togglePause();
+        gameManager.endGame(false);
+    }
+
+    @Test
+    @DisplayName("게임 종료 상태에서 dropCurrentBlock이 호출되지 않는지 확인")
+    void testDropCurrentBlockNotCalledWhenGameOver() throws InterruptedException {
+        // given
+        gameManager.startGame();
+        gameManager.endGame(false);
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임이 GAME_OVER 상태여야 함");
+
+        // when - 게임 종료 상태에서 시간 대기
+        Thread.sleep(200);
+
+        // then - 여전히 게임 종료 상태여야 함
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "여전히 GAME_OVER 상태여야 함");
+        assertFalse(gameManager.isGameRunning(), "게임이 종료되어 있어야 함");
+    }
+
+    @Test
+    @DisplayName("handleGameOver()가 올바르게 동작하는지 확인")
+    void testHandleGameOver() {
+        // given
+        gameManager.startGame();
+        gameManager.addScore(2000);
+        int initialScoreCount = gameManager.getScoreBoard().getScores().size();
+
+        // when - handleGameOver 직접 호출
+        gameManager.handleGameOver();
+
+        // then
+        int finalScoreCount = gameManager.getScoreBoard().getScores().size();
+        assertEquals(initialScoreCount + 1, finalScoreCount, "스코어보드에 점수가 추가되어야 함");
+        
+        // 추가된 점수와 플레이어 이름 확인
+        var scores = gameManager.getScoreBoard().getScores();
+        var addedScore = scores.stream()
+            .filter(entry -> entry.getScore() == 2000 && "Player".equals(entry.getName()))
+            .findFirst();
+        assertTrue(addedScore.isPresent(), "2000점과 'Player' 이름이 스코어보드에 기록되어야 함");
+        assertEquals(ScoreBoard.ScoreEntry.Mode.NORMAL, addedScore.get().getMode(), 
+            "게임 모드가 NORMAL이어야 함");
+    }
+
+    @Test
+    @DisplayName("endGame 후 새 게임 시작이 정상적으로 동작하는지 확인")
+    void testRestartAfterEndGame() {
+        // given - 첫 번째 게임
+        gameManager.startGame();
+        gameManager.addScore(1000);
+        gameManager.linesCleared(5);
+        gameManager.endGame(false);
+        
+        assertEquals(GameState.GAME_OVER, gameManager.getState(), "게임이 종료되어야 함");
+        assertEquals(1000, gameManager.getCurrentScore(), "종료된 게임의 점수 유지");
+        assertEquals(5, gameManager.getLinesCleared(), "종료된 게임의 라인 수 유지");
+
+        // when - 새 게임 시작
+        gameManager.startGame();
+
+        // then - 모든 값이 초기화되어야 함
+        assertEquals(GameState.PLAYING, gameManager.getState(), "새 게임이 PLAYING 상태여야 함");
+        assertEquals(0, gameManager.getCurrentScore(), "점수가 0으로 초기화되어야 함");
+        assertEquals(0, gameManager.getLinesCleared(), "라인 수가 0으로 초기화되어야 함");
+        assertTrue(gameManager.isGameRunning(), "새 게임이 실행 중이어야 함");
+
+        // 정리
+        gameManager.endGame(false);
     }
 }

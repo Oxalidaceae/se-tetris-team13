@@ -2,6 +2,8 @@ package team13.tetris.game.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -668,6 +670,164 @@ public class GameSceneControllerTest {
 		assertDoesNotThrow(() -> {
 			controller.attachToScene(mockScene);
 		}, "Scene 연결이 예외 없이 실행되어야 함");
+	}
+
+	@Test
+	@DisplayName("하드드롭 스로틀링 상태 확인 - Reflection 사용")
+	void testHardDropThrottlingState() {
+		// given
+		controller.setEngine(testEngine);
+		
+		try {
+			Field lastHardDropTimeField = GameSceneController.class.getDeclaredField("lastHardDropTime");
+			lastHardDropTimeField.setAccessible(true);
+			
+			// when - 첫 번째 하드드롭
+			controller.onHardDropPressed();
+			long firstDropTime = (Long) lastHardDropTimeField.get(controller);
+			
+			// then
+			assertEquals(1, testEngine.hardDropCalled, "하드드롭이 호출됨");
+			assertTrue(firstDropTime > 0, "하드드롭 시간이 기록됨");
+		} catch (Exception e) {
+			// Reflection 실패 시 기본 동작만 확인
+			controller.onHardDropPressed();
+			assertEquals(1, testEngine.hardDropCalled, "기본 하드드롭 동작 확인");
+		}
+	}
+
+	@Test
+	@DisplayName("일시정지 상태 토글 테스트 - Reflection 사용")
+	void testPauseStateToggle() {
+		// given
+		controller.setEngine(testEngine);
+		
+		try {
+			Field pausedField = GameSceneController.class.getDeclaredField("paused");
+			pausedField.setAccessible(true);
+			
+			// 초기 상태 확인
+			assertFalse((Boolean) pausedField.get(controller), "초기에는 일시정지 상태가 아님");
+			
+			// when - 일시정지
+			try {
+				controller.pause();
+			} catch (Exception e) {
+				// JavaFX 예외 무시하고 계속
+			}
+			
+			// then
+			assertTrue((Boolean) pausedField.get(controller), "pause() 호출 후 일시정지 상태");
+			assertEquals(1, testEngine.stopAutoDropCalled, "자동하강 중지 호출");
+			
+			// when - 재개 
+			try {
+				controller.resume();
+			} catch (Exception e) {
+				// JavaFX 예외 무시하고 계속
+			}
+			
+			// then
+			assertFalse((Boolean) pausedField.get(controller), "resume() 호출 후 정상 상태");
+			assertEquals(1, testEngine.startAutoDropCalled, "자동하강 시작 호출");
+		} catch (Exception e) {
+			// Reflection 실패 시 기본 동작만 확인
+			try {
+				controller.pause();
+			} catch (Exception ex) {
+				// JavaFX 예외 무시
+			}
+			assertEquals(1, testEngine.stopAutoDropCalled, "기본 일시정지 동작 확인");
+		}
+	}
+
+	@Test
+	@DisplayName("총 클리어된 라인 수 추적 테스트 - Reflection 사용")
+	void testTotalLinesClearedTracking() {
+		// given
+		controller.setEngine(testEngine);
+		
+		try {
+			Field totalLinesClearedField = GameSceneController.class.getDeclaredField("totalLinesCleared");
+			totalLinesClearedField.setAccessible(true);
+			
+			// 초기 상태 확인
+			assertEquals(0, (int) totalLinesClearedField.get(controller), "초기 클리어 라인 수는 0");
+			
+			// when - 라인 클리어 이벤트 발생 시 NPE 발생하지만 totalLinesCleared는 증가함
+			assertThrows(NullPointerException.class, () -> {
+				controller.onLinesCleared(3);
+			}, "GameScene이 null일 때 NPE 발생");
+			
+			// then - reflection으로 직접 필드 값 확인 (NPE 발생 전에 증가함)
+			assertEquals(3, (int) totalLinesClearedField.get(controller), "NPE 발생 전에 라인 수는 증가함");
+			
+			// when - 추가 라인 클리어
+			assertThrows(NullPointerException.class, () -> {
+				controller.onLinesCleared(2);
+			}, "GameScene이 null일 때 또 다시 NPE 발생");
+			
+			// then  
+			assertEquals(5, (int) totalLinesClearedField.get(controller), "추가 라인 클리어 후 총합 5");
+		} catch (Exception e) {
+			// Reflection 실패 시 NPE 발생 확인으로 대체
+			assertThrows(NullPointerException.class, () -> {
+				controller.onLinesCleared(3);
+			}, "GameScene이 null일 때 NPE 발생");
+		}
+	}
+
+	@Test
+	@DisplayName("게임오버 상태 설정 테스트 - Reflection 사용")
+	void testGameOverStateManagement() {
+		// given
+		controller.setEngine(testEngine);
+		
+		try {
+			Field gameOverField = GameSceneController.class.getDeclaredField("gameOver");
+			gameOverField.setAccessible(true);
+			
+			// 초기 상태 확인
+			assertFalse((Boolean) gameOverField.get(controller), "초기에는 게임오버 상태가 아님");
+			
+			// when - 게임오버 이벤트
+			try {
+				controller.onGameOver();
+			} catch (Exception e) {
+				// JavaFX 예외나 NPE 무시하고 계속
+			}
+			
+			// then
+			assertTrue((Boolean) gameOverField.get(controller), "게임오버 후 상태가 true로 변경");
+			assertEquals(1, testEngine.stopAutoDropCalled, "게임오버 시 자동하강 중지");
+		} catch (Exception e) {
+			// Reflection 실패 시 기본 동작만 확인
+			try {
+				controller.onGameOver();
+			} catch (Exception ex) {
+				// JavaFX 예외나 NPE 무시
+			}
+			assertEquals(1, testEngine.stopAutoDropCalled, "기본 게임오버 동작 확인");
+		}
+	}
+
+	@Test
+	@DisplayName("피스 스폰 시 화면 업데이트 테스트")
+	void testPieceSpawnedUpdate() {
+		// given
+		controller.setEngine(testEngine);
+		Tetromino mockTetromino = Tetromino.of(Tetromino.Kind.I);
+		
+		// when & then - GameScene이 null이므로 NPE가 발생함을 확인
+		assertThrows(NullPointerException.class, () -> {
+			controller.onPieceSpawned(mockTetromino, 4, 0);
+		}, "GameScene이 null일 때 onPieceSpawned에서 NPE 발생");
+		
+		// when & then - 다음 피스 업데이트도 NPE 발생
+		Tetromino nextTetromino = Tetromino.of(Tetromino.Kind.T);
+		assertThrows(NullPointerException.class, () -> {
+			controller.onNextPiece(nextTetromino);
+		}, "GameScene이 null일 때 onNextPiece에서 NPE 발생");
 	}
 
 	@Test

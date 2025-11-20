@@ -125,10 +125,10 @@ public class NetworkLobbyScene {
         readyBox.getChildren().addAll(readyTitleLabel, myReadyLabel, opponentReadyLabel);
         
         // 준비 버튼
-        readyButton = new Button("Ready");
+        readyButton = new Button("Start");
         readyButton.getStyleClass().add("button");
         
-        Button backButton = new Button("Cancel");
+        Button backButton = new Button("Back");
         backButton.getStyleClass().add("button");
         
         backButton.setOnAction(e -> {
@@ -188,7 +188,7 @@ public class NetworkLobbyScene {
                 readyButton.setText("Cancel Ready");
                 readyButton.getStyleClass().add("selected");
             } else {
-                readyButton.setText("Ready");
+                readyButton.setText("Start");
                 readyButton.getStyleClass().remove("selected");
             }
         });
