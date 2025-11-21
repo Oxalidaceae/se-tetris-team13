@@ -58,6 +58,9 @@ public class NetworkGameScene extends BaseGameScene {
     private final Label scoreLabelRemote;
     private final Label timerLabelLocal;
     private final Label timerLabelRemote;
+    
+    // 네트워크 지연 상태 표시
+    private final Label networkLagLabel;
 
     // 이름표
     private final String localName;
@@ -95,6 +98,13 @@ public class NetworkGameScene extends BaseGameScene {
         scoreLabelLocal.getStyleClass().add("score-label");
         timerLabelLocal = new Label("Time: 120");
         timerLabelLocal.getStyleClass().add("label-title");
+        
+        // 네트워크 지연 상태 표시 라벨 생성
+        networkLagLabel = new Label("The game is being delayed");
+        networkLagLabel.getStyleClass().add("label");
+        networkLagLabel.setStyle("-fx-text-fill: yellow; -fx-font-weight: bold;");
+        networkLagLabel.setVisible(false);  // 초기에는 숨김
+        networkLagLabel.setManaged(false);  // 레이아웃에서 제외
 
 
         VBox localBox = new VBox(12);
@@ -138,24 +148,24 @@ public class NetworkGameScene extends BaseGameScene {
 
         if (timerMode) {
             if ("SMALL".equals(windowSize)) {
-                rightPanel = new VBox(8, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(8, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             } else if ("MEDIUM".equals(windowSize)) {
-                rightPanel = new VBox(10, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(10, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
             } else { // LARGE
-                rightPanel = new VBox(12, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(12, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             }
         } else {
             if ("SMALL".equals(windowSize)) {
-                rightPanel = new VBox(8, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(8, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             } else if ("MEDIUM".equals(windowSize)) {
-                rightPanel = new VBox(10, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(10, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
             } else { // LARGE
-                rightPanel = new VBox(12, previewGrid, scoreLabel, incomingLabel, incomingGrid);
+                rightPanel = new VBox(12, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             }
         }
@@ -224,6 +234,14 @@ public class NetworkGameScene extends BaseGameScene {
     
     public void setConnected(boolean connected) {
         // 연결 상태 표시 (필요시 UI 업데이트)
+    }
+    
+    // 네트워크 지연 상태 표시/숨김
+    public void setNetworkLagStatus(boolean isLagging) {
+        Platform.runLater(() -> {
+            networkLagLabel.setVisible(isLagging);
+            networkLagLabel.setManaged(isLagging);  // 레이아웃에 포함/제외
+        });
     }
 
     // Main UI 업데이트 (Local + Remote)

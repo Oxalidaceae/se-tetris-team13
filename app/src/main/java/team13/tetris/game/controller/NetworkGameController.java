@@ -76,6 +76,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     // 로비 복귀 전에 받은 상대방 Ready 상태 저장
     private Boolean pendingOpponentReady = null;
     
+    // 네트워크 안정성 관리
+    private volatile long lastMessageReceivedTime = 0;
+    private ScheduledExecutorService networkCheckExecutor;
+    private static final long LAG_THRESHOLD_MS = 2000;  // 2초 이상 지연되면 랙 상태
+    private static final long DISCONNECT_THRESHOLD_MS = 10000;  // 10초 이상 지연되면 끊김
+    private volatile boolean isLagging = false;
+    
     public NetworkGameController(SceneManager manager, Settings settings, boolean isHost, String serverIP) {
         this.manager = manager;
         this.settings = settings;
@@ -128,6 +135,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         
         new Thread(() -> {
             if (client.connect()) {
+                // 연결 성공 시 IP 주소 저장
+                settings.setRecentIP(serverIP);
+                
                 Platform.runLater(() -> {
                     lobbyScene.setStatusText("Connected to server!\nBoth players must be ready to start the game.");
                 });
@@ -280,6 +290,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 게임 시작
         myEngine.startNewGame();
         gameScene.updateLocalGrid();
+        
+        // 네트워크 안정성 체크 시작
+        startNetworkStabilityCheck();
     }
 
     private void startTimer() {
@@ -441,6 +454,11 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (timerMode && timerExecutor != null && !timerExecutor.isShutdown()) {
             timerExecutor.shutdownNow();
         }
+        // 네트워크 지연 체크 일시 중지
+        if (networkCheckExecutor != null && !networkCheckExecutor.isShutdown()) {
+            networkCheckExecutor.shutdownNow();
+        }
+        // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
         // Pause UI 표시
         showPauseWindow();
     }
@@ -460,6 +478,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         }
         if (timerMode) {
             startTimer();
+        }
+        // 네트워크 지연 체크 재시작
+        if (gameStarted) {
+            startNetworkStabilityCheck();
         }
     }
 
@@ -533,6 +555,11 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             timerExecutor.shutdownNow();
         }
 
+        // 호스트인 경우 서버 상태도 리셋
+        if (isHost && server != null) {
+            server.resetReadyStates();
+        }
+
         myReady = false;
 
         Platform.runLater(() -> {
@@ -550,6 +577,83 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 this::returnToLobby // Play Again 콜백
             );
         });
+    }
+    
+    // 네트워크 안정성 체크 시작
+    private void startNetworkStabilityCheck() {
+        lastMessageReceivedTime = System.currentTimeMillis();
+        isLagging = false;
+        
+        networkCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+        networkCheckExecutor.scheduleAtFixedRate(() -> {
+            if (!gameStarted) return;
+            
+            long currentTime = System.currentTimeMillis();
+            long timeSinceLastMessage = currentTime - lastMessageReceivedTime;
+            
+            if (timeSinceLastMessage >= DISCONNECT_THRESHOLD_MS) {
+                // 10초 이상 메시지 없음 - 연결 끊김 처리
+                Platform.runLater(this::handleMessageTimeout);
+                networkCheckExecutor.shutdown();
+            } else if (timeSinceLastMessage >= LAG_THRESHOLD_MS) {
+                // 2초 이상 메시지 없음 - 랙 상태
+                if (!isLagging) {
+                    isLagging = true;
+                    Platform.runLater(() -> {
+                        if (gameScene != null) {
+                            gameScene.setNetworkLagStatus(true);
+                        }
+                    });
+                }
+            } else {
+                // 정상 상태
+                if (isLagging) {
+                    isLagging = false;
+                    Platform.runLater(() -> {
+                        if (gameScene != null) {
+                            gameScene.setNetworkLagStatus(false);
+                        }
+                    });
+                }
+            }
+        }, 0, 500, TimeUnit.MILLISECONDS);  // 0.5초마다 체크
+    }
+    
+    // 메시지 수신 지연 (네트워크 연결 끊김 처리)
+    private void handleMessageTimeout() {
+        if (!gameStarted) return;
+        
+        gameStarted = false;
+        if (myEngine != null) {
+            myEngine.stopAutoDrop();
+            myEngine = null;
+        }
+        if (timerExecutor != null && !timerExecutor.isShutdown()) {
+            timerExecutor.shutdownNow();
+        }
+        if (networkCheckExecutor != null && !networkCheckExecutor.isShutdown()) {
+            networkCheckExecutor.shutdownNow();
+        }
+        paused = false;
+        gameScene = null;
+        
+        // ready 상태 초기화
+        myReady = false;
+        if (isHost && server != null) {
+            server.resetReadyStates();
+        } else if (!isHost && client != null) {
+            client.requestUnready();
+        }
+
+        showDisconnectionAlert("Network delay", "There is no network response.\nReturn to the lobby screen.");
+        
+        // 로비 씬 재생성 (네트워크 연결은 유지)
+        returnToLobby();
+    }
+    
+    // 메시지 수신 시각 업데이트
+    private void updateLastMessageTime() {
+        lastMessageReceivedTime = System.currentTimeMillis();
     }
     
     // ClientMessageListener 구현 
@@ -609,6 +713,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 startTimer();
             }
         });
+        updateLastMessageTime();
     }
 
     @Override
@@ -636,6 +741,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     @Override
     public void onGameOver(String reason) {
         handleRemoteGameOver(reason);
+        updateLastMessageTime();
     }
     
     @Override
@@ -655,7 +761,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 boardUpdate.getScore(),
                 boardUpdate.getLinesCleared()
         ));
-        
+        updateLastMessageTime();
     }
     
     @Override
@@ -676,6 +782,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
             // 내 보드 상태 전송 (상대방이 내 incoming을 볼 수 있도록)
             sendMyBoardState();
         });
+        updateLastMessageTime();
     }
     
     @Override
