@@ -110,7 +110,7 @@ class TetrisClientTest {
         // 다양한 상태에서 메서드 호출
         assertFalse(client.isConnected(), "초기 연결 상태 확인");
         assertFalse(client.isGameStarted(), "초기 게임 상태 확인");
-        
+
         // null 메시지 전송 시도 (방어적 프로그래밍 테스트)
         assertDoesNotThrow(() -> {
             boolean result = client.sendMessage(null);
@@ -139,8 +139,8 @@ class TetrisClientTest {
     @Test
     @DisplayName("다양한 플레이어 ID로 클라이언트 생성")
     void testVariousPlayerIds() {
-        String[] testIds = {"Player1", "한글플레이어", "Player_123", "P", "VeryLongPlayerNameForTesting"};
-        
+        String[] testIds = { "Player1", "한글플레이어", "Player_123", "P", "VeryLongPlayerNameForTesting" };
+
         for (String playerId : testIds) {
             TetrisClient testClient = new TetrisClient(playerId, "localhost", 12345);
             assertNotNull(testClient, "플레이어 ID: " + playerId + "로 클라이언트 생성 가능");
@@ -152,8 +152,8 @@ class TetrisClientTest {
     @Test
     @DisplayName("다양한 호스트 주소로 클라이언트 생성")
     void testVariousHostAddresses() {
-        String[] hostAddresses = {"localhost", "127.0.0.1", "192.168.1.1", "example.com"};
-        
+        String[] hostAddresses = { "localhost", "127.0.0.1", "192.168.1.1", "example.com" };
+
         for (String host : hostAddresses) {
             TetrisClient testClient = new TetrisClient("TestPlayer", host, 12345);
             assertNotNull(testClient, "호스트: " + host + "로 클라이언트 생성 가능");
@@ -164,8 +164,8 @@ class TetrisClientTest {
     @Test
     @DisplayName("다양한 포트로 클라이언트 생성")
     void testVariousPorts() {
-        int[] ports = {12345, 8080, 9999, 1234, 65535};
-        
+        int[] ports = { 12345, 8080, 9999, 1234, 65535 };
+
         for (int port : ports) {
             TetrisClient testClient = new TetrisClient("TestPlayer", "localhost", port);
             assertNotNull(testClient, "포트: " + port + "로 클라이언트 생성 가능");
@@ -178,18 +178,19 @@ class TetrisClientTest {
     void testGameActionMethods() {
         // Ready 메시지
         assertFalse(client.requestReady(), "연결되지 않은 상태에서 requestReady는 false");
-        
+
         // 게임 제어 메시지들
         assertFalse(client.pauseGame(), "연결되지 않은 상태에서 pauseGame은 false");
         assertFalse(client.resumeGame(), "연결되지 않은 상태에서 resumeGame은 false");
-        
+
         // 공격 메시지
         assertFalse(client.sendAttack("opponent", 4), "연결되지 않은 상태에서 sendAttack은 false");
-        
+
         // 보드 업데이트 (모든 필수 매개변수 포함)
         int[][] testBoard = new int[10][20];
         java.util.Queue<int[][]> emptyQueue = new java.util.LinkedList<>();
-        assertFalse(client.sendBoardUpdate(testBoard, 5, 2, 1, 0, 2, emptyQueue, 1000, 5, 1), "연결되지 않은 상태에서 sendBoardUpdate는 false");
+        assertFalse(client.sendBoardUpdate(testBoard, 5, 2, 1, 0, false, null, -1, 2, false, null, -1, emptyQueue, 1000,
+                5, 1), "연결되지 않은 상태에서 sendBoardUpdate는 false");
     }
 
     @Test
@@ -202,12 +203,13 @@ class TetrisClientTest {
                 largeBoard[i][j] = (i + j) % 8; // 다양한 값으로 채움
             }
         }
-        
+
         assertDoesNotThrow(() -> {
             java.util.Queue<int[][]> largeQueue = new java.util.LinkedList<>();
-            assertFalse(client.sendBoardUpdate(largeBoard, 0, 0, 1, 0, 2, largeQueue, Integer.MAX_VALUE, Integer.MAX_VALUE, 10), "큰 보드 메시지도 안전하게 처리");
+            assertFalse(client.sendBoardUpdate(largeBoard, 0, 0, 1, 0, false, null, -1, 2, false, null, -1, largeQueue,
+                    Integer.MAX_VALUE, Integer.MAX_VALUE, 10), "큰 보드 메시지도 안전하게 처리");
         }, "큰 데이터 처리도 안전해야 함");
-        
+
         // 유효 범위 내 공격 메시지
         assertDoesNotThrow(() -> {
             AttackMessage bigAttack = AttackMessage.createStandardAttack("TestPlayer", 10);
@@ -227,8 +229,8 @@ class TetrisClientTest {
     @Test
     @DisplayName("빈 문자열이나 특수 문자가 포함된 플레이어 ID 테스트")
     void testSpecialPlayerIds() {
-        String[] specialIds = {"", " ", "Player With Spaces", "Player@#$%", "12345", "가나다라마"};
-        
+        String[] specialIds = { "", " ", "Player With Spaces", "Player@#$%", "12345", "가나다라마" };
+
         for (String id : specialIds) {
             assertDoesNotThrow(() -> {
                 TetrisClient specialClient = new TetrisClient(id, "localhost", 12345);

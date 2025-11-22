@@ -31,7 +31,7 @@ class TetrisClientAdvancedTest {
         // 테스트용 서버 시작
         testServer = new TetrisServer("TestHost", TEST_PORT);
         testServer.start();
-        
+
         // 클라이언트 생성
         listener = new TestAdvancedListener();
         client = new TetrisClient("TestClient", "localhost", TEST_PORT);
@@ -53,7 +53,7 @@ class TetrisClientAdvancedTest {
     void testRealServerConnection() throws InterruptedException {
         assertTrue(client.connect(), "서버에 연결되어야 함");
         assertTrue(client.isConnected(), "연결 상태가 true여야 함");
-        
+
         // 연결 수락 대기
         assertTrue(listener.waitForConnectionAccepted(3000), "연결 수락 메시지를 받아야 함");
     }
@@ -63,7 +63,7 @@ class TetrisClientAdvancedTest {
     void testReadyMessageAfterConnection() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         assertTrue(client.requestReady(), "Ready 메시지 전송이 성공해야 함");
         // 서버에서 Ready 상태를 받고 응답하는지 확인
         Thread.sleep(100); // 메시지 처리 대기
@@ -74,7 +74,7 @@ class TetrisClientAdvancedTest {
     void testBoardUpdateAfterConnection() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 테스트용 보드 데이터
         int[][] testBoard = new int[10][20];
         for (int i = 0; i < 10; i++) {
@@ -82,11 +82,12 @@ class TetrisClientAdvancedTest {
                 testBoard[i][j] = (i + j) % 7; // 다양한 블록 타입
             }
         }
-        
+
         Queue<int[][]> incomingBlocks = new LinkedList<>();
-        
+
         // 게임이 시작되지 않은 상태에서는 false를 반환해야 함
-        assertFalse(client.sendBoardUpdate(testBoard, 5, 10, 1, 0, 2, incomingBlocks, 1500, 10, 2));
+        assertFalse(client.sendBoardUpdate(testBoard, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks,
+                1500, 10, 2));
     }
 
     @Test
@@ -94,7 +95,7 @@ class TetrisClientAdvancedTest {
     void testAttackMessageAfterConnection() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 게임이 시작되지 않은 상태에서는 false를 반환해야 함
         assertFalse(client.sendAttack("opponent", 4));
     }
@@ -104,7 +105,7 @@ class TetrisClientAdvancedTest {
     void testPauseResumeMessages() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         assertTrue(client.pauseGame(), "일시정지 메시지 전송이 성공해야 함");
         assertTrue(client.resumeGame(), "재개 메시지 전송이 성공해야 함");
     }
@@ -114,7 +115,7 @@ class TetrisClientAdvancedTest {
     void testDisconnection() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         client.disconnect();
         assertFalse(client.isConnected(), "연결 해제 후 상태가 false여야 함");
     }
@@ -133,7 +134,7 @@ class TetrisClientAdvancedTest {
         // 임시로 포트를 점유
         try (ServerSocket blockingSocket = new ServerSocket(TEST_PORT + 1)) {
             TetrisClient blockedClient = new TetrisClient("TestClient", "localhost", TEST_PORT + 1);
-            
+
             // 연결은 성공하지만 테트리스 프로토콜이 아니므로 실패할 것
             assertFalse(blockedClient.connect(), "잘못된 프로토콜 서버에는 연결할 수 없어야 함");
         }
@@ -150,13 +151,13 @@ class TetrisClientAdvancedTest {
     void testServerShutdownDuringConnection() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 서버 종료
         testServer.stop();
-        
+
         // 잠시 대기 후 연결 상태 확인 (더 짧은 대기 시간)
         Thread.sleep(500);
-        
+
         // 연결이 끊어졌을 때의 처리가 제대로 되는지 확인
         assertFalse(client.sendMessage(ConnectionMessage.createPlayerReady("TestClient")));
     }
@@ -166,11 +167,11 @@ class TetrisClientAdvancedTest {
     void testConcurrentMessageSending() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 여러 스레드에서 동시에 메시지 전송
         Thread[] threads = new Thread[5];
         boolean[] results = new boolean[5];
-        
+
         for (int i = 0; i < 5; i++) {
             final int index = i;
             threads[i] = new Thread(() -> {
@@ -178,15 +179,15 @@ class TetrisClientAdvancedTest {
                 results[index] = client.sendMessage(msg);
             });
         }
-        
+
         for (Thread thread : threads) {
             thread.start();
         }
-        
+
         for (Thread thread : threads) {
             thread.join();
         }
-        
+
         // 모든 메시지 전송이 성공해야 함
         for (boolean result : results) {
             assertTrue(result, "동시 메시지 전송이 성공해야 함");
@@ -198,7 +199,7 @@ class TetrisClientAdvancedTest {
     void testLargeBoardDataTransmission() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 대용량 보드 데이터 생성
         int[][] largeBoard = new int[50][100];
         for (int i = 0; i < 50; i++) {
@@ -206,7 +207,7 @@ class TetrisClientAdvancedTest {
                 largeBoard[i][j] = (i * j) % 8;
             }
         }
-        
+
         Queue<int[][]> largeIncomingBlocks = new LinkedList<>();
         for (int i = 0; i < 10; i++) {
             int[][] block = new int[4][4];
@@ -217,10 +218,11 @@ class TetrisClientAdvancedTest {
             }
             largeIncomingBlocks.add(block);
         }
-        
+
         // 게임이 시작되지 않았으므로 false를 반환하지만, 에러 없이 처리되어야 함
         assertDoesNotThrow(() -> {
-            client.sendBoardUpdate(largeBoard, 25, 50, 1, 2, 3, largeIncomingBlocks, 999999, 500, 10);
+            client.sendBoardUpdate(largeBoard, 25, 50, 1, 2, false, null, -1, 3, false, null, -1, largeIncomingBlocks,
+                    999999, 500, 10);
         });
     }
 
@@ -228,10 +230,10 @@ class TetrisClientAdvancedTest {
     @DisplayName("빈 메시지 리스너로 연결")
     void testConnectionWithNullListener() throws InterruptedException {
         client.setMessageListener(null);
-        
+
         // 리스너가 null이어도 연결은 성공해야 함
         assertTrue(client.connect(), "null 리스너여도 연결은 성공해야 함");
-        
+
         // 메시지 전송도 가능해야 함
         assertTrue(client.sendMessage(ConnectionMessage.createPlayerReady("TestClient")));
     }
@@ -241,17 +243,17 @@ class TetrisClientAdvancedTest {
     void testSpecialCharacterMessages() throws InterruptedException {
         assertTrue(client.connect());
         assertTrue(listener.waitForConnectionAccepted(3000));
-        
+
         // 특수 문자가 포함된 메시지들
         String[] specialMessages = {
-            "테스트 메시지",
-            "Special !@#$%^&*() Characters",
-            "줄바꿈\n포함",
-            "탭\t문자",
-            "\"따옴표\" 포함",
-            "Unicode: 🎮🎯🎲"
+                "테스트 메시지",
+                "Special !@#$%^&*() Characters",
+                "줄바꿈\n포함",
+                "탭\t문자",
+                "\"따옴표\" 포함",
+                "Unicode: 🎮🎯🎲"
         };
-        
+
         for (String msg : specialMessages) {
             ConnectionMessage connMsg = new ConnectionMessage(MessageType.PAUSE, "TestClient", msg);
             assertTrue(client.sendMessage(connMsg), "특수 문자 메시지 전송이 성공해야 함: " + msg);
@@ -264,10 +266,10 @@ class TetrisClientAdvancedTest {
         for (int i = 0; i < 2; i++) { // 3번에서 2번으로 줄임
             assertTrue(client.connect(), "연결 시도 " + i + "가 성공해야 함");
             assertTrue(listener.waitForConnectionAccepted(2000), "연결 수락 대기 " + i);
-            
+
             client.disconnect();
             assertFalse(client.isConnected(), "연결 해제 " + i + " 후 상태가 false여야 함");
-            
+
             Thread.sleep(200); // 정리 시간을 늘림
         }
     }

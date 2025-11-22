@@ -354,16 +354,42 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         Tetromino current = myEngine.getCurrent();
         int pieceType = -1;
         int pieceRotation = 0;
+        boolean pieceIsItem = false;
+        String pieceItemType = null;
+        int pieceItemBlockIndex = -1;
+        
         if (current != null && current.getKind() != null) {
             pieceType = current.getKind().getId();
             pieceRotation = current.getRotationIndex();
+            pieceIsItem = current.isItemPiece();
+            if (pieceIsItem && current.getItemType() != null) {
+                pieceItemType = current.getItemType().name();
+                if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY) {
+                    pieceItemBlockIndex = current.getCopyBlockIndex();
+                } else if (current.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR) {
+                    pieceItemBlockIndex = current.getLineClearBlockIndex();
+                }
+            }
         }
         
         // 다음 블록 정보
         Tetromino next = myEngine.getNext();
         int nextPieceType = -1;
+        boolean nextIsItem = false;
+        String nextItemType = null;
+        int nextItemBlockIndex = -1;
+        
         if (next != null && next.getKind() != null) {
             nextPieceType = next.getKind().getId();
+            nextIsItem = next.isItemPiece();
+            if (nextIsItem && next.getItemType() != null) {
+                nextItemType = next.getItemType().name();
+                if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.COPY) {
+                    nextItemBlockIndex = next.getCopyBlockIndex();
+                } else if (next.getItemType() == team13.tetris.game.model.Tetromino.ItemType.LINE_CLEAR) {
+                    nextItemBlockIndex = next.getLineClearBlockIndex();
+                }
+            }
         }
         
         // 내 incoming 블록 큐를 전송 (상대방 화면에서 "내가 받을 공격" 표시용)
@@ -376,7 +402,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     pieceY,
                     pieceType,
                     pieceRotation,
+                    pieceIsItem,
+                    pieceItemType,
+                    pieceItemBlockIndex,
                     nextPieceType,
+                    nextIsItem,
+                    nextItemType,
+                    nextItemBlockIndex,
                     incomingBlocks,
                     score,
                     lines,
@@ -389,7 +421,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     pieceY,
                     pieceType,
                     pieceRotation,
+                    pieceIsItem,
+                    pieceItemType,
+                    pieceItemBlockIndex,
                     nextPieceType,
+                    nextIsItem,
+                    nextItemType,
+                    nextItemBlockIndex,
                     incomingBlocks,
                     score,
                     lines,
@@ -756,7 +794,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 boardUpdate.getCurrentPieceY(),
                 boardUpdate.getCurrentPieceType(),
                 boardUpdate.getCurrentPieceRotation(),
+                boardUpdate.getCurrentPieceIsItem(),
+                boardUpdate.getCurrentPieceItemType(),
+                boardUpdate.getCurrentPieceItemBlockIndex(),
                 boardUpdate.getNextPieceType(),
+                boardUpdate.getNextPieceIsItem(),
+                boardUpdate.getNextPieceItemType(),
+                boardUpdate.getNextPieceItemBlockIndex(),
                 boardUpdate.getIncomingBlocks(),
                 boardUpdate.getScore(),
                 boardUpdate.getLinesCleared()
