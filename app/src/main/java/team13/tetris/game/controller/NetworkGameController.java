@@ -772,7 +772,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         
         // 로컬 대전과 동일: 공격 패턴을 큐에 추가 (다음 블록 생성 시 적용)
         Platform.runLater(() -> {
-            myIncomingBlocks.add(attackPattern);
+            addAttackWithLimit(myIncomingBlocks, attackPattern);
             
             // UI 업데이트: 내 incoming 그리드 표시
             if (gameScene != null) {
@@ -903,6 +903,34 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         }
         
         return pattern;
+    }
+    
+    // 공격 패턴을 큐에 추가 (최대 10줄 제한)
+    private void addAttackWithLimit(Queue<int[][]> incomingQueue, int[][] newPattern) {
+        // 현재 큐에 있는 총 줄 수 계산
+        int currentTotalLines = 0;
+        for (int[][] pattern : incomingQueue) {
+            currentTotalLines += pattern.length;
+        }
+        
+        int newLines = newPattern.length;
+        
+        // 이미 10줄이 차 있는 경우 무시
+        if (currentTotalLines >= 10) {
+            return;
+        }
+        
+        // 추가하면 10줄을 넘는 경우, 제일 아래쪽 부분을 잘라냄
+        if (currentTotalLines + newLines > 10) {
+            int allowedLines = 10 - currentTotalLines;
+            int[][] trimmedPattern = new int[allowedLines][newPattern[0].length];
+            // 위쪽 부분만 복사 (아래쪽 버림)
+            System.arraycopy(newPattern, 0, trimmedPattern, 0, allowedLines);
+            incomingQueue.add(trimmedPattern);
+        } else {
+            // 10줄 이하면 전체 추가
+            incomingQueue.add(newPattern);
+        }
     }
     
     // 넘어온 블록을 보드에 추가 (VersusGameController와 동일한 로직)

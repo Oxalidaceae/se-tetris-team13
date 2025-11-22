@@ -238,6 +238,113 @@ class TetrisClientTest {
         }
     }
 
+    @Test
+    @DisplayName("getServerAddress 메서드 테스트")
+    void testGetServerAddress() {
+        TetrisClient client1 = new TetrisClient("Player1", "localhost", 12345);
+        assertEquals("localhost:12345", client1.getServerAddress(), "서버 주소가 올바르게 반환되어야 함");
+        
+        TetrisClient client2 = new TetrisClient("Player2", "192.168.1.1", 8080);
+        assertEquals("192.168.1.1:8080", client2.getServerAddress(), "서버 주소가 올바르게 반환되어야 함");
+    }
+
+    @Test
+    @DisplayName("기본 포트로 클라이언트 생성 테스트")
+    void testClientWithDefaultPort() {
+        TetrisClient defaultPortClient = new TetrisClient("Player", "localhost");
+        assertNotNull(defaultPortClient, "기본 포트로 클라이언트 생성 가능");
+        assertFalse(defaultPortClient.isConnected(), "초기 상태에서는 연결되어 있지 않아야 함");
+        assertTrue(defaultPortClient.getServerAddress().contains("localhost"), "서버 주소에 localhost 포함");
+    }
+
+    @Test
+    @DisplayName("requestReady 메서드 테스트 - 연결되지 않은 상태")
+    void testRequestReadyWhenNotConnected() {
+        assertFalse(client.requestReady(), "연결되지 않은 상태에서 준비 요청은 실패해야 함");
+    }
+
+    @Test
+    @DisplayName("requestUnready 메서드 테스트 - 연결되지 않은 상태")
+    void testRequestUnreadyWhenNotConnected() {
+        assertFalse(client.requestUnready(), "연결되지 않은 상태에서 준비 취소 요청은 실패해야 함");
+    }
+
+    @Test
+    @DisplayName("sendBoardUpdate 메서드 테스트 - 게임 시작 전")
+    void testSendBoardUpdateBeforeGameStart() {
+        int[][] testBoard = new int[10][20];
+        java.util.Queue<int[][]> emptyQueue = new java.util.LinkedList<>();
+        
+        assertFalse(client.sendBoardUpdate(testBoard, 0, 0, 1, 0, 2, emptyQueue, 0, 0, 1),
+            "게임 시작 전에는 보드 업데이트를 보낼 수 없어야 함");
+    }
+
+    @Test
+    @DisplayName("sendAttack 메서드 테스트 - 게임 시작 전")
+    void testSendAttackBeforeGameStart() {
+        assertFalse(client.sendAttack("Opponent", 2),
+            "게임 시작 전에는 공격 메시지를 보낼 수 없어야 함");
+    }
+
+    @Test
+    @DisplayName("다양한 포트 번호로 클라이언트 생성 테스트")
+    void testVariousPortNumbers() {
+        int[] ports = {1, 80, 443, 8080, 12345, 65535};
+        
+        for (int port : ports) {
+            assertDoesNotThrow(() -> {
+                TetrisClient portClient = new TetrisClient("Player", "localhost", port);
+                assertNotNull(portClient, "포트 " + port + "로 클라이언트 생성 가능");
+                assertTrue(portClient.getServerAddress().contains(String.valueOf(port)), 
+                    "서버 주소에 포트 번호 포함");
+            }, "다양한 포트 번호 처리는 안전해야 함: " + port);
+        }
+    }
+
+    @Test
+    @DisplayName("여러 클라이언트 인스턴스 생성 테스트")
+    void testMultipleClientInstances() {
+        TetrisClient client1 = new TetrisClient("Player1", "localhost", 12345);
+        TetrisClient client2 = new TetrisClient("Player2", "localhost", 12345);
+        TetrisClient client3 = new TetrisClient("Player3", "192.168.1.1", 8080);
+        
+        assertNotNull(client1);
+        assertNotNull(client2);
+        assertNotNull(client3);
+        
+        assertNotEquals(client1.getPlayerId(), client2.getPlayerId(), "각 클라이언트는 다른 플레이어 ID를 가져야 함");
+        assertNotEquals(client1.getServerAddress(), client3.getServerAddress(), "다른 서버 주소를 가질 수 있음");
+    }
+
+    @Test
+    @DisplayName("messageListener null 상태에서 disconnect 테스트")
+    void testDisconnectWithoutListener() {
+        TetrisClient noListenerClient = new TetrisClient("Player", "localhost", 12345);
+        // messageListener를 설정하지 않음
+        
+        assertDoesNotThrow(() -> {
+            noListenerClient.disconnect();
+        }, "리스너 없이도 disconnect는 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("연속 disconnect 호출 테스트")
+    void testMultipleDisconnectCalls() {
+        assertDoesNotThrow(() -> {
+            client.disconnect();
+            client.disconnect();
+            client.disconnect();
+        }, "여러 번 disconnect 호출해도 안전해야 함");
+    }
+
+    @Test
+    @DisplayName("null 메시지 전송 테스트")
+    void testSendNullMessage() {
+        assertDoesNotThrow(() -> {
+            assertFalse(client.sendMessage(null), "null 메시지 전송은 실패해야 함");
+        }, "null 메시지 전송 시도는 안전해야 함");
+    }
+
     // 테스트용 ClientMessageListener 구현
     private static class TestClientMessageListener implements ClientMessageListener {
         private boolean connectionAccepted = false;
