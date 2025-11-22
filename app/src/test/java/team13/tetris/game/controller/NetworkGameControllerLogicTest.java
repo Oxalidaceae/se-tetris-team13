@@ -29,7 +29,7 @@ class NetworkGameControllerLogicTest {
     void testControllerCreationAndInitialState() {
         assertNotNull(hostController, "호스트 컨트롤러가 생성되어야 함");
         assertNotNull(clientController, "클라이언트 컨트롤러가 생성되어야 함");
-        
+
         // 초기 상태에서는 JavaFX에 의존하지 않는 메서드들이 안전하게 동작해야 함
         assertDoesNotThrow(() -> {
             hostController.disconnect();
@@ -99,20 +99,17 @@ class NetworkGameControllerLogicTest {
         int[][] largeBoard = createTestBoard(50, 100, 2);
 
         BoardUpdateMessage message1 = new BoardUpdateMessage(
-            "Player1", testBoard1, 5, 10, 1, 0, 2, null, 1000, 5, 1
-        );
+                "Player1", testBoard1, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, null, 1000, 5, 1);
         BoardUpdateMessage message2 = new BoardUpdateMessage(
-            "Player2", testBoard2, 3, 8, 2, 1, 1, null, 2500, 12, 2
-        );
+                "Player2", testBoard2, 3, 8, 2, 1, false, null, -1, 1, false, null, -1, null, 2500, 12, 2);
         BoardUpdateMessage largeMessage = new BoardUpdateMessage(
-            "Player3", largeBoard, 25, 50, 3, 2, 4, null, 50000, 100, 10
-        );
+                "Player3", largeBoard, 25, 50, 3, 2, false, null, -1, 4, false, null, -1, null, 50000, 100, 10);
 
         assertDoesNotThrow(() -> {
             hostController.onBoardUpdate(message1);
             hostController.onBoardUpdate(message2);
             hostController.onBoardUpdate(largeMessage);
-            
+
             clientController.onBoardUpdate(message1);
             clientController.onBoardUpdate(message2);
             clientController.onBoardUpdate(largeMessage);
@@ -133,7 +130,7 @@ class NetworkGameControllerLogicTest {
             hostController.onAttackReceived(multiLineAttack);
             hostController.onAttackReceived(maxLineAttack);
             hostController.onAttackReceived(specialAttack);
-            
+
             clientController.onAttackReceived(singleLineAttack);
             clientController.onAttackReceived(multiLineAttack);
             clientController.onAttackReceived(maxLineAttack);
@@ -176,7 +173,7 @@ class NetworkGameControllerLogicTest {
     void testConcurrentMessageHandling() throws InterruptedException {
         int threadCount = 5; // 스레드 수 줄임
         CountDownLatch latch = new CountDownLatch(threadCount);
-        
+
         for (int i = 0; i < threadCount; i++) {
             final int index = i;
             new Thread(() -> {
@@ -187,20 +184,19 @@ class NetworkGameControllerLogicTest {
                     hostController.onGamePaused();
                     hostController.onGameResumed();
                     hostController.onGameOver("Thread " + index + " game over");
-                    
+
                     AttackMessage attack = new AttackMessage("Thread" + index, index % 4 + 1, index % 4 + 1, null);
                     hostController.onAttackReceived(attack);
-                    
+
                     hostController.onError("Thread " + index + " error");
                     hostController.onGameModeSelected(
-                        index % 2 == 0 ? GameModeMessage.GameMode.NORMAL : GameModeMessage.GameMode.ITEM
-                    );
+                            index % 2 == 0 ? GameModeMessage.GameMode.NORMAL : GameModeMessage.GameMode.ITEM);
                 } finally {
                     latch.countDown();
                 }
             }).start();
         }
-        
+
         assertTrue(latch.await(3, TimeUnit.SECONDS), "모든 동시 메시지 처리가 완료되어야 함");
     }
 
@@ -245,42 +241,42 @@ class NetworkGameControllerLogicTest {
             // 연결
             hostController.onConnectionAccepted();
             clientController.onConnectionAccepted();
-            
+
             // 게임 모드 선택
             hostController.onGameModeSelected(GameModeMessage.GameMode.ITEM);
             clientController.onGameModeSelected(GameModeMessage.GameMode.ITEM);
-            
+
             // 게임 시작
             hostController.onGameStart();
             clientController.onGameStart();
-            
+
             // 게임 진행 (보드 업데이트와 공격 반복)
             for (int i = 0; i < 10; i++) {
                 int[][] board = createTestBoard(10, 20, i);
                 BoardUpdateMessage boardMsg = new BoardUpdateMessage(
-                    "Player" + i, board, i % 10, i % 20, i % 7, i % 4, (i + 1) % 7, null, i * 100, i, i / 2
-                );
+                        "Player" + i, board, i % 10, i % 20, i % 7, i % 4, false, null, -1, (i + 1) % 7, false, null,
+                        -1, null, i * 100, i, i / 2);
                 hostController.onBoardUpdate(boardMsg);
                 clientController.onBoardUpdate(boardMsg);
-                
+
                 if (i % 3 == 0) {
                     AttackMessage attackMsg = new AttackMessage("Attacker" + i, i % 4 + 1, i % 4 + 1, null);
                     hostController.onAttackReceived(attackMsg);
                     clientController.onAttackReceived(attackMsg);
                 }
             }
-            
+
             // 일시정지/재개
             hostController.onGamePaused();
             clientController.onGamePaused();
-            
+
             hostController.onGameResumed();
             clientController.onGameResumed();
-            
+
             // 게임 종료
             hostController.onGameOver("Game completed");
             clientController.onGameOver("Game completed");
-            
+
         }, "게임 전체 시나리오가 안전하게 처리되어야 함");
     }
 
@@ -292,45 +288,45 @@ class NetworkGameControllerLogicTest {
             for (int i = 0; i < 200; i++) {
                 int[][] board = createTestBoard(10, 20, i % 8);
                 BoardUpdateMessage msg = new BoardUpdateMessage(
-                    "Player" + (i % 10), board, i % 10, i % 20, i % 7, i % 4, (i + 1) % 7, null, i, i / 10, i / 100
-                );
+                        "Player" + (i % 10), board, i % 10, i % 20, i % 7, i % 4, false, null, -1, (i + 1) % 7, false,
+                        null, -1, null, i, i / 10, i / 100);
                 hostController.onBoardUpdate(msg);
-                
+
                 if (i % 50 == 0) {
                     // 주기적으로 가비지 컬렉션 힌트
                     System.gc();
                 }
             }
-            
+
             // 대량의 공격 메시지 처리 (반복 횟수 줄임)
             for (int i = 0; i < 100; i++) {
                 AttackMessage attackMsg = new AttackMessage("Attacker" + (i % 5), i % 4 + 1, i % 4 + 1, null);
                 hostController.onAttackReceived(attackMsg);
             }
-            
+
         }, "대량 메시지 처리가 안전하게 완료되어야 함");
     }
 
     @Test
     @DisplayName("다양한 IP 주소와 서버 설정 테스트")
     void testVariousServerSettings() {
-        String[] testIPs = {"127.0.0.1", "192.168.1.1", "10.0.0.1", "localhost", "example.com"};
-        
+        String[] testIPs = { "127.0.0.1", "192.168.1.1", "10.0.0.1", "localhost", "example.com" };
+
         for (String ip : testIPs) {
             assertDoesNotThrow(() -> {
                 NetworkGameController testHost = new NetworkGameController(null, settings, true, ip);
                 NetworkGameController testClient = new NetworkGameController(null, settings, false, ip);
-                
+
                 assertNotNull(testHost, "호스트 컨트롤러가 IP " + ip + "로 생성되어야 함");
                 assertNotNull(testClient, "클라이언트 컨트롤러가 IP " + ip + "로 생성되어야 함");
-                
+
                 // 기본 동작 테스트
                 testHost.onConnectionAccepted();
                 testClient.onConnectionAccepted();
-                
+
                 testHost.disconnect();
                 testClient.disconnect();
-                
+
             }, "IP 주소 " + ip + "로 컨트롤러 생성 및 동작은 안전해야 함");
         }
     }

@@ -12,7 +12,13 @@ public class BoardUpdateMessage extends NetworkMessage {
     private final int currentPieceY;            // 현재 블록 Y 좌표
     private final int currentPieceType;         // 현재 블록 타입 (T, I, O, S, Z, J, L)
     private final int currentPieceRotation;     // 현재 블록 회전 상태 (0, 1, 2, 3)
+    private final boolean currentPieceIsItem;   // 현재 블록이 아이템인지 여부
+    private final String currentPieceItemType;  // 현재 블록의 아이템 타입 (WEIGHT, GRAVITY, SPLIT 등)
+    private final int currentPieceItemBlockIndex; // COPY/LINE_CLEAR 아이템의 특수 블록 인덱스
     private final int nextPieceType;            // 다음 블록 타입
+    private final boolean nextPieceIsItem;      // 다음 블록이 아이템인지 여부
+    private final String nextPieceItemType;     // 다음 블록의 아이템 타입
+    private final int nextPieceItemBlockIndex;  // 다음 블록의 아이템 인덱스
     private final Queue<int[][]> incomingBlocks; // 공격받을 블록 미리보기
     private final int score;                    // 현재 점수
     private final int linesCleared;             // 삭제한 줄 수
@@ -20,7 +26,9 @@ public class BoardUpdateMessage extends NetworkMessage {
     
     // 전체 정보를 포함하는 생성자
     public BoardUpdateMessage(String playerId, int[][] board, int pieceX, int pieceY, 
-                            int pieceType, int pieceRotation, int nextPieceType,
+                            int pieceType, int pieceRotation, 
+                            boolean pieceIsItem, String pieceItemType, int pieceItemBlockIndex,
+                            int nextPieceType, boolean nextIsItem, String nextItemType, int nextItemBlockIndex,
                             Queue<int[][]> incomingBlocks, int score, int lines, int level) {
         super(MessageType.BOARD_UPDATE, playerId);
         
@@ -29,7 +37,13 @@ public class BoardUpdateMessage extends NetworkMessage {
         this.currentPieceY = pieceY;
         this.currentPieceType = pieceType;
         this.currentPieceRotation = pieceRotation;
+        this.currentPieceIsItem = pieceIsItem;
+        this.currentPieceItemType = pieceItemType;
+        this.currentPieceItemBlockIndex = pieceItemBlockIndex;
         this.nextPieceType = nextPieceType;
+        this.nextPieceIsItem = nextIsItem;
+        this.nextPieceItemType = nextItemType;
+        this.nextPieceItemBlockIndex = nextItemBlockIndex;
         this.incomingBlocks = incomingBlocks != null ? new LinkedList<>(incomingBlocks) : new LinkedList<>();
         this.score = score;
         this.linesCleared = lines;
@@ -72,8 +86,32 @@ public class BoardUpdateMessage extends NetworkMessage {
         return currentPieceRotation;
     }
     
+    public boolean getCurrentPieceIsItem() {
+        return currentPieceIsItem;
+    }
+    
+    public String getCurrentPieceItemType() {
+        return currentPieceItemType;
+    }
+    
+    public int getCurrentPieceItemBlockIndex() {
+        return currentPieceItemBlockIndex;
+    }
+    
     public int getNextPieceType() {
         return nextPieceType;
+    }
+    
+    public boolean getNextPieceIsItem() {
+        return nextPieceIsItem;
+    }
+    
+    public String getNextPieceItemType() {
+        return nextPieceItemType;
+    }
+    
+    public int getNextPieceItemBlockIndex() {
+        return nextPieceItemBlockIndex;
     }
     
     public Queue<int[][]> getIncomingBlocks() {
