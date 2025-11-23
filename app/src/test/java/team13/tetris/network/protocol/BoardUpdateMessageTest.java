@@ -17,7 +17,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         assertNotNull(message, "메시지가 생성되어야 함");
@@ -33,7 +33,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         int[][] retrievedBoard = message.getBoardState();
@@ -50,7 +50,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         int[][] retrievedBoard = message.getBoardState();
@@ -67,7 +67,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 2, 3, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 2, false, null, -1, 3, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         assertEquals(5, message.getCurrentPieceX(), "현재 블록 X 좌표가 올바르게 설정되어야 함");
@@ -83,7 +83,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 7, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 7, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         assertEquals(7, message.getNextPieceType(), "다음 블록 타입이 올바르게 설정되어야 함");
@@ -98,7 +98,7 @@ class BoardUpdateMessageTest {
         incomingBlocks.add(new int[][]{{5, 6}, {7, 8}});
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         Queue<int[][]> retrieved = message.getIncomingBlocks();
@@ -113,7 +113,7 @@ class BoardUpdateMessageTest {
         int[][] board = createTestBoard();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, null, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, null, 1000, 10, 2
         );
         
         Queue<int[][]> retrieved = message.getIncomingBlocks();
@@ -129,7 +129,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 5000, 25, 5
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 5000, 25, 5
         );
         
         assertEquals(5000, message.getScore(), "점수가 올바르게 설정되어야 함");
@@ -143,7 +143,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", null, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", null, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         assertNull(message.getBoardState(), "null 보드는 null로 반환되어야 함");
@@ -157,7 +157,7 @@ class BoardUpdateMessageTest {
         incomingBlocks.add(new int[][]{{1, 2}, {3, 4}});
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         String toString = message.toString();
@@ -177,7 +177,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         assertTrue(message.getTimestamp() > 0, "타임스탬프가 설정되어야 함");
@@ -194,7 +194,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         int[][] retrieved = message.getBoardState();
@@ -213,7 +213,7 @@ class BoardUpdateMessageTest {
         incomingBlocks.add(new int[][]{{1, 2}, {3, 4}});
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 5, 10, 1, 0, 2, incomingBlocks, 1000, 10, 2
+            "Player1", board, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks, 1000, 10, 2
         );
         
         Queue<int[][]> retrieved = message.getIncomingBlocks();
@@ -230,7 +230,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, 0, 0, 0, 0, 0, incomingBlocks, 0, 0, 0
+            "Player1", board, 0, 0, 0, 0, false, null, -1, 0, false, null, -1, incomingBlocks, 0, 0, 0
         );
         
         assertEquals(0, message.getCurrentPieceX(), "X 좌표가 0이어야 함");
@@ -250,7 +250,7 @@ class BoardUpdateMessageTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
         
         BoardUpdateMessage message = new BoardUpdateMessage(
-            "Player1", board, -5, -10, -1, -2, -3, incomingBlocks, -1000, -10, -2
+            "Player1", board, -5, -10, -1, -2, false, null, -1, -3, false, null, -1, incomingBlocks, -1000, -10, -2
         );
         
         assertEquals(-5, message.getCurrentPieceX(), "음수 X 좌표가 저장되어야 함");

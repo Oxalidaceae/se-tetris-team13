@@ -277,7 +277,7 @@ class TetrisClientTest {
         int[][] testBoard = new int[10][20];
         java.util.Queue<int[][]> emptyQueue = new java.util.LinkedList<>();
         
-        assertFalse(client.sendBoardUpdate(testBoard, 0, 0, 1, 0, 2, emptyQueue, 0, 0, 1),
+        assertFalse(client.sendBoardUpdate(testBoard, 0, 0, 1, 0, false, null, -1, 2, false, null, -1, emptyQueue, 0, 0, 1),
             "게임 시작 전에는 보드 업데이트를 보낼 수 없어야 함");
     }
 

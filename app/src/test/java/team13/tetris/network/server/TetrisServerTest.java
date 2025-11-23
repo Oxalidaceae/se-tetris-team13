@@ -546,7 +546,7 @@ class TetrisServerTest {
             int[][] boardState = new int[20][10];
             java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>();
             
-            server.sendHostBoardUpdate(boardState, 3, 0, 0, 0, 1, incomingBlocks, 100, 5, 1);
+            server.sendHostBoardUpdate(boardState, 3, 0, 0, 0, false, null, -1, 1, false, null, -1, incomingBlocks, 100, 5, 1);
             
             // 공격 전송
             server.sendHostAttack(2);
@@ -810,7 +810,7 @@ class TetrisServerTest {
             int[][] board = new int[20][10];
             java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>();
             BoardUpdateMessage msg = new BoardUpdateMessage(
-                "TestPlayer", board, 0, 0, 0, 0, 0, incomingBlocks, 0, 0, 0
+                "TestPlayer", board, 0, 0, 0, 0, false, null, -1, 0, false, null, -1, incomingBlocks, 0, 0, 0
             );
             server.broadcastBoardUpdateToOthers("TestPlayer", msg);
         }, "broadcastBoardUpdateToOthers 호출은 안전해야 함");
@@ -848,7 +848,7 @@ class TetrisServerTest {
             int[][] board = new int[20][10];
             java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>();
             BoardUpdateMessage boardMsg = new BoardUpdateMessage(
-                "TestPlayer", board, 0, 0, 0, 0, 0, incomingBlocks, 0, 0, 0
+                "TestPlayer", board, 0, 0, 0, 0, false, null, -1, 0, false, null, -1, incomingBlocks, 0, 0, 0
             );
             AttackMessage attackMsg = AttackMessage.createStandardAttack("TestPlayer", 2);
             

@@ -495,17 +495,17 @@ class NetworkGameControllerTest {
     void testBoardUpdateWithVariousStates() {
         // 현재 블록 없음
         int[][] emptyBoard = new int[20][10];
-        BoardUpdateMessage message1 = new BoardUpdateMessage("Opponent", emptyBoard, 0, 0, -1, 0, -1, null, 0, 0, 0);
+        BoardUpdateMessage message1 = new BoardUpdateMessage("Opponent", emptyBoard, 0, 0, -1, 0, false, null, -1, -1, false, null, -1, null, 0, 0, 0);
         assertDoesNotThrow(() -> controller.onBoardUpdate(message1), "빈 보드 업데이트 안전");
         
         // 다음 블록 있음
-        BoardUpdateMessage message2 = new BoardUpdateMessage("Opponent", emptyBoard, 3, 0, 0, 0, 1, null, 100, 5, 1);
+        BoardUpdateMessage message2 = new BoardUpdateMessage("Opponent", emptyBoard, 3, 0, 0, 0, false, null, -1, 1, false, null, -1, null, 100, 5, 1);
         assertDoesNotThrow(() -> controller.onBoardUpdate(message2), "다음 블록 있는 보드 업데이트 안전");
         
         // incoming 블록 있음
         java.util.Queue<int[][]> incomingBlocks = new java.util.LinkedList<>();
         incomingBlocks.add(new int[][]{{1000, 1000, 0, 1000, 1000, 1000, 1000, 1000, 1000, 1000}});
-        BoardUpdateMessage message3 = new BoardUpdateMessage("Opponent", emptyBoard, 5, 10, 2, 1, 3, incomingBlocks, 200, 10, 2);
+        BoardUpdateMessage message3 = new BoardUpdateMessage("Opponent", emptyBoard, 5, 10, 2, 1, false, null, -1, 3, false, null, -1, incomingBlocks, 200, 10, 2);
         assertDoesNotThrow(() -> controller.onBoardUpdate(message3), "incoming 블록 있는 보드 업데이트 안전");
     }
 
