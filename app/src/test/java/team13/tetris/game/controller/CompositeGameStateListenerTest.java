@@ -4,12 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
@@ -324,9 +322,8 @@ public class CompositeGameStateListenerTest {
 
             // 세 번의 printStackTrace 출력 확인
             String errorOutput = errStream.toString();
-            long exceptionCount = errorOutput.lines()
-                    .filter(line -> line.contains("Test Exception"))
-                    .count();
+            long exceptionCount =
+                    errorOutput.lines().filter(line -> line.contains("Test Exception")).count();
             assertEquals(3, exceptionCount);
 
         } finally {
@@ -366,11 +363,12 @@ public class CompositeGameStateListenerTest {
         composite.add(listener2);
 
         // CopyOnWriteArrayList 사용으로 동시 수정 안전
-        assertDoesNotThrow(() -> {
-            composite.add(listener3); // 이벤트 전달 중 추가
-            composite.onScoreChanged(800);
-            composite.remove(listener1); // 이벤트 전달 중 제거
-        });
+        assertDoesNotThrow(
+                () -> {
+                    composite.add(listener3); // 이벤트 전달 중 추가
+                    composite.onScoreChanged(800);
+                    composite.remove(listener1); // 이벤트 전달 중 제거
+                });
 
         // listener3는 추가 후 이벤트를 받음
         assertEquals(1, listener3.onScoreChangedCount);
@@ -383,69 +381,74 @@ public class CompositeGameStateListenerTest {
         // 호출 순서를 기록하는 리스너
         StringBuilder callOrder = new StringBuilder();
 
-        GameStateListener orderedListener1 = new GameStateListener() {
-            @Override
-            public void onBoardUpdated(Board board) {}
+        GameStateListener orderedListener1 =
+                new GameStateListener() {
+                    @Override
+                    public void onBoardUpdated(Board board) {}
 
-            @Override
-            public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
+                    @Override
+                    public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
 
-            @Override
-            public void onLinesCleared(int lines) {}
+                    @Override
+                    public void onLinesCleared(int lines) {}
 
-            @Override
-            public void onGameOver() {}
+                    @Override
+                    public void onGameOver() {}
 
-            @Override
-            public void onNextPiece(Tetromino next) {}
+                    @Override
+                    public void onNextPiece(Tetromino next) {}
 
-            @Override
-            public void onScoreChanged(int score) {
-                callOrder.append("1");
-            }
-        };
+                    @Override
+                    public void onScoreChanged(int score) {
+                        callOrder.append("1");
+                    }
+                };
 
-        GameStateListener orderedListener2 = new GameStateListener() {
-            @Override
-            public void onBoardUpdated(Board board) {}
+        GameStateListener orderedListener2 =
+                new GameStateListener() {
+                    @Override
+                    public void onBoardUpdated(Board board) {}
 
-            @Override
-            public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
+                    @Override
+                    public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
 
-            @Override
-            public void onLinesCleared(int lines) {}
+                    @Override
+                    public void onLinesCleared(int lines) {}
 
-            @Override
-            public void onGameOver() {}
+                    @Override
+                    public void onGameOver() {}
 
-            @Override
-            public void onNextPiece(Tetromino next) {}
+                    @Override
+                    public void onNextPiece(Tetromino next) {}
 
-            @Override
-            public void onScoreChanged(int score) {
-                callOrder.append("2");
-            }
-        };
+                    @Override
+                    public void onScoreChanged(int score) {
+                        callOrder.append("2");
+                    }
+                };
 
-        GameStateListener orderedListener3 = new GameStateListener() {
-            @Override
-            public void onBoardUpdated(Board board) {}
+        GameStateListener orderedListener3 =
+                new GameStateListener() {
+                    @Override
+                    public void onBoardUpdated(Board board) {}
 
-            @Override
-            public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
+                    @Override
+                    public void onPieceSpawned(Tetromino tetromino, int px, int py) {}
 
-            @Override
-            public void onLinesCleared(int lines) {}
+                    @Override
+                    public void onLinesCleared(int lines) {}
 
-            @Override
-            public void onGameOver() {}
+                    @Override
+                    public void onGameOver() {}
 
-            @Override
-            public void onNextPiece(Tetromino next) {}
+                    @Override
+                    public void onNextPiece(Tetromino next) {}
 
-            @Override
-            public void onScoreChanged(int score) { callOrder.append("3"); }
-        };
+                    @Override
+                    public void onScoreChanged(int score) {
+                        callOrder.append("3");
+                    }
+                };
 
         composite.add(orderedListener1);
         composite.add(orderedListener2);

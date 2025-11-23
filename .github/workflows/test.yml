@@ -39,6 +39,12 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
+      - name: Check code formatting
+        run: ./gradlew spotlessCheck
+
+      - name: Check code style
+        run: ./gradlew checkstyleMain checkstyleTest
+
       - name: Run tests with JaCoCo coverage
         run: ./gradlew test jacocoTestReport
 

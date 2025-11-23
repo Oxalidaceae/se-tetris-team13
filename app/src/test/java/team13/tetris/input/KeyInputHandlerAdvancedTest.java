@@ -1,16 +1,15 @@
 package team13.tetris.input;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import team13.tetris.config.Settings;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("KeyInputHandler 고급 기능 테스트")
 class KeyInputHandlerAdvancedTest {
@@ -45,12 +44,12 @@ class KeyInputHandlerAdvancedTest {
         settings.setKeyRotate("W");
         settings.setKeyDrop("SPACE");
         settings.setPause("ESCAPE");
-        
+
         // JavaFX Scene 연결 없이 키 매칭만 테스트
-        
+
         // when & then - 각 키가 올바른 콜백을 호출하는지 테스트
         // 실제 JavaFX 환경에서는 KeyEvent를 생성하여 테스트할 수 있음
-        
+
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "A 키가 왼쪽 이동으로 인식되어야 함");
         assertTrue(keyInputHandler.isRightClicked(KeyCode.D), "D 키가 오른쪽 이동으로 인식되어야 함");
         assertTrue(keyInputHandler.isDropClicked(KeyCode.S), "S 키가 소프트 드롭으로 인식되어야 함");
@@ -72,24 +71,25 @@ class KeyInputHandlerAdvancedTest {
     @DisplayName("동적 키 설정 변경 테스트")
     void testDynamicKeySettingChanges() {
         // JavaFX Scene 연결 없이 키 매칭만 테스트
-        
+
         // 초기 설정
         settings.setKeyLeft("A");
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "초기 A 키가 인식되어야 함");
-        
+
         // 동적 변경
         settings.setKeyLeft("Q");
         assertFalse(keyInputHandler.isLeftClicked(KeyCode.A), "변경 후 A 키는 인식되지 않아야 함");
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.Q), "변경 후 Q 키가 인식되어야 함");
-        
+
         // 여러 번 변경
         String[] keys = {"B", "C", "X", "Z", "F1", "SPACE", "ENTER"};
-        KeyCode[] keyCodes = {KeyCode.B, KeyCode.C, KeyCode.X, KeyCode.Z, KeyCode.F1, KeyCode.SPACE, KeyCode.ENTER};
-        
+        KeyCode[] keyCodes = {
+            KeyCode.B, KeyCode.C, KeyCode.X, KeyCode.Z, KeyCode.F1, KeyCode.SPACE, KeyCode.ENTER
+        };
+
         for (int i = 0; i < keys.length; i++) {
             settings.setKeyLeft(keys[i]);
-            assertTrue(keyInputHandler.isLeftClicked(keyCodes[i]), 
-                keys[i] + " 키로 변경 후 인식되어야 함");
+            assertTrue(keyInputHandler.isLeftClicked(keyCodes[i]), keys[i] + " 키로 변경 후 인식되어야 함");
         }
     }
 
@@ -102,28 +102,36 @@ class KeyInputHandlerAdvancedTest {
         settings.setKeyRotate("W");
         settings.setKeyDrop("SPACE");
         settings.setPause("ESCAPE");
-        
+
         // JavaFX Scene 연결 없이 키 매칭만 테스트
-        
+
         // 각 키가 올바른 콜백 메서드와 매칭되는지 확인
-        KeyCode[] testKeys = {KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W, KeyCode.SPACE, KeyCode.ESCAPE};
+        KeyCode[] testKeys = {
+            KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W, KeyCode.SPACE, KeyCode.ESCAPE
+        };
         String[] expectedActions = {"left", "right", "drop", "rotate", "hardDrop", "pause"};
-        
+
         for (int i = 0; i < testKeys.length; i++) {
             callback.reset();
-            
+
             // 실제 JavaFX 환경에서는 KeyEvent를 발생시켜 테스트
             // 여기서는 직접 키 매칭만 테스트
             KeyCode key = testKeys[i];
             String expectedAction = expectedActions[i];
-            
+
             switch (expectedAction) {
-                case "left" -> assertTrue(keyInputHandler.isLeftClicked(key), key + "가 왼쪽 이동으로 인식되어야 함");
-                case "right" -> assertTrue(keyInputHandler.isRightClicked(key), key + "가 오른쪽 이동으로 인식되어야 함");
-                case "drop" -> assertTrue(keyInputHandler.isDropClicked(key), key + "가 소프트 드롭으로 인식되어야 함");
-                case "rotate" -> assertTrue(keyInputHandler.isRotateClicked(key), key + "가 회전으로 인식되어야 함");
-                case "hardDrop" -> assertTrue(keyInputHandler.isHardDropClicked(key), key + "가 하드 드롭으로 인식되어야 함");
-                case "pause" -> assertTrue(keyInputHandler.isPauseClicked(key), key + "가 일시정지로 인식되어야 함");
+                case "left" -> assertTrue(
+                        keyInputHandler.isLeftClicked(key), key + "가 왼쪽 이동으로 인식되어야 함");
+                case "right" -> assertTrue(
+                        keyInputHandler.isRightClicked(key), key + "가 오른쪽 이동으로 인식되어야 함");
+                case "drop" -> assertTrue(
+                        keyInputHandler.isDropClicked(key), key + "가 소프트 드롭으로 인식되어야 함");
+                case "rotate" -> assertTrue(
+                        keyInputHandler.isRotateClicked(key), key + "가 회전으로 인식되어야 함");
+                case "hardDrop" -> assertTrue(
+                        keyInputHandler.isHardDropClicked(key), key + "가 하드 드롭으로 인식되어야 함");
+                case "pause" -> assertTrue(
+                        keyInputHandler.isPauseClicked(key), key + "가 일시정지로 인식되어야 함");
             }
         }
     }
@@ -133,18 +141,21 @@ class KeyInputHandlerAdvancedTest {
     void testComplexKeyMatching() {
         // 특수 키들과 조합 테스트
         String[] specialKeys = {
-            "CONTROL", "SHIFT", "ALT", "TAB", "ENTER", "BACK_SPACE", 
+            "CONTROL", "SHIFT", "ALT", "TAB", "ENTER", "BACK_SPACE",
             "DELETE", "HOME", "END", "PAGE_UP", "PAGE_DOWN", "INSERT"
         };
         KeyCode[] specialKeyCodes = {
-            KeyCode.CONTROL, KeyCode.SHIFT, KeyCode.ALT, KeyCode.TAB, KeyCode.ENTER, KeyCode.BACK_SPACE,
-            KeyCode.DELETE, KeyCode.HOME, KeyCode.END, KeyCode.PAGE_UP, KeyCode.PAGE_DOWN, KeyCode.INSERT
+            KeyCode.CONTROL, KeyCode.SHIFT, KeyCode.ALT, KeyCode.TAB, KeyCode.ENTER,
+                    KeyCode.BACK_SPACE,
+            KeyCode.DELETE, KeyCode.HOME, KeyCode.END, KeyCode.PAGE_UP, KeyCode.PAGE_DOWN,
+                    KeyCode.INSERT
         };
-        
+
         for (int i = 0; i < specialKeys.length; i++) {
             settings.setKeyLeft(specialKeys[i]);
-            assertTrue(keyInputHandler.isLeftClicked(specialKeyCodes[i]), 
-                specialKeys[i] + " 특수 키가 매칭되어야 함");
+            assertTrue(
+                    keyInputHandler.isLeftClicked(specialKeyCodes[i]),
+                    specialKeys[i] + " 특수 키가 매칭되어야 함");
         }
     }
 
@@ -158,9 +169,9 @@ class KeyInputHandlerAdvancedTest {
         settings.setKeyRotate("W");
         settings.setKeyDrop("SPACE");
         settings.setPause("ESCAPE");
-        
+
         long startTime = System.nanoTime();
-        
+
         // 각 키에 대해 10000번씩 매칭 테스트
         for (int i = 0; i < 10000; i++) {
             keyInputHandler.isLeftClicked(KeyCode.A);
@@ -169,18 +180,20 @@ class KeyInputHandlerAdvancedTest {
             keyInputHandler.isRotateClicked(KeyCode.W);
             keyInputHandler.isHardDropClicked(KeyCode.SPACE);
             keyInputHandler.isPauseClicked(KeyCode.ESCAPE);
-            
+
             // 매칭되지 않는 키들도 테스트
             keyInputHandler.isLeftClicked(KeyCode.B);
             keyInputHandler.isRightClicked(KeyCode.F);
             keyInputHandler.isDropClicked(KeyCode.X);
         }
-        
+
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
-        
+
         // 성능 검증: 60000번의 매칭이 1초 이내에 완료되어야 함
-        assertTrue(duration < 1_000_000_000L, "키 매칭 성능이 충분해야 함 (실제: " + (duration / 1_000_000) + "ms)");
+        assertTrue(
+                duration < 1_000_000_000L,
+                "키 매칭 성능이 충분해야 함 (실제: " + (duration / 1_000_000) + "ms)");
     }
 
     @Test
@@ -193,24 +206,26 @@ class KeyInputHandlerAdvancedTest {
         settings.setKeyRotate("T");
         settings.setKeyDrop("F");
         settings.setPause("G");
-        
+
         // 모든 키가 올바르게 매칭되는지 동시 확인
-        assertTrue(keyInputHandler.isLeftClicked(KeyCode.Q) &&
-                  keyInputHandler.isRightClicked(KeyCode.E) &&
-                  keyInputHandler.isDropClicked(KeyCode.R) &&
-                  keyInputHandler.isRotateClicked(KeyCode.T) &&
-                  keyInputHandler.isHardDropClicked(KeyCode.F) &&
-                  keyInputHandler.isPauseClicked(KeyCode.G),
-                  "모든 키가 동시에 올바르게 매칭되어야 함");
-        
+        assertTrue(
+                keyInputHandler.isLeftClicked(KeyCode.Q)
+                        && keyInputHandler.isRightClicked(KeyCode.E)
+                        && keyInputHandler.isDropClicked(KeyCode.R)
+                        && keyInputHandler.isRotateClicked(KeyCode.T)
+                        && keyInputHandler.isHardDropClicked(KeyCode.F)
+                        && keyInputHandler.isPauseClicked(KeyCode.G),
+                "모든 키가 동시에 올바르게 매칭되어야 함");
+
         // 이전 키들은 매칭되지 않아야 함
-        assertFalse(keyInputHandler.isLeftClicked(KeyCode.A) ||
-                   keyInputHandler.isRightClicked(KeyCode.D) ||
-                   keyInputHandler.isDropClicked(KeyCode.S) ||
-                   keyInputHandler.isRotateClicked(KeyCode.W) ||
-                   keyInputHandler.isHardDropClicked(KeyCode.SPACE) ||
-                   keyInputHandler.isPauseClicked(KeyCode.ESCAPE),
-                   "이전 키들은 매칭되지 않아야 함");
+        assertFalse(
+                keyInputHandler.isLeftClicked(KeyCode.A)
+                        || keyInputHandler.isRightClicked(KeyCode.D)
+                        || keyInputHandler.isDropClicked(KeyCode.S)
+                        || keyInputHandler.isRotateClicked(KeyCode.W)
+                        || keyInputHandler.isHardDropClicked(KeyCode.SPACE)
+                        || keyInputHandler.isPauseClicked(KeyCode.ESCAPE),
+                "이전 키들은 매칭되지 않아야 함");
     }
 
     @Test
@@ -223,7 +238,7 @@ class KeyInputHandlerAdvancedTest {
         settings.setKeyRotate("A");
         settings.setKeyDrop("A");
         settings.setPause("A");
-        
+
         // 모든 액션이 동일한 키에 대해 true를 반환해야 함
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "A 키가 왼쪽 이동으로 인식되어야 함");
         assertTrue(keyInputHandler.isRightClicked(KeyCode.A), "A 키가 오른쪽 이동으로 인식되어야 함");
@@ -239,16 +254,16 @@ class KeyInputHandlerAdvancedTest {
         // 초기 설정
         settings.setKeyLeft("A");
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "초기 A 키가 인식되어야 함");
-        
+
         // 새로운 Settings 객체로 KeyInputHandler 생성
         Settings newSettings = new Settings();
         newSettings.setKeyLeft("B");
         KeyInputHandler newHandler = new KeyInputHandler(newSettings);
-        
+
         // 새 핸들러는 새 설정을 사용해야 함
         assertFalse(newHandler.isLeftClicked(KeyCode.A), "새 핸들러는 A 키를 인식하지 않아야 함");
         assertTrue(newHandler.isLeftClicked(KeyCode.B), "새 핸들러는 B 키를 인식해야 함");
-        
+
         // 기존 핸들러는 영향받지 않아야 함
         assertTrue(keyInputHandler.isLeftClicked(KeyCode.A), "기존 핸들러는 여전히 A 키를 인식해야 함");
         assertFalse(keyInputHandler.isLeftClicked(KeyCode.B), "기존 핸들러는 B 키를 인식하지 않아야 함");
@@ -262,10 +277,10 @@ class KeyInputHandlerAdvancedTest {
             Settings tempSettings = new Settings();
             tempSettings.setKeyLeft("KEY_" + i);
             KeyInputHandler tempHandler = new KeyInputHandler(tempSettings);
-            
+
             // 각 핸들러가 독립적으로 동작하는지 확인
             assertNotNull(tempHandler, "핸들러 " + i + "가 생성되어야 함");
-            
+
             if (i % 100 == 0) {
                 // 주기적으로 가비지 컬렉션 힌트
                 System.gc();
@@ -278,17 +293,17 @@ class KeyInputHandlerAdvancedTest {
     void testMultipleCallbackImplementations() {
         TestKeyInputCallback callback1 = new TestKeyInputCallback();
         TestKeyInputCallback callback2 = new TestKeyInputCallback();
-        
+
         KeyInputHandler handler1 = new KeyInputHandler(settings);
         KeyInputHandler handler2 = new KeyInputHandler(settings);
-        
+
         settings.setKeyLeft("A");
-        
+
         // JavaFX Scene 연결 없이 키 매칭만 테스트
         // 각 핸들러가 독립적으로 동작하는지 확인
         assertNotNull(callback1, "콜백1이 생성되어야 함");
         assertNotNull(callback2, "콜백2가 생성되어야 함");
-        
+
         // 키 매칭은 여전히 동작해야 함
         assertTrue(handler1.isLeftClicked(KeyCode.A), "핸들러1의 키 매칭이 동작해야 함");
         assertTrue(handler2.isLeftClicked(KeyCode.A), "핸들러2의 키 매칭이 동작해야 함");
@@ -353,11 +368,28 @@ class KeyInputHandlerAdvancedTest {
             return actionLatch.await(timeoutMs, TimeUnit.MILLISECONDS);
         }
 
-        public int getLeftCount() { return leftCount.get(); }
-        public int getRightCount() { return rightCount.get(); }
-        public int getRotateCount() { return rotateCount.get(); }
-        public int getDropCount() { return dropCount.get(); }
-        public int getHardDropCount() { return hardDropCount.get(); }
-        public int getPauseCount() { return pauseCount.get(); }
+        public int getLeftCount() {
+            return leftCount.get();
+        }
+
+        public int getRightCount() {
+            return rightCount.get();
+        }
+
+        public int getRotateCount() {
+            return rotateCount.get();
+        }
+
+        public int getDropCount() {
+            return dropCount.get();
+        }
+
+        public int getHardDropCount() {
+            return hardDropCount.get();
+        }
+
+        public int getPauseCount() {
+            return pauseCount.get();
+        }
     }
 }

@@ -1,12 +1,15 @@
 package team13.tetris.game;
 
-import team13.tetris.data.ScoreBoard;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import team13.tetris.data.ScoreBoard;
 
 enum GameState {
-    READY, PLAYING, PAUSED, GAME_OVER
+    READY,
+    PLAYING,
+    PAUSED,
+    GAME_OVER
 }
 
 public class GameManager {
@@ -32,7 +35,8 @@ public class GameManager {
     }
 
     public void startGame() {
-        if (gameLoop == null || gameLoop.isShutdown()) gameLoop = Executors.newSingleThreadScheduledExecutor();
+        if (gameLoop == null || gameLoop.isShutdown())
+            gameLoop = Executors.newSingleThreadScheduledExecutor();
 
         state = GameState.PLAYING;
         currentScore = 0;
@@ -67,7 +71,11 @@ public class GameManager {
     }
 
     private void dropCurrentBlock() {
-        System.out.println("Block drop - Time: " + gameTimer.getFormattedTime() + ", Speed Level: " + gameTimer.getSpeedLevel());
+        System.out.println(
+                "Block drop - Time: "
+                        + gameTimer.getFormattedTime()
+                        + ", Speed Level: "
+                        + gameTimer.getSpeedLevel());
     }
 
     public void togglePause() {
@@ -92,7 +100,7 @@ public class GameManager {
         state = GameState.GAME_OVER;
         stopGameLoop();
         System.out.println("Game Over! Final Score: " + currentScore);
-        
+
         if (showUI) handleGameOver();
     }
 
@@ -100,9 +108,7 @@ public class GameManager {
         scoreBoard.addScore("Player", currentScore, ScoreBoard.ScoreEntry.Mode.NORMAL);
         System.out.println("Game Over! Final Score: " + currentScore);
         System.out.println("\n=== High Scores ===");
-        scoreBoard
-                .getScores()
-                .stream()
+        scoreBoard.getScores().stream()
                 .limit(10)
                 .forEach(entry -> System.out.println(entry.getName() + ": " + entry.getScore()));
     }
@@ -118,21 +124,33 @@ public class GameManager {
         if (difficultyLevel > lastDifficultyLevel) {
             gameTimer.increaseSpeed();
             lastDifficultyLevel = difficultyLevel;
-            System.out.println("Difficulty increased! Lines: " + this.linesCleared +
-                    " - Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x" +
-                    " - Speed Level: " + gameTimer.getSpeedLevel());
+            System.out.println(
+                    "Difficulty increased! Lines: "
+                            + this.linesCleared
+                            + " - Speed: "
+                            + String.format("%.1f", gameTimer.getSpeedFactor())
+                            + "x"
+                            + " - Speed Level: "
+                            + gameTimer.getSpeedLevel());
         }
 
-        int points = switch (lines) {
-            case 1 -> 100 * gameTimer.getSpeedLevel();
-            case 2 -> 300 * gameTimer.getSpeedLevel();
-            case 3 -> 500 * gameTimer.getSpeedLevel();
-            case 4 -> 800 * gameTimer.getSpeedLevel();
-            default -> 0;
-        };
+        int points =
+                switch (lines) {
+                    case 1 -> 100 * gameTimer.getSpeedLevel();
+                    case 2 -> 300 * gameTimer.getSpeedLevel();
+                    case 3 -> 500 * gameTimer.getSpeedLevel();
+                    case 4 -> 800 * gameTimer.getSpeedLevel();
+                    default -> 0;
+                };
 
         addScore(points);
-        System.out.println(lines + " lines cleared! Points: " + points + " (Speed Level: " + gameTimer.getSpeedLevel() + ")");
+        System.out.println(
+                lines
+                        + " lines cleared! Points: "
+                        + points
+                        + " (Speed Level: "
+                        + gameTimer.getSpeedLevel()
+                        + ")");
     }
 
     public void addSoftDropScore() {
@@ -143,8 +161,14 @@ public class GameManager {
     public void addHardDropScore(int dropDistance) {
         int points = gameTimer.getHardDropScore(dropDistance);
         addScore(points);
-        System.out.println("Hard drop! Distance: " + dropDistance + " cells, Points: " + points
-                + " (Speed: " + String.format("%.1f", gameTimer.getSpeedFactor()) + "x)");
+        System.out.println(
+                "Hard drop! Distance: "
+                        + dropDistance
+                        + " cells, Points: "
+                        + points
+                        + " (Speed: "
+                        + String.format("%.1f", gameTimer.getSpeedFactor())
+                        + "x)");
     }
 
     public void addAutoDropScore(int dropDistance) {

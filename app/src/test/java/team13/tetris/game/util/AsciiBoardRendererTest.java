@@ -1,12 +1,12 @@
 package team13.tetris.game.util;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 // AsciiBoardRenderer 테스트: Tests ASCII rendering of board and tetrominoes
 @DisplayName("AsciiBoardRenderer 테스트")
@@ -15,7 +15,9 @@ public class AsciiBoardRendererTest {
     private Board board;
 
     @BeforeEach
-    void setUp() { board = new Board(10, 20); }
+    void setUp() {
+        board = new Board(10, 20);
+    }
 
     @Test
     @DisplayName("빈 보드를 렌더링할 수 있는지 확인")
@@ -104,10 +106,12 @@ public class AsciiBoardRendererTest {
     @DisplayName("null 테트로미노로 렌더링해도 오류가 없는지 확인")
     void testRenderWithNullTetromino() {
         // when
-        assertDoesNotThrow(() -> {
-            String result = AsciiBoardRenderer.render(board, null, 0, 0);
-            assertNotNull(result);
-        }, "null 테트로미노로 렌더링해도 예외가 발생하지 않아야 함");
+        assertDoesNotThrow(
+                () -> {
+                    String result = AsciiBoardRenderer.render(board, null, 0, 0);
+                    assertNotNull(result);
+                },
+                "null 테트로미노로 렌더링해도 예외가 발생하지 않아야 함");
     }
 
     @Test
@@ -117,13 +121,15 @@ public class AsciiBoardRendererTest {
         Tetromino oPiece = new Tetromino(Tetromino.Kind.O, 0);
 
         // when - 보드 밖의 위치
-        assertDoesNotThrow(() -> {
-            String result1 = AsciiBoardRenderer.render(board, oPiece, -5, -5);
-            assertNotNull(result1);
+        assertDoesNotThrow(
+                () -> {
+                    String result1 = AsciiBoardRenderer.render(board, oPiece, -5, -5);
+                    assertNotNull(result1);
 
-            String result2 = AsciiBoardRenderer.render(board, oPiece, 100, 100);
-            assertNotNull(result2);
-        }, "보드 밖의 위치에서도 렌더링이 가능해야 함");
+                    String result2 = AsciiBoardRenderer.render(board, oPiece, 100, 100);
+                    assertNotNull(result2);
+                },
+                "보드 밖의 위치에서도 렌더링이 가능해야 함");
     }
 
     // renderPreview 메서드 테스트
@@ -260,7 +266,8 @@ public class AsciiBoardRendererTest {
             String[] lines = preview.split("\n");
 
             assertEquals(4, lines.length, piece.getKind() + " 미리보기는 4줄이어야 함");
-            for (String line : lines) assertEquals(4, line.length(), piece.getKind() + " 각 줄은 4문자여야 함");
+            for (String line : lines)
+                assertEquals(4, line.length(), piece.getKind() + " 각 줄은 4문자여야 함");
             assertTrue(preview.contains("■"), piece.getKind() + " 블록이 포함되어야 함");
         }
     }
@@ -277,7 +284,8 @@ public class AsciiBoardRendererTest {
         // then
         String[] lines = result.split("\n");
         assertTrue(lines[0].startsWith("X") && lines[0].endsWith("X"), "첫 줄은 테두리여야 함");
-        assertTrue(lines[lines.length - 1].startsWith("X") && lines[lines.length - 1].endsWith("X"),
+        assertTrue(
+                lines[lines.length - 1].startsWith("X") && lines[lines.length - 1].endsWith("X"),
                 "마지막 줄은 테두리여야 함");
     }
 
@@ -286,12 +294,10 @@ public class AsciiBoardRendererTest {
     void testRenderComplexBoardState() {
         // given - 보드 하단에 복잡한 패턴 생성
         for (int x = 0; x < 10; x++) {
-            if (x % 2 == 0)
-                board.setCell(x, 19, 1);
+            if (x % 2 == 0) board.setCell(x, 19, 1);
         }
         for (int x = 0; x < 10; x++) {
-            if (x % 3 == 0)
-                board.setCell(x, 18, 2);
+            if (x % 3 == 0) board.setCell(x, 18, 2);
         }
 
         // when
@@ -312,8 +318,7 @@ public class AsciiBoardRendererTest {
     private int countOccurrences(String str, char ch) {
         int count = 0;
         for (char c : str.toCharArray()) {
-            if (c == ch)
-                count++;
+            if (c == ch) count++;
         }
         return count;
     }

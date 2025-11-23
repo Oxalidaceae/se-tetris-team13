@@ -1,11 +1,11 @@
 package team13.tetris.scenes;
 
-import team13.tetris.SceneManager;
-import team13.tetris.config.Settings;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import team13.tetris.SceneManager;
+import team13.tetris.config.Settings;
 
 public class SoloModeSelectionScene {
     private final SceneManager manager;
@@ -25,7 +25,10 @@ public class SoloModeSelectionScene {
         Button backBtn = new Button("Back");
 
         normalModeBtn.setOnAction(e -> manager.showDifficultySelection(settings));
-        itemModeBtn.setOnAction(e -> manager.showGame(settings, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM));
+        itemModeBtn.setOnAction(
+                e ->
+                        manager.showGame(
+                                settings, team13.tetris.data.ScoreBoard.ScoreEntry.Mode.ITEM));
         backBtn.setOnAction(e -> manager.showGameModeSelection(settings));
 
         VBox layout = new VBox(15, title, normalModeBtn, itemModeBtn, backBtn);

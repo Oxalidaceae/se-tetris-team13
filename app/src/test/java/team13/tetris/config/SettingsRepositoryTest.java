@@ -1,24 +1,22 @@
 package team13.tetris.config;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 // SettingsRepository 테스트: Tests settings file save/load functionality
 @DisplayName("SettingsRepository 테스트")
 public class SettingsRepositoryTest {
 
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     private String originalUserDir;
 
@@ -153,14 +151,36 @@ public class SettingsRepositoryTest {
         Settings loadedSettings = SettingsRepository.load();
 
         // then - 모든 값이 일치하는지 확인
-        assertEquals(originalSettings.isColorBlindMode(), loadedSettings.isColorBlindMode(), "Color blind mode should match");
-        assertEquals(originalSettings.getWindowSize(), loadedSettings.getWindowSize(), "Window size should match");
-        assertEquals(originalSettings.getKeyLeft(), loadedSettings.getKeyLeft(), "Left key should match");
-        assertEquals(originalSettings.getKeyRight(), loadedSettings.getKeyRight(), "Right key should match");
-        assertEquals(originalSettings.getKeyDown(), loadedSettings.getKeyDown(), "Down key should match");
-        assertEquals(originalSettings.getKeyRotate(), loadedSettings.getKeyRotate(), "Rotate key should match");
-        assertEquals(originalSettings.getKeyDrop(), loadedSettings.getKeyDrop(), "Drop key should match");
-        assertEquals(originalSettings.getPause(), loadedSettings.getPause(), "Pause key should match");
+        assertEquals(
+                originalSettings.isColorBlindMode(),
+                loadedSettings.isColorBlindMode(),
+                "Color blind mode should match");
+        assertEquals(
+                originalSettings.getWindowSize(),
+                loadedSettings.getWindowSize(),
+                "Window size should match");
+        assertEquals(
+                originalSettings.getKeyLeft(),
+                loadedSettings.getKeyLeft(),
+                "Left key should match");
+        assertEquals(
+                originalSettings.getKeyRight(),
+                loadedSettings.getKeyRight(),
+                "Right key should match");
+        assertEquals(
+                originalSettings.getKeyDown(),
+                loadedSettings.getKeyDown(),
+                "Down key should match");
+        assertEquals(
+                originalSettings.getKeyRotate(),
+                loadedSettings.getKeyRotate(),
+                "Rotate key should match");
+        assertEquals(
+                originalSettings.getKeyDrop(),
+                loadedSettings.getKeyDrop(),
+                "Drop key should match");
+        assertEquals(
+                originalSettings.getPause(), loadedSettings.getPause(), "Pause key should match");
     }
 
     @Test
@@ -252,26 +272,32 @@ public class SettingsRepositoryTest {
     @Test
     @DisplayName("save 메서드가 static인지 확인")
     void testSaveIsStatic() {
-        assertDoesNotThrow(() -> {
-            SettingsRepository.save(new Settings());
-        }, "save method should be static and callable");
+        assertDoesNotThrow(
+                () -> {
+                    SettingsRepository.save(new Settings());
+                },
+                "save method should be static and callable");
     }
 
     @Test
     @DisplayName("load 메서드가 static인지 확인")
     void testLoadIsStatic() {
-        assertDoesNotThrow(() -> {
-            SettingsRepository.load();
-        }, "load method should be static and callable");
+        assertDoesNotThrow(
+                () -> {
+                    SettingsRepository.load();
+                },
+                "load method should be static and callable");
     }
 
     @Test
     @DisplayName("null Settings를 저장하려고 할 때 예외가 발생하는지 확인")
     void testSaveNullSettings() {
         // null을 저장하려고 하면 NullPointerException이 발생할 수 있음
-        assertDoesNotThrow(() -> {
-            SettingsRepository.save(null);
-        }, "Should not throw exception when saving null (Gson handles it)");
+        assertDoesNotThrow(
+                () -> {
+                    SettingsRepository.save(null);
+                },
+                "Should not throw exception when saving null (Gson handles it)");
     }
 
     @Test
@@ -280,7 +306,8 @@ public class SettingsRepositoryTest {
         for (int i = 0; i < 10; i++) {
             Settings settings = new Settings();
             settings.setKeyLeft("KEY_" + i);
-            assertDoesNotThrow(() -> SettingsRepository.save(settings), "Should handle multiple saves");
+            assertDoesNotThrow(
+                    () -> SettingsRepository.save(settings), "Should handle multiple saves");
         }
 
         Settings loaded = SettingsRepository.load();

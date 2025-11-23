@@ -8,7 +8,12 @@ import java.util.List;
 public class ScoreBoard {
     public static class ScoreEntry {
         public enum Mode {
-            EASY, NORMAL, HARD, ITEM, VERSUS, TIMER
+            EASY,
+            NORMAL,
+            HARD,
+            ITEM,
+            VERSUS,
+            TIMER
         }
 
         private String name;
@@ -70,7 +75,9 @@ public class ScoreBoard {
 
     public void saveScores() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(scoreFile))) {
-            for (ScoreEntry entry : scores) writer.println(entry.getName() + "," + entry.getScore() + "," + entry.getMode().name());
+            for (ScoreEntry entry : scores)
+                writer.println(
+                        entry.getName() + "," + entry.getScore() + "," + entry.getMode().name());
         } catch (IOException e) {
             System.err.println("Error saving scores: " + e.getMessage());
         }
@@ -78,7 +85,7 @@ public class ScoreBoard {
 
     public void loadScores() {
         File file = new File(scoreFile);
-        
+
         if (!file.exists()) return;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -130,7 +137,7 @@ public class ScoreBoard {
 
     public int getLastAddedIndex() {
         if (lastAddedEntry == null) return -1;
-        
+
         return scores.indexOf(lastAddedEntry);
     }
 

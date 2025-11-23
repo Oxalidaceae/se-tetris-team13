@@ -14,7 +14,7 @@ public final class AsciiBoardRenderer {
 
         // top border
         for (int c = 0; c < cols + 2; c++) sb.append('X');
-        
+
         sb.append('\n');
 
         for (int r = 0; r < rows; r++) {
@@ -27,8 +27,12 @@ public final class AsciiBoardRenderer {
                     int[][] shape = current.getShape();
                     int sr = r - py;
                     int sc = c - px;
-                    
-                    if (sr >= 0 && sr < shape.length && sc >= 0 && sc < shape[0].length && shape[sr][sc] != 0) occupied = true;
+
+                    if (sr >= 0
+                            && sr < shape.length
+                            && sc >= 0
+                            && sc < shape[0].length
+                            && shape[sr][sc] != 0) occupied = true;
                 }
 
                 sb.append(occupied ? '■' : ' ');
@@ -83,7 +87,7 @@ public final class AsciiBoardRenderer {
             for (int c = 0; c < size; c++) {
                 sb.append(grid[r][c]);
             }
-            
+
             sb.append('\n');
         }
 

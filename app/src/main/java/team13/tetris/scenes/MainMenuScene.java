@@ -1,11 +1,11 @@
 package team13.tetris.scenes;
 
-import team13.tetris.SceneManager;
-import team13.tetris.config.Settings;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import team13.tetris.SceneManager;
+import team13.tetris.config.Settings;
 
 public class MainMenuScene {
     private final SceneManager manager;
@@ -28,12 +28,13 @@ public class MainMenuScene {
         startBtn.setOnAction(e -> manager.showGameModeSelection(settings));
         optionBtn.setOnAction(e -> manager.showSettings(settings));
         scoreBtn.setOnAction(e -> manager.showScoreboard(settings));
-        exitBtn.setOnAction(e -> manager.showConfirmScene(
-            settings,
-            "Exit Game?",
-            () -> manager.exitWithSave(settings),
-            () -> manager.showMainMenu(settings)
-        ));
+        exitBtn.setOnAction(
+                e ->
+                        manager.showConfirmScene(
+                                settings,
+                                "Exit Game?",
+                                () -> manager.exitWithSave(settings),
+                                () -> manager.showMainMenu(settings)));
 
         VBox layout = new VBox(10, title, startBtn, optionBtn, scoreBtn, exitBtn);
         layout.setStyle("-fx-alignment: center;");

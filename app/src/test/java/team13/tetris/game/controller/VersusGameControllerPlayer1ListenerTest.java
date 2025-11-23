@@ -1,5 +1,10 @@
 package team13.tetris.game.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.util.LinkedList;
+import java.util.Queue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,26 +17,16 @@ import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 import team13.tetris.scenes.VersusGameScene;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 @DisplayName("VersusGameController Player1Listener 테스트")
 class VersusGameControllerPlayer1ListenerTest {
 
-    @Mock
-    private VersusGameScene mockGameScene;
+    @Mock private VersusGameScene mockGameScene;
 
-    @Mock
-    private SceneManager mockSceneManager;
+    @Mock private SceneManager mockSceneManager;
 
-    @Mock
-    private GameEngine mockEngine1;
+    @Mock private GameEngine mockEngine1;
 
-    @Mock
-    private GameEngine mockEngine2;
+    @Mock private GameEngine mockEngine2;
 
     private Settings settings;
     private VersusGameController controller;
@@ -46,7 +41,15 @@ class VersusGameControllerPlayer1ListenerTest {
         when(mockEngine2.getBoard()).thenReturn(new Board(10, 20));
 
         try {
-            controller = new VersusGameController(mockGameScene, mockSceneManager, settings, mockEngine1, mockEngine2, false, false);
+            controller =
+                    new VersusGameController(
+                            mockGameScene,
+                            mockSceneManager,
+                            settings,
+                            mockEngine1,
+                            mockEngine2,
+                            false,
+                            false);
             player1Listener = controller.getPlayer1Listener();
         } catch (Exception e) {
             // JavaFX 초기화 문제로 인한 예외를 무시하고 모킹 객체로 대체
@@ -70,12 +73,13 @@ class VersusGameControllerPlayer1ListenerTest {
     void testOnPieceSpawned() {
         // given
         Tetromino piece = Tetromino.of(Tetromino.Kind.I);
-        
+
         // Add an attack to the controller's queue for player 1
         try {
-            java.lang.reflect.Field field = VersusGameController.class.getDeclaredField("incomingBlocksForPlayer1");
+            java.lang.reflect.Field field =
+                    VersusGameController.class.getDeclaredField("incomingBlocksForPlayer1");
             field.setAccessible(true);
-            
+
             @SuppressWarnings("unchecked")
             Queue<int[][]> queue = (Queue<int[][]>) field.get(controller);
             queue.add(new int[1][10]);
@@ -110,7 +114,7 @@ class VersusGameControllerPlayer1ListenerTest {
             assertNotNull(player1Listener);
             return;
         }
-        
+
         // when
         try {
             player1Listener.onScoreChanged(100);
@@ -118,7 +122,7 @@ class VersusGameControllerPlayer1ListenerTest {
             // JavaFX 또는 애니메이션 관련 문제를 무시하고 테스트 통과
             return;
         }
-        
+
         // then - JavaFX 초기화 문제로 인해 실제 호출이 안 될 수 있으므로 검증을 유연하게 처리
         try {
             verify(mockGameScene, times(1)).updateGrid();
@@ -190,8 +194,13 @@ class VersusGameControllerPlayer1ListenerTest {
     void testOnNextPiece_VariousTetrominoTypes() {
         // given
         Tetromino.Kind[] kinds = {
-            Tetromino.Kind.I, Tetromino.Kind.O, Tetromino.Kind.T,
-            Tetromino.Kind.S, Tetromino.Kind.Z, Tetromino.Kind.J, Tetromino.Kind.L
+            Tetromino.Kind.I,
+            Tetromino.Kind.O,
+            Tetromino.Kind.T,
+            Tetromino.Kind.S,
+            Tetromino.Kind.Z,
+            Tetromino.Kind.J,
+            Tetromino.Kind.L
         };
 
         // when & then
@@ -205,7 +214,7 @@ class VersusGameControllerPlayer1ListenerTest {
                 continue;
             }
         }
-        
+
         // 최소한 listener가 정상적으로 동작했는지 확인
         assertNotNull(player1Listener);
     }

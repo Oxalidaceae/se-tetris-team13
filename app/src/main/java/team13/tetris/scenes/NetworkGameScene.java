@@ -1,24 +1,23 @@
 package team13.tetris.scenes;
 
+import java.util.*;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-import java.util.*;
-
 // 네트워크 대전 게임 화면 (VersusGameScene과 동일한 디자인 유지)
 public class NetworkGameScene extends BaseGameScene {
     @SuppressWarnings("unused")
     private final SceneManager manager;
+
     private final GameEngine localEngine; // 실제 엔진
 
     private Scene scene;
@@ -76,7 +75,8 @@ public class NetworkGameScene extends BaseGameScene {
     private volatile boolean updatePending = false;
     private final boolean timerMode;
 
-    public NetworkGameScene(SceneManager manager,
+    public NetworkGameScene(
+            SceneManager manager,
             Settings settings,
             GameEngine localEngine,
             String localName,
@@ -113,7 +113,8 @@ public class NetworkGameScene extends BaseGameScene {
 
         VBox localBox = new VBox(12);
         HBox localGame = new HBox(12);
-        VBox rightL = createRightPanel(previewLocal, scoreLabelLocal, incomingLocal, timerLabelLocal);
+        VBox rightL =
+                createRightPanel(previewLocal, scoreLabelLocal, incomingLocal, timerLabelLocal);
         localGame.getChildren().addAll(boardGridLocal, rightL);
         localBox.getChildren().add(localGame);
 
@@ -129,7 +130,8 @@ public class NetworkGameScene extends BaseGameScene {
 
         VBox remoteBox = new VBox(12);
         HBox remoteGame = new HBox(12);
-        VBox rightR = createRightPanel(previewRemote, scoreLabelRemote, incomingRemote, timerLabelRemote);
+        VBox rightR =
+                createRightPanel(previewRemote, scoreLabelRemote, incomingRemote, timerLabelRemote);
         remoteGame.getChildren().addAll(boardGridRemote, rightR);
         remoteBox.getChildren().add(remoteGame);
 
@@ -142,7 +144,8 @@ public class NetworkGameScene extends BaseGameScene {
         updateGrid();
     }
 
-    private VBox createRightPanel(GridPane previewGrid, Label scoreLabel, GridPane incomingGrid, Label timerLabel) {
+    private VBox createRightPanel(
+            GridPane previewGrid, Label scoreLabel, GridPane incomingGrid, Label timerLabel) {
         Label incomingLabel = new Label("Incoming:");
         incomingLabel.getStyleClass().add("label");
 
@@ -151,27 +154,69 @@ public class NetworkGameScene extends BaseGameScene {
 
         if (timerMode) {
             if ("SMALL".equals(windowSize)) {
-                rightPanel = new VBox(8, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid,
-                        networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                8,
+                                previewGrid,
+                                scoreLabel,
+                                timerLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             } else if ("MEDIUM".equals(windowSize)) {
-                rightPanel = new VBox(10, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid,
-                        networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                10,
+                                previewGrid,
+                                scoreLabel,
+                                timerLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
             } else { // LARGE
-                rightPanel = new VBox(12, previewGrid, scoreLabel, timerLabel, incomingLabel, incomingGrid,
-                        networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                12,
+                                previewGrid,
+                                scoreLabel,
+                                timerLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             }
         } else {
             if ("SMALL".equals(windowSize)) {
-                rightPanel = new VBox(8, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                8,
+                                previewGrid,
+                                scoreLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             } else if ("MEDIUM".equals(windowSize)) {
-                rightPanel = new VBox(10, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                10,
+                                previewGrid,
+                                scoreLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 30));
             } else { // LARGE
-                rightPanel = new VBox(12, previewGrid, scoreLabel, incomingLabel, incomingGrid, networkLagLabel);
+                rightPanel =
+                        new VBox(
+                                12,
+                                previewGrid,
+                                scoreLabel,
+                                incomingLabel,
+                                incomingGrid,
+                                networkLagLabel);
                 HBox.setMargin(rightPanel, new Insets(0, 0, 0, 50));
             }
         }
@@ -187,26 +232,27 @@ public class NetworkGameScene extends BaseGameScene {
     }
 
     public void requestFocus() {
-        Platform.runLater(() -> {
-            if (scene != null)
-                scene.getRoot().requestFocus();
-        });
+        Platform.runLater(
+                () -> {
+                    if (scene != null) scene.getRoot().requestFocus();
+                });
     }
 
     public void updateTimer(int seconds) {
         if (timerMode) {
-            Platform.runLater(() -> {
-                timerLabelLocal.setText("Time: " + seconds);
-                timerLabelRemote.setText("Time: " + seconds);
-                if (seconds <= 30) {
-                    timerLabelLocal.setStyle("-fx-text-fill: red;");
-                    timerLabelRemote.setStyle("-fx-text-fill: red;");
-                } else {
-                    // 30초 이상일 때 기본 스타일로 되돌림
-                    timerLabelLocal.setStyle("");
-                    timerLabelRemote.setStyle("");
-                }
-            });
+            Platform.runLater(
+                    () -> {
+                        timerLabelLocal.setText("Time: " + seconds);
+                        timerLabelRemote.setText("Time: " + seconds);
+                        if (seconds <= 30) {
+                            timerLabelLocal.setStyle("-fx-text-fill: red;");
+                            timerLabelRemote.setStyle("-fx-text-fill: red;");
+                        } else {
+                            // 30초 이상일 때 기본 스타일로 되돌림
+                            timerLabelLocal.setStyle("");
+                            timerLabelRemote.setStyle("");
+                        }
+                    });
         }
     }
 
@@ -239,7 +285,8 @@ public class NetworkGameScene extends BaseGameScene {
         this.remoteNextIsItem = nextIsItem;
         this.remoteNextItemType = nextItemType;
         this.remoteNextItemBlockIndex = nextItemBlockIndex;
-        this.remoteIncomingQueue = (incoming != null) ? new LinkedList<>(incoming) : new LinkedList<>();
+        this.remoteIncomingQueue =
+                (incoming != null) ? new LinkedList<>(incoming) : new LinkedList<>();
         this.remoteScore = score;
 
         updateGrid();
@@ -255,23 +302,24 @@ public class NetworkGameScene extends BaseGameScene {
 
     // 네트워크 지연 상태 표시/숨김
     public void setNetworkLagStatus(boolean isLagging) {
-        Platform.runLater(() -> {
-            networkLagLabel.setVisible(isLagging);
-            networkLagLabel.setManaged(isLagging); // 레이아웃에 포함/제외
-        });
+        Platform.runLater(
+                () -> {
+                    networkLagLabel.setVisible(isLagging);
+                    networkLagLabel.setManaged(isLagging); // 레이아웃에 포함/제외
+                });
     }
 
     // Main UI 업데이트 (Local + Remote)
     public void updateGrid() {
-        if (updatePending)
-            return;
+        if (updatePending) return;
         updatePending = true;
 
-        Platform.runLater(() -> {
-            updateLocalUI();
-            updateRemoteUI();
-            updatePending = false;
-        });
+        Platform.runLater(
+                () -> {
+                    updateLocalUI();
+                    updateRemoteUI();
+                    updatePending = false;
+                });
     }
 
     // Local Player UI Update
@@ -287,8 +335,7 @@ public class NetworkGameScene extends BaseGameScene {
             for (int x = 0; x < w; x++) {
                 int v = board.getCell(x, y);
                 CellView cell = cache.get((y + 1) + "," + (x + 1));
-                if (cell == null)
-                    continue;
+                if (cell == null) continue;
 
                 applyCellValue(cell, v);
             }
@@ -313,15 +360,15 @@ public class NetworkGameScene extends BaseGameScene {
 
     // Local Player의 incoming grid 업데이트 (NetworkGameController에서 호출)
     public void updateLocalIncomingGrid(Queue<int[][]> incomingQueue) {
-        Platform.runLater(() -> {
-            updateIncoming(incomingCacheLocal, incomingQueue);
-        });
+        Platform.runLater(
+                () -> {
+                    updateIncoming(incomingCacheLocal, incomingQueue);
+                });
     }
 
     // Remote Player UI Update
     private void updateRemoteUI() {
-        if (remoteBoard == null)
-            return;
+        if (remoteBoard == null) return;
 
         int[][] board = remoteBoard;
         Map<String, CellView> cache = boardCacheRemote;
@@ -334,8 +381,7 @@ public class NetworkGameScene extends BaseGameScene {
             for (int x = 0; x < w; x++) {
                 int v = board[y][x];
                 CellView cell = cache.get((y + 1) + "," + (x + 1));
-                if (cell == null)
-                    continue;
+                if (cell == null) continue;
 
                 applyCellValue(cell, v);
             }
@@ -344,8 +390,7 @@ public class NetworkGameScene extends BaseGameScene {
         // 2) 떨어지는 미노 (서버에서 받은 데이터로 렌더, 아이템 정보 포함)
         if (remotePieceType > 0) {
             Tetromino.Kind kind = Tetromino.kindForId(remotePieceType);
-            if (kind == null)
-                return;
+            if (kind == null) return;
 
             Tetromino t;
             // 아이템 정보가 있으면 아이템 테트로미노 생성 (rotation 값을 직접 사용)
@@ -451,8 +496,8 @@ public class NetworkGameScene extends BaseGameScene {
         }
     }
 
-    private void drawFallingPiece(Map<String, CellView> cache,
-            Tetromino cur, int px, int py, int w, int h) {
+    private void drawFallingPiece(
+            Map<String, CellView> cache, Tetromino cur, int px, int py, int w, int h) {
         int[][] shape = cur.getShape();
         String blockClass = cur.getBlockStyleClass();
         String textClass = cur.getTextStyleClass();
@@ -480,15 +525,12 @@ public class NetworkGameScene extends BaseGameScene {
         }
     }
 
-    private void drawGhostPiece(Map<String, CellView> cache,
-            GameEngine engine, int w, int h) {
+    private void drawGhostPiece(Map<String, CellView> cache, GameEngine engine, int w, int h) {
         Tetromino cur = engine.getCurrent();
-        if (cur == null)
-            return;
+        if (cur == null) return;
 
         int ghostY = engine.getGhostY();
-        if (ghostY < 0)
-            return;
+        if (ghostY < 0) return;
 
         int[][] shape = cur.getShape();
         int px = engine.getPieceX();
@@ -500,8 +542,7 @@ public class NetworkGameScene extends BaseGameScene {
                     int by = ghostY + r;
                     if (bx >= 0 && bx < w && by >= 0 && by < h) {
                         CellView cell = cache.get((by + 1) + "," + (bx + 1));
-                        if (cell != null)
-                            fillCell(cell, "O", "block-ghost", "tetris-ghost-text");
+                        if (cell != null) fillCell(cell, "O", "block-ghost", "tetris-ghost-text");
                     }
                 }
             }
@@ -514,12 +555,10 @@ public class NetworkGameScene extends BaseGameScene {
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
                 CellView cell = cache.get(r + "," + c);
-                if (cell != null)
-                    applyCellEmpty(cell);
+                if (cell != null) applyCellEmpty(cell);
             }
         }
-        if (next == null)
-            return;
+        if (next == null) return;
 
         int[][] shape = next.getShape();
         String blockClass = next.getBlockStyleClass();
@@ -543,12 +582,10 @@ public class NetworkGameScene extends BaseGameScene {
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
                 CellView cell = cache.get(r + "," + c);
-                if (cell != null)
-                    applyCellEmpty(cell);
+                if (cell != null) applyCellEmpty(cell);
             }
         }
-        if (next == null)
-            return;
+        if (next == null) return;
 
         int[][] shape = next.getShape();
         int minR = 4, maxR = -1, minC = 4, maxC = -1;
@@ -578,7 +615,10 @@ public class NetworkGameScene extends BaseGameScene {
                     CellView cell = cache.get(rr + "," + cc);
                     if (cell != null) {
                         // 아이템 블록 표시 지원
-                        applyItemMinoDisplay(cell, next, blockIndex,
+                        applyItemMinoDisplay(
+                                cell,
+                                next,
+                                blockIndex,
                                 next.getBlockStyleClass(),
                                 next.getTextStyleClass());
                     }
@@ -589,7 +629,11 @@ public class NetworkGameScene extends BaseGameScene {
     }
 
     // 아이템 미노 표시 로직 (VersusGameScene과 동일)
-    private void applyItemMinoDisplay(CellView cell, Tetromino tetromino, int blockIndex, String blockClass,
+    private void applyItemMinoDisplay(
+            CellView cell,
+            Tetromino tetromino,
+            int blockIndex,
+            String blockClass,
             String textClass) {
         if (tetromino.isItemPiece()) {
             if (tetromino.getItemType() == Tetromino.ItemType.COPY
@@ -628,13 +672,13 @@ public class NetworkGameScene extends BaseGameScene {
                 Label cell = cache.get(r + "," + c);
                 if (cell != null) {
                     cell.setText(" ");
-                    cell.setStyle("-fx-background-color: transparent; -fx-border-color: #333; -fx-border-width: 0.3;");
+                    cell.setStyle(
+                            "-fx-background-color: transparent; -fx-border-color: #333; -fx-border-width: 0.3;");
                 }
             }
         }
 
-        if (queue == null || queue.isEmpty())
-            return;
+        if (queue == null || queue.isEmpty()) return;
 
         int row = 9;
 
@@ -656,8 +700,7 @@ public class NetworkGameScene extends BaseGameScene {
                 }
                 row--;
             }
-            if (row < 0)
-                break;
+            if (row < 0) break;
         }
     }
 
@@ -686,8 +729,7 @@ public class NetworkGameScene extends BaseGameScene {
             for (int gx = 0; gx < w + 2; gx++) {
                 CellView cell = new CellView(cellSize, settings);
 
-                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1)
-                    cell.setBorder();
+                if (gx == 0 || gx == w + 1 || gy == 0 || gy == h + 1) cell.setBorder();
 
                 grid.add(cell, gx, gy);
                 cache.put(gy + "," + gx, cell);
@@ -726,12 +768,15 @@ public class NetworkGameScene extends BaseGameScene {
     private GridPane createIncomingGrid(Map<String, Label> cache) {
         GridPane grid = new GridPane();
         grid.getStyleClass().add("incoming-grid");
-        grid.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-background-color: #1a1a1a;");
+        grid.setStyle(
+                "-fx-border-color: gray; -fx-border-width: 1; -fx-background-color: #1a1a1a;");
         grid.setHgap(0);
         grid.setVgap(0);
 
-        double cellSize = ("LARGE".equals(settings.getWindowSize()) ? 22
-                : "MEDIUM".equals(settings.getWindowSize()) ? 17 : 13);
+        double cellSize =
+                ("LARGE".equals(settings.getWindowSize())
+                        ? 22
+                        : "MEDIUM".equals(settings.getWindowSize()) ? 17 : 13);
 
         for (int r = 0; r < 10; r++) {
             for (int c = 0; c < 10; c++) {

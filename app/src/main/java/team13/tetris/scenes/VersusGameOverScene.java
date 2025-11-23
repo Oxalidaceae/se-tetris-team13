@@ -27,7 +27,17 @@ public class VersusGameOverScene {
             int loserScore,
             boolean timerMode,
             boolean itemMode) {
-        this(manager, settings, winner, winnerScore, loserScore, timerMode, itemMode, "Player 1", false, null);
+        this(
+                manager,
+                settings,
+                winner,
+                winnerScore,
+                loserScore,
+                timerMode,
+                itemMode,
+                "Player 1",
+                false,
+                null);
     }
 
     public VersusGameOverScene(
@@ -60,7 +70,7 @@ public class VersusGameOverScene {
         // 게임 모드에 따라 다른 결과 메시지 생성
         Label resultLabel;
         Label scoreLabel;
-        
+
         if (isNetworkMode) {
             // 네트워크 모드: 플레이어 관점에서 표시
             if (winner.equals("Draw")) {
@@ -73,17 +83,24 @@ public class VersusGameOverScene {
                 resultLabel = new Label("You Lose!");
                 resultLabel.setStyle("-fx-text-fill: #FF6B6B; -fx-font-size: 32px;"); // 빨간색
             }
-            
+
             // 네트워크 모드 점수 표시
-            scoreLabel = new Label(
-                "Your Score: " + (winner.equals(currentPlayer) || winner.contains("You") ? winnerScore : loserScore) + "\n" +
-                "Opponent Score: " + (winner.equals(currentPlayer) || winner.contains("You") ? loserScore : winnerScore)
-            );
+            scoreLabel =
+                    new Label(
+                            "Your Score: "
+                                    + (winner.equals(currentPlayer) || winner.contains("You")
+                                            ? winnerScore
+                                            : loserScore)
+                                    + "\n"
+                                    + "Opponent Score: "
+                                    + (winner.equals(currentPlayer) || winner.contains("You")
+                                            ? loserScore
+                                            : winnerScore));
         } else {
             // 로컬 모드: 기존 방식 (Player # Wins!)
             resultLabel = new Label(winner + " Wins!");
             resultLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 32px;"); // 금색
-            
+
             // 로컬 모드 점수 표시 (항상 Player 1, Player 2 순서)
             int player1Score, player2Score;
             if (winner.equals("Player 1")) {
@@ -93,13 +110,16 @@ public class VersusGameOverScene {
                 player1Score = loserScore;
                 player2Score = winnerScore;
             }
-            
-            scoreLabel = new Label(
-                "Player 1 Score: " + player1Score + "\n" +
-                "Player 2 Score: " + player2Score
-            );
+
+            scoreLabel =
+                    new Label(
+                            "Player 1 Score: "
+                                    + player1Score
+                                    + "\n"
+                                    + "Player 2 Score: "
+                                    + player2Score);
         }
-        
+
         resultLabel.getStyleClass().add("label-title");
         scoreLabel.getStyleClass().add("label");
         scoreLabel.setStyle("-fx-font-size: 20px;");
@@ -112,14 +132,16 @@ public class VersusGameOverScene {
             retryBtn.setOnAction(e -> onPlayAgain.run());
         } else {
             // 로컬 모드: 기존 동작 유지
-            retryBtn.setOnAction(e -> {
-                manager.show2PGame(settings, timerMode, itemMode);
-            });
+            retryBtn.setOnAction(
+                    e -> {
+                        manager.show2PGame(settings, timerMode, itemMode);
+                    });
         }
 
-        mainMenuBtn.setOnAction(e -> {
-            manager.showMainMenu(settings);
-        });
+        mainMenuBtn.setOnAction(
+                e -> {
+                    manager.showMainMenu(settings);
+                });
 
         // 네트워크 모드에서는 Main Menu 버튼 숨김
         VBox layout;

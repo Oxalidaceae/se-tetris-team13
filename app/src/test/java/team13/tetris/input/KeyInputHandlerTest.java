@@ -2,11 +2,10 @@ package team13.tetris.input;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
 import javafx.scene.input.KeyCode;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import team13.tetris.config.Settings;
 
 // KeyInputHandler 테스트: Tests keyboard input mapping, key matching logic
@@ -73,15 +72,11 @@ class KeyInputHandlerTest {
         settings.setPause("P");
 
         // when & then
-        assertTrue(keyInputHandler.isHardDropClicked(KeyCode.SPACE),
-                "SPACE 키가 하드 드롭과 매칭되어야 함");
-        assertFalse(keyInputHandler.isHardDropClicked(KeyCode.ENTER),
-                "ENTER 키는 하드 드롭과 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isHardDropClicked(KeyCode.SPACE), "SPACE 키가 하드 드롭과 매칭되어야 함");
+        assertFalse(keyInputHandler.isHardDropClicked(KeyCode.ENTER), "ENTER 키는 하드 드롭과 매칭되지 않아야 함");
 
-        assertTrue(keyInputHandler.isPauseClicked(KeyCode.P),
-                "P 키가 일시정지와 매칭되어야 함");
-        assertFalse(keyInputHandler.isPauseClicked(KeyCode.Q),
-                "Q 키는 일시정지와 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isPauseClicked(KeyCode.P), "P 키가 일시정지와 매칭되어야 함");
+        assertFalse(keyInputHandler.isPauseClicked(KeyCode.Q), "Q 키는 일시정지와 매칭되지 않아야 함");
     }
 
     @Test
@@ -92,15 +87,12 @@ class KeyInputHandlerTest {
         settings.setKeyRight("NUMPAD5");
 
         // when & then
-        assertTrue(keyInputHandler.isLeftClicked(KeyCode.DIGIT1),
-                "DIGIT1 키가 왼쪽 이동과 매칭되어야 함");
-        assertFalse(keyInputHandler.isLeftClicked(KeyCode.DIGIT2),
-                "DIGIT2 키는 왼쪽 이동과 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isLeftClicked(KeyCode.DIGIT1), "DIGIT1 키가 왼쪽 이동과 매칭되어야 함");
+        assertFalse(keyInputHandler.isLeftClicked(KeyCode.DIGIT2), "DIGIT2 키는 왼쪽 이동과 매칭되지 않아야 함");
 
-        assertTrue(keyInputHandler.isRightClicked(KeyCode.NUMPAD5),
-                "NUMPAD5 키가 오른쪽 이동과 매칭되어야 함");
-        assertFalse(keyInputHandler.isRightClicked(KeyCode.NUMPAD1),
-                "NUMPAD1 키는 오른쪽 이동과 매칭되지 않아야 함");
+        assertTrue(keyInputHandler.isRightClicked(KeyCode.NUMPAD5), "NUMPAD5 키가 오른쪽 이동과 매칭되어야 함");
+        assertFalse(
+                keyInputHandler.isRightClicked(KeyCode.NUMPAD1), "NUMPAD1 키는 오른쪽 이동과 매칭되지 않아야 함");
     }
 
     @Test
@@ -129,8 +121,7 @@ class KeyInputHandlerTest {
         // when & then
         assertTrue(keyInputHandler.isRotateClicked(KeyCode.F1), "F1 키가 회전과 매칭되어야 함");
         assertTrue(keyInputHandler.isPauseClicked(KeyCode.F2), "F2 키가 일시정지와 매칭되어야 함");
-        assertFalse(keyInputHandler.isRotateClicked(KeyCode.F2),
-                "F2 키는 회전과 매칭되지 않아야 함");
+        assertFalse(keyInputHandler.isRotateClicked(KeyCode.F2), "F2 키는 회전과 매칭되지 않아야 함");
     }
 
     @Test
@@ -273,35 +264,75 @@ class KeyInputHandlerTest {
     @DisplayName("숫자 키와 넘패드 키 매칭 테스트")
     void testNumericKeys() {
         // given
-        String[] digitKeys = {"DIGIT0", "DIGIT1", "DIGIT2", "DIGIT3", "DIGIT4", "DIGIT5", "DIGIT6", "DIGIT7", "DIGIT8", "DIGIT9"};
-        String[] numpadKeys = {"NUMPAD0", "NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6", "NUMPAD7", "NUMPAD8", "NUMPAD9"};
-        KeyCode[] digitKeyCodes = {KeyCode.DIGIT0, KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.DIGIT3, KeyCode.DIGIT4,
-                                  KeyCode.DIGIT5, KeyCode.DIGIT6, KeyCode.DIGIT7, KeyCode.DIGIT8, KeyCode.DIGIT9};
-        KeyCode[] numpadKeyCodes = {KeyCode.NUMPAD0, KeyCode.NUMPAD1, KeyCode.NUMPAD2, KeyCode.NUMPAD3, KeyCode.NUMPAD4,
-                                   KeyCode.NUMPAD5, KeyCode.NUMPAD6, KeyCode.NUMPAD7, KeyCode.NUMPAD8, KeyCode.NUMPAD9};
+        String[] digitKeys = {
+            "DIGIT0", "DIGIT1", "DIGIT2", "DIGIT3", "DIGIT4", "DIGIT5", "DIGIT6", "DIGIT7",
+            "DIGIT8", "DIGIT9"
+        };
+        String[] numpadKeys = {
+            "NUMPAD0", "NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6", "NUMPAD7",
+            "NUMPAD8", "NUMPAD9"
+        };
+        KeyCode[] digitKeyCodes = {
+            KeyCode.DIGIT0,
+            KeyCode.DIGIT1,
+            KeyCode.DIGIT2,
+            KeyCode.DIGIT3,
+            KeyCode.DIGIT4,
+            KeyCode.DIGIT5,
+            KeyCode.DIGIT6,
+            KeyCode.DIGIT7,
+            KeyCode.DIGIT8,
+            KeyCode.DIGIT9
+        };
+        KeyCode[] numpadKeyCodes = {
+            KeyCode.NUMPAD0,
+            KeyCode.NUMPAD1,
+            KeyCode.NUMPAD2,
+            KeyCode.NUMPAD3,
+            KeyCode.NUMPAD4,
+            KeyCode.NUMPAD5,
+            KeyCode.NUMPAD6,
+            KeyCode.NUMPAD7,
+            KeyCode.NUMPAD8,
+            KeyCode.NUMPAD9
+        };
 
         for (int i = 0; i < digitKeys.length; i++) {
             settings.setKeyLeft(digitKeys[i]);
-            assertTrue(keyInputHandler.isLeftClicked(digitKeyCodes[i]), 
-                      digitKeys[i] + " 키가 매칭되어야 함");
-            
+            assertTrue(
+                    keyInputHandler.isLeftClicked(digitKeyCodes[i]), digitKeys[i] + " 키가 매칭되어야 함");
+
             settings.setKeyRight(numpadKeys[i]);
-            assertTrue(keyInputHandler.isRightClicked(numpadKeyCodes[i]), 
-                      numpadKeys[i] + " 키가 매칭되어야 함");
+            assertTrue(
+                    keyInputHandler.isRightClicked(numpadKeyCodes[i]),
+                    numpadKeys[i] + " 키가 매칭되어야 함");
         }
     }
 
     @Test
     @DisplayName("모든 F키 매칭 테스트")
     void testFunctionKeys() {
-        String[] fKeys = {"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"};
-        KeyCode[] fKeyCodes = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6,
-                              KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12};
+        String[] fKeys = {
+            "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"
+        };
+        KeyCode[] fKeyCodes = {
+            KeyCode.F1,
+            KeyCode.F2,
+            KeyCode.F3,
+            KeyCode.F4,
+            KeyCode.F5,
+            KeyCode.F6,
+            KeyCode.F7,
+            KeyCode.F8,
+            KeyCode.F9,
+            KeyCode.F10,
+            KeyCode.F11,
+            KeyCode.F12
+        };
 
         for (int i = 0; i < fKeys.length; i++) {
             settings.setKeyRotate(fKeys[i]);
-            assertTrue(keyInputHandler.isRotateClicked(fKeyCodes[i]), 
-                      fKeys[i] + " 키가 회전과 매칭되어야 함");
+            assertTrue(keyInputHandler.isRotateClicked(fKeyCodes[i]), fKeys[i] + " 키가 회전과 매칭되어야 함");
         }
     }
 
@@ -309,17 +340,20 @@ class KeyInputHandlerTest {
     @DisplayName("잘못된 키 이름 설정 테스트")
     void testInvalidKeyNames() {
         String[] invalidKeys = {"INVALID_KEY", "KEY_NOT_EXISTS", "WRONG_NAME", "123", "!@#", "가나다"};
-        
+
         for (String invalidKey : invalidKeys) {
             settings.setKeyLeft(invalidKey);
-            
+
             // 모든 KeyCode에 대해 false를 반환해야 함
-            assertFalse(keyInputHandler.isLeftClicked(KeyCode.A), 
-                       invalidKey + " 설정 시 어떤 키와도 매칭되지 않아야 함");
-            assertFalse(keyInputHandler.isLeftClicked(KeyCode.SPACE), 
-                       invalidKey + " 설정 시 SPACE와도 매칭되지 않아야 함");
-            assertFalse(keyInputHandler.isLeftClicked(KeyCode.ENTER), 
-                       invalidKey + " 설정 시 ENTER와도 매칭되지 않아야 함");
+            assertFalse(
+                    keyInputHandler.isLeftClicked(KeyCode.A),
+                    invalidKey + " 설정 시 어떤 키와도 매칭되지 않아야 함");
+            assertFalse(
+                    keyInputHandler.isLeftClicked(KeyCode.SPACE),
+                    invalidKey + " 설정 시 SPACE와도 매칭되지 않아야 함");
+            assertFalse(
+                    keyInputHandler.isLeftClicked(KeyCode.ENTER),
+                    invalidKey + " 설정 시 ENTER와도 매칭되지 않아야 함");
         }
     }
 
@@ -336,7 +370,7 @@ class KeyInputHandlerTest {
 
         // when & then - 대량의 키 매칭 테스트가 빠르게 실행되어야 함
         long startTime = System.nanoTime();
-        
+
         for (int i = 0; i < 1000; i++) { // 반복 횟수를 줄임
             keyInputHandler.isLeftClicked(KeyCode.A);
             keyInputHandler.isRightClicked(KeyCode.D);
@@ -344,15 +378,15 @@ class KeyInputHandlerTest {
             keyInputHandler.isRotateClicked(KeyCode.W);
             keyInputHandler.isHardDropClicked(KeyCode.SPACE);
             keyInputHandler.isPauseClicked(KeyCode.ESCAPE);
-            
+
             keyInputHandler.isLeftClicked(KeyCode.B);
             keyInputHandler.isRightClicked(KeyCode.F);
             keyInputHandler.isDropClicked(KeyCode.X);
         }
-        
+
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
-        
+
         // 1000번의 매칭이 1초 이내에 완료되어야 함
         assertTrue(duration < 1_000_000_000L, "키 매칭이 충분히 빨라야 함");
     }
@@ -365,16 +399,22 @@ class KeyInputHandlerTest {
         settings.setKeyRight("D");
         settings.setKeyDown("S");
         settings.setKeyRotate("W");
-        
+
         // when & then - 여러 키를 동시에 확인
-        assertTrue(keyInputHandler.isLeftClicked(KeyCode.A) && keyInputHandler.isRightClicked(KeyCode.D),
-                  "여러 키가 동시에 매칭될 수 있어야 함");
-        
-        assertTrue(keyInputHandler.isDropClicked(KeyCode.S) && keyInputHandler.isRotateClicked(KeyCode.W),
-                  "다른 키들도 동시에 매칭될 수 있어야 함");
-        
-        assertFalse(keyInputHandler.isLeftClicked(KeyCode.B) || keyInputHandler.isRightClicked(KeyCode.F),
-                   "잘못된 키들은 매칭되지 않아야 함");
+        assertTrue(
+                keyInputHandler.isLeftClicked(KeyCode.A)
+                        && keyInputHandler.isRightClicked(KeyCode.D),
+                "여러 키가 동시에 매칭될 수 있어야 함");
+
+        assertTrue(
+                keyInputHandler.isDropClicked(KeyCode.S)
+                        && keyInputHandler.isRotateClicked(KeyCode.W),
+                "다른 키들도 동시에 매칭될 수 있어야 함");
+
+        assertFalse(
+                keyInputHandler.isLeftClicked(KeyCode.B)
+                        || keyInputHandler.isRightClicked(KeyCode.F),
+                "잘못된 키들은 매칭되지 않아야 함");
     }
 
     @Test
@@ -400,18 +440,22 @@ class KeyInputHandlerTest {
     @Test
     @DisplayName("모든 알파벳 키 매칭 테스트")
     void testAllAlphabetKeys() {
-        String[] alphabet = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                           "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-        KeyCode[] alphabetKeyCodes = {KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F,
-                                     KeyCode.G, KeyCode.H, KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L,
-                                     KeyCode.M, KeyCode.N, KeyCode.O, KeyCode.P, KeyCode.Q, KeyCode.R,
-                                     KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X,
-                                     KeyCode.Y, KeyCode.Z};
+        String[] alphabet = {
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+        };
+        KeyCode[] alphabetKeyCodes = {
+            KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F, KeyCode.G, KeyCode.H,
+            KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L, KeyCode.M, KeyCode.N, KeyCode.O, KeyCode.P,
+            KeyCode.Q, KeyCode.R, KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X,
+            KeyCode.Y, KeyCode.Z
+        };
 
         for (int i = 0; i < alphabet.length; i++) {
             settings.setKeyLeft(alphabet[i]);
-            assertTrue(keyInputHandler.isLeftClicked(alphabetKeyCodes[i]), 
-                      alphabet[i] + " 키가 매칭되어야 함");
+            assertTrue(
+                    keyInputHandler.isLeftClicked(alphabetKeyCodes[i]),
+                    alphabet[i] + " 키가 매칭되어야 함");
         }
     }
 }

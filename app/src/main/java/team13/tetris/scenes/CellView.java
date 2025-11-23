@@ -64,12 +64,10 @@ public class CellView extends StackPane {
 
         switch (currentPattern) {
             case "horizontal": // S - 수평 줄무늬
-                for (double y = 0; y < h; y += 5)
-                    gc.strokeLine(0, y, w, y);
+                for (double y = 0; y < h; y += 5) gc.strokeLine(0, y, w, y);
                 break;
             case "vertical": // J - 수직 줄무늬
-                for (double x = 0; x < w; x += 5)
-                    gc.strokeLine(x, 0, x, h);
+                for (double x = 0; x < w; x += 5) gc.strokeLine(x, 0, x, h);
                 break;
             case "diagonal-right": // I - 빗살무늬 ↗
                 for (double offset = -h; offset < w + h; offset += 5)
@@ -97,12 +95,20 @@ public class CellView extends StackPane {
 
     private void clearDynamicStyles() {
         ObservableList<String> rectClasses = rect.getStyleClass();
-        rectClasses.removeIf(name -> name.startsWith("block-") || name.startsWith("item-") || 
-                         name.equals("cell-empty") || name.equals("cell-border"));
+        rectClasses.removeIf(
+                name ->
+                        name.startsWith("block-")
+                                || name.startsWith("item-")
+                                || name.equals("cell-empty")
+                                || name.equals("cell-border"));
 
         ObservableList<String> labelClasses = label.getStyleClass();
-        labelClasses.removeIf(name -> name.startsWith("tetris-") || name.startsWith("item-") || 
-                          name.equals("cell-empty") || name.equals("cell-border"));
+        labelClasses.removeIf(
+                name ->
+                        name.startsWith("tetris-")
+                                || name.startsWith("item-")
+                                || name.equals("cell-empty")
+                                || name.equals("cell-border"));
     }
 
     public void setEmpty() {
@@ -119,28 +125,35 @@ public class CellView extends StackPane {
         currentPattern = null;
         clearCanvas();
         if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
-        if (!label.getStyleClass().contains("cell-border")) label.getStyleClass().add("cell-border");
+        if (!label.getStyleClass().contains("cell-border"))
+            label.getStyleClass().add("cell-border");
         label.setText("X");
     }
 
     public void setBlock(String symbol, String blockClass, String textClass) {
         clearDynamicStyles();
-        if (blockClass != null && !blockClass.isBlank() && !rect.getStyleClass().contains(blockClass))
-            rect.getStyleClass().add(blockClass);
+        if (blockClass != null
+                && !blockClass.isBlank()
+                && !rect.getStyleClass().contains(blockClass)) rect.getStyleClass().add(blockClass);
         if (textClass != null && !textClass.isBlank() && !label.getStyleClass().contains(textClass))
             label.getStyleClass().add(textClass);
-        
+
         // 색맹 모드에서는 아이템 블록(C, L, W, G, S)만 글자 표시, 일반 블록은 패턴만
-        boolean isItemBlock = symbol != null && (symbol.equals("C") || symbol.equals("L") || 
-              symbol.equals("W") || symbol.equals("G") || symbol.equals("S"));
+        boolean isItemBlock =
+                symbol != null
+                        && (symbol.equals("C")
+                                || symbol.equals("L")
+                                || symbol.equals("W")
+                                || symbol.equals("G")
+                                || symbol.equals("S"));
         boolean isGhostBlock = "block-ghost".equals(blockClass);
-        
+
         if ((settings.isColorBlindMode() && !isItemBlock) || isGhostBlock) {
             label.setText(" "); // 일반 블록은 색맹모드에서 글자 숨김, 고스트 블록은 항상 글자 숨김
         } else {
             label.setText(symbol == null ? "" : symbol); // 아이템 블록은 글자 표시
         }
-        
+
         // 색맹 모드에서 패턴 적용
         if (blockClass != null && settings.isColorBlindMode()) {
             applyPattern(blockClass);

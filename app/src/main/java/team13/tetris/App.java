@@ -24,21 +24,22 @@ public class App extends Application {
 
         primaryStage.setTitle("Tetris");
         primaryStage.show();
-        primaryStage.setOnCloseRequest(event -> {
-            // 설정 저장
-            settings.setColorBlindMode(manager.isColorBlindMode());
-            settings.setWindowSize(getCurrentWindowSize(primaryStage, manager));
-            SettingsRepository.save(settings);
+        primaryStage.setOnCloseRequest(
+                event -> {
+                    // 설정 저장
+                    settings.setColorBlindMode(manager.isColorBlindMode());
+                    settings.setWindowSize(getCurrentWindowSize(primaryStage, manager));
+                    SettingsRepository.save(settings);
 
-            manager.cleanup();
-        });
+                    manager.cleanup();
+                });
     }
 
     // OS별로 약간의 픽셀 차이가 존재하므로 범위로 판단
     // 대전 모드인 경우 원래 창 크기를 사용
     private String getCurrentWindowSize(Stage stage, SceneManager manager) {
         double width = manager.getOriginalWidth();
-        
+
         if (width <= 450) {
             return "SMALL";
         } else if (width >= 750) {

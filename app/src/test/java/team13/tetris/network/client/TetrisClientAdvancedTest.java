@@ -1,13 +1,6 @@
 package team13.tetris.network.client;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
-import team13.tetris.network.listener.ClientMessageListener;
-import team13.tetris.network.protocol.*;
-import team13.tetris.network.server.TetrisServer;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,8 +8,14 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import team13.tetris.network.listener.ClientMessageListener;
+import team13.tetris.network.protocol.*;
+import team13.tetris.network.server.TetrisServer;
 
 @Disabled("Network tests are unstable and cause timeouts")
 class TetrisClientAdvancedTest {
@@ -86,8 +85,24 @@ class TetrisClientAdvancedTest {
         Queue<int[][]> incomingBlocks = new LinkedList<>();
 
         // 게임이 시작되지 않은 상태에서는 false를 반환해야 함
-        assertFalse(client.sendBoardUpdate(testBoard, 5, 10, 1, 0, false, null, -1, 2, false, null, -1, incomingBlocks,
-                1500, 10, 2));
+        assertFalse(
+                client.sendBoardUpdate(
+                        testBoard,
+                        5,
+                        10,
+                        1,
+                        0,
+                        false,
+                        null,
+                        -1,
+                        2,
+                        false,
+                        null,
+                        -1,
+                        incomingBlocks,
+                        1500,
+                        10,
+                        2));
     }
 
     @Test
@@ -174,10 +189,13 @@ class TetrisClientAdvancedTest {
 
         for (int i = 0; i < 5; i++) {
             final int index = i;
-            threads[i] = new Thread(() -> {
-                ConnectionMessage msg = ConnectionMessage.createPlayerReady("TestClient" + index);
-                results[index] = client.sendMessage(msg);
-            });
+            threads[i] =
+                    new Thread(
+                            () -> {
+                                ConnectionMessage msg =
+                                        ConnectionMessage.createPlayerReady("TestClient" + index);
+                                results[index] = client.sendMessage(msg);
+                            });
         }
 
         for (Thread thread : threads) {
@@ -220,10 +238,26 @@ class TetrisClientAdvancedTest {
         }
 
         // 게임이 시작되지 않았으므로 false를 반환하지만, 에러 없이 처리되어야 함
-        assertDoesNotThrow(() -> {
-            client.sendBoardUpdate(largeBoard, 25, 50, 1, 2, false, null, -1, 3, false, null, -1, largeIncomingBlocks,
-                    999999, 500, 10);
-        });
+        assertDoesNotThrow(
+                () -> {
+                    client.sendBoardUpdate(
+                            largeBoard,
+                            25,
+                            50,
+                            1,
+                            2,
+                            false,
+                            null,
+                            -1,
+                            3,
+                            false,
+                            null,
+                            -1,
+                            largeIncomingBlocks,
+                            999999,
+                            500,
+                            10);
+                });
     }
 
     @Test
@@ -246,12 +280,12 @@ class TetrisClientAdvancedTest {
 
         // 특수 문자가 포함된 메시지들
         String[] specialMessages = {
-                "테스트 메시지",
-                "Special !@#$%^&*() Characters",
-                "줄바꿈\n포함",
-                "탭\t문자",
-                "\"따옴표\" 포함",
-                "Unicode: 🎮🎯🎲"
+            "테스트 메시지",
+            "Special !@#$%^&*() Characters",
+            "줄바꿈\n포함",
+            "탭\t문자",
+            "\"따옴표\" 포함",
+            "Unicode: 🎮🎯🎲"
         };
 
         for (String msg : specialMessages) {

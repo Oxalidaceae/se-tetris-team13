@@ -1,9 +1,10 @@
 package team13.tetris.game;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 // Timer 클래스 테스트: Tests time tracking, speed adjustments, formatted time output
 @DisplayName("Timer 테스트")
@@ -12,7 +13,9 @@ public class TimerTest {
     private Timer timer;
 
     @BeforeEach
-    void setUp() { timer = new Timer(); }
+    void setUp() {
+        timer = new Timer();
+    }
 
     @Test
     @DisplayName("초기값이 올바르게 설정되는지 확인")
@@ -28,7 +31,8 @@ public class TimerTest {
     @DisplayName("tick 메서드가 시간을 올바르게 누적하는지 확인")
     void testTick() {
         timer.tick(1.5);
-        assertEquals(1.5, timer.getElapsedTime(), 0.001, "Elapsed time should be 1.5 after tick(1.5)");
+        assertEquals(
+                1.5, timer.getElapsedTime(), 0.001, "Elapsed time should be 1.5 after tick(1.5)");
 
         timer.tick(2.3);
         assertEquals(3.8, timer.getElapsedTime(), 0.001, "Elapsed time should accumulate");
@@ -192,11 +196,16 @@ public class TimerTest {
         // Should have attempted 10 speed increases (5 per minute)
         // But actual increases depend on whether max speed was reached
         double expectedSpeed = Math.min(10.0, 1.0 + (speedIncreases * 0.1));
-        assertEquals(expectedSpeed, gameTimer.getSpeedFactor(), 0.01,
+        assertEquals(
+                expectedSpeed,
+                gameTimer.getSpeedFactor(),
+                0.01,
                 "Speed should be " + expectedSpeed + " after " + speedIncreases + " increases");
 
         assertTrue(gameTimer.getSpeedLevel() >= 1, "Should be at least speed level 1");
-        assertTrue(gameTimer.getInterval() <= 1000.0, "Interval should be faster than or equal to initial");
+        assertTrue(
+                gameTimer.getInterval() <= 1000.0,
+                "Interval should be faster than or equal to initial");
     }
 
     @Test
@@ -216,7 +225,8 @@ public class TimerTest {
         // Test speed factor precision
         timer.setSpeedFactor(3.14159);
         assertEquals(3.14159, timer.getSpeedFactor(), 0.00001, "Should maintain precision");
-        assertEquals(1000.0 / 3.14159, timer.getInterval(), 0.001, "Interval calculation precision");
+        assertEquals(
+                1000.0 / 3.14159, timer.getInterval(), 0.001, "Interval calculation precision");
     }
 
     // ============================================
@@ -228,25 +238,28 @@ public class TimerTest {
     void testIncreaseSpeedWithMultiplier() {
         // Test with multiplier 0.5 (slower increase)
         timer.increaseSpeed(0.5);
-        assertEquals(1.05, timer.getSpeedFactor(), 0.001,
-                "Speed should increase by 0.1 * 0.5 = 0.05");
+        assertEquals(
+                1.05, timer.getSpeedFactor(), 0.001, "Speed should increase by 0.1 * 0.5 = 0.05");
 
         // Test with multiplier 2.0 (faster increase)
         timer.reset();
         timer.increaseSpeed(2.0);
-        assertEquals(1.2, timer.getSpeedFactor(), 0.001,
-                "Speed should increase by 0.1 * 2.0 = 0.2");
+        assertEquals(
+                1.2, timer.getSpeedFactor(), 0.001, "Speed should increase by 0.1 * 2.0 = 0.2");
 
         // Test with multiplier 0 (no increase)
         timer.reset();
         timer.increaseSpeed(0.0);
-        assertEquals(1.0, timer.getSpeedFactor(), 0.001,
-                "Speed should not increase with 0 multiplier");
+        assertEquals(
+                1.0, timer.getSpeedFactor(), 0.001, "Speed should not increase with 0 multiplier");
 
         // Test negative multiplier (decrease)
         timer.reset();
         timer.increaseSpeed(-1.0);
-        assertEquals(0.9, timer.getSpeedFactor(), 0.001,
+        assertEquals(
+                0.9,
+                timer.getSpeedFactor(),
+                0.001,
                 "Speed should decrease with negative multiplier");
     }
 
@@ -258,7 +271,8 @@ public class TimerTest {
 
         // Try to increase beyond max with multiplier
         timer.increaseSpeed(5.0); // Would increase by 0.5
-        assertTrue(timer.getSpeedFactor() <= 10.0,
+        assertTrue(
+                timer.getSpeedFactor() <= 10.0,
                 "Speed should not exceed max even with large multiplier");
     }
 
@@ -266,65 +280,52 @@ public class TimerTest {
     @DisplayName("드롭 거리에 따른 점수 계산이 올바른지 확인")
     void testCalculateDropScore() {
         // Test at base speed (1.0x)
-        assertEquals(10, timer.calculateDropScore(1),
-                "1 cell drop at 1x speed = 10 points");
-        assertEquals(50, timer.calculateDropScore(5),
-                "5 cell drop at 1x speed = 50 points");
-        assertEquals(0, timer.calculateDropScore(0),
-                "0 cell drop = 0 points");
+        assertEquals(10, timer.calculateDropScore(1), "1 cell drop at 1x speed = 10 points");
+        assertEquals(50, timer.calculateDropScore(5), "5 cell drop at 1x speed = 50 points");
+        assertEquals(0, timer.calculateDropScore(0), "0 cell drop = 0 points");
 
         // Test at higher speed (2.0x)
         timer.setSpeedFactor(2.0);
-        assertEquals(20, timer.calculateDropScore(1),
-                "1 cell drop at 2x speed = 20 points");
-        assertEquals(100, timer.calculateDropScore(5),
-                "5 cell drop at 2x speed = 100 points");
+        assertEquals(20, timer.calculateDropScore(1), "1 cell drop at 2x speed = 20 points");
+        assertEquals(100, timer.calculateDropScore(5), "5 cell drop at 2x speed = 100 points");
 
         // Test at max speed (10.0x)
         timer.setSpeedFactor(10.0);
-        assertEquals(100, timer.calculateDropScore(1),
-                "1 cell drop at 10x speed = 100 points");
-        assertEquals(1000, timer.calculateDropScore(10),
-                "10 cell drop at 10x speed = 1000 points");
+        assertEquals(100, timer.calculateDropScore(1), "1 cell drop at 10x speed = 100 points");
+        assertEquals(1000, timer.calculateDropScore(10), "10 cell drop at 10x speed = 1000 points");
     }
 
     @Test
     @DisplayName("소프트 드롭 점수가 속도에 따라 올바르게 계산되는지 확인")
     void testGetSoftDropScore() {
         // Test at base speed
-        assertEquals(10, timer.getSoftDropScore(),
-                "Soft drop at 1x speed = 10 points");
+        assertEquals(10, timer.getSoftDropScore(), "Soft drop at 1x speed = 10 points");
 
         // Test at 3x speed
         timer.setSpeedFactor(3.0);
-        assertEquals(30, timer.getSoftDropScore(),
-                "Soft drop at 3x speed = 30 points");
+        assertEquals(30, timer.getSoftDropScore(), "Soft drop at 3x speed = 30 points");
 
         // Test at max speed
         timer.setSpeedFactor(10.0);
-        assertEquals(100, timer.getSoftDropScore(),
-                "Soft drop at 10x speed = 100 points");
+        assertEquals(100, timer.getSoftDropScore(), "Soft drop at 10x speed = 100 points");
     }
 
     @Test
     @DisplayName("하드 드롭 점수가 거리와 속도에 따라 올바르게 계산되는지 확인")
     void testGetHardDropScore() {
         // Test various drop distances at base speed
-        assertEquals(10, timer.getHardDropScore(1),
-                "Hard drop 1 cell at 1x speed = 10 points");
-        assertEquals(100, timer.getHardDropScore(10),
-                "Hard drop 10 cells at 1x speed = 100 points");
-        assertEquals(200, timer.getHardDropScore(20),
-                "Hard drop 20 cells at 1x speed = 200 points");
-        assertEquals(0, timer.getHardDropScore(0),
-                "Hard drop 0 cells = 0 points");
+        assertEquals(10, timer.getHardDropScore(1), "Hard drop 1 cell at 1x speed = 10 points");
+        assertEquals(
+                100, timer.getHardDropScore(10), "Hard drop 10 cells at 1x speed = 100 points");
+        assertEquals(
+                200, timer.getHardDropScore(20), "Hard drop 20 cells at 1x speed = 200 points");
+        assertEquals(0, timer.getHardDropScore(0), "Hard drop 0 cells = 0 points");
 
         // Test at higher speed
         timer.setSpeedFactor(5.0);
-        assertEquals(50, timer.getHardDropScore(1),
-                "Hard drop 1 cell at 5x speed = 50 points");
-        assertEquals(500, timer.getHardDropScore(10),
-                "Hard drop 10 cells at 5x speed = 500 points");
+        assertEquals(50, timer.getHardDropScore(1), "Hard drop 1 cell at 5x speed = 50 points");
+        assertEquals(
+                500, timer.getHardDropScore(10), "Hard drop 10 cells at 5x speed = 500 points");
     }
 
     @Test
@@ -332,14 +333,11 @@ public class TimerTest {
     void testScoreCalculationWithFractionalSpeed() {
         // Test with fractional speed factor
         timer.setSpeedFactor(2.5);
-        assertEquals(25, timer.calculateDropScore(1),
-                "1 cell at 2.5x speed = 25 points");
-        assertEquals(250, timer.calculateDropScore(10),
-                "10 cells at 2.5x speed = 250 points");
+        assertEquals(25, timer.calculateDropScore(1), "1 cell at 2.5x speed = 25 points");
+        assertEquals(250, timer.calculateDropScore(10), "10 cells at 2.5x speed = 250 points");
 
         timer.setSpeedFactor(1.5);
-        assertEquals(15, timer.calculateDropScore(1),
-                "1 cell at 1.5x speed = 15 points");
+        assertEquals(15, timer.calculateDropScore(1), "1 cell at 1.5x speed = 15 points");
     }
 
     @Test
@@ -347,7 +345,9 @@ public class TimerTest {
     void testNegativeDropDistance() {
         // Edge case: what happens with negative distance?
         int score = timer.calculateDropScore(-5);
-        assertEquals(-50, score,
+        assertEquals(
+                -50,
+                score,
                 "Negative drop distance should give negative score (or should it be validated?)");
     }
 }

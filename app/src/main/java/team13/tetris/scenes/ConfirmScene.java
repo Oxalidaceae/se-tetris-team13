@@ -12,13 +12,20 @@ public class ConfirmScene {
     // 사용하지 않는 필드이지만 향후 확장을 위해 보존
     @SuppressWarnings("unused")
     private final SceneManager manager;
+
     @SuppressWarnings("unused")
     private final Settings settings;
+
     private final String title;
     private final Runnable onConfirm;
     private final Runnable onCancel;
 
-    public ConfirmScene(SceneManager manager, Settings settings, String title, Runnable onConfirm, Runnable onCancel) {
+    public ConfirmScene(
+            SceneManager manager,
+            Settings settings,
+            String title,
+            Runnable onConfirm,
+            Runnable onCancel) {
         this.manager = manager;
         this.settings = settings;
         this.title = title;
@@ -34,16 +41,18 @@ public class ConfirmScene {
         Button cancelBtn = new Button("Cancel");
 
         // confirmBtn.setOnAction(e -> manager.exitWithSave(settings));
-        confirmBtn.setOnAction(e -> {
-            if (onConfirm != null) onConfirm.run();
-        });
-        cancelBtn.setOnAction(e -> {
-            if (onCancel != null) onCancel.run();
-        });
+        confirmBtn.setOnAction(
+                e -> {
+                    if (onConfirm != null) onConfirm.run();
+                });
+        cancelBtn.setOnAction(
+                e -> {
+                    if (onCancel != null) onCancel.run();
+                });
 
         HBox buttonBox = new HBox(20, confirmBtn, cancelBtn);
         buttonBox.setStyle("-fx-alignment: center;");
-        
+
         VBox layout = new VBox(20, title, buttonBox);
         layout.setStyle("-fx-alignment: center;");
 

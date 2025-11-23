@@ -11,10 +11,12 @@ public abstract class BaseGameScene {
     protected static final double BOARD_CELL_SIZE = 28.0;
     protected static final double PREVIEW_CELL_SIZE = 22.0;
     protected static final String FILLED_SYMBOL = "";
-    
+
     protected final Settings settings;
 
-    protected BaseGameScene(Settings settings) { this.settings = settings; }
+    protected BaseGameScene(Settings settings) {
+        this.settings = settings;
+    }
 
     // 보드 그리드 생성
     protected GridPane createBoardGrid(Board board) {
@@ -76,7 +78,9 @@ public abstract class BaseGameScene {
     }
 
     // 셀을 비움
-    protected void applyCellEmpty(CellView cell) { if (cell != null) cell.setEmpty(); }
+    protected void applyCellEmpty(CellView cell) {
+        if (cell != null) cell.setEmpty();
+    }
 
     // 셀에 블록 채우기
     protected void fillCell(CellView cell, String symbol, String blockClass, String textClass) {
@@ -99,9 +103,10 @@ public abstract class BaseGameScene {
         if (preview) cell.getStyleClass().add("preview-cell");
         return cell;
     }
-    
+
     // 고스트 블록 렌더링 - 공통 메서드
-    protected void renderGhostBlock(int[][] shape, int px, int py, int ghostY, int w, int h, GridPane boardGrid) {
+    protected void renderGhostBlock(
+            int[][] shape, int px, int py, int ghostY, int w, int h, GridPane boardGrid) {
         if (ghostY != -1 && ghostY != py) {
             for (int r = 0; r < shape.length; r++) {
                 for (int c = 0; c < shape[r].length; c++) {
@@ -109,7 +114,8 @@ public abstract class BaseGameScene {
                         int bx = px + c;
                         int by = ghostY + r;
                         if (bx >= 0 && bx < w && by >= 0 && by < h) {
-                            CellView cell = (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
+                            CellView cell =
+                                    (CellView) getNodeByRowColumnIndex(by + 1, bx + 1, boardGrid);
                             if (cell != null) {
                                 // 고스트 블록은 반투명하게 표시
                                 cell.setBlock("", "block-ghost", "tetris-ghost-text");

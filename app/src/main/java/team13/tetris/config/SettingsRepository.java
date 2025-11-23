@@ -26,7 +26,9 @@ public class SettingsRepository {
             System.out.println("[SettingsRepository] No settings.json found, using defaults");
             return new Settings();
         } catch (JsonSyntaxException e) {
-            System.err.println("[SettingsRepository] Corrupted settings.json, using defaults: " + e.getMessage());
+            System.err.println(
+                    "[SettingsRepository] Corrupted settings.json, using defaults: "
+                            + e.getMessage());
             return new Settings();
         }
     }

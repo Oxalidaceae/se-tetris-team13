@@ -6,13 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-// GameEngine Piece Movement 테스트: Tests piece movement (left, right, rotate), wall-kick, and collision handling
+// GameEngine Piece Movement 테스트: Tests piece movement (left, right, rotate), wall-kick, and
+// collision handling
 @DisplayName("GameEngine 조각 이동 테스트")
 public class GameEnginePieceMovementTest {
 
@@ -28,7 +28,9 @@ public class GameEnginePieceMovementTest {
         public void onScoreChanged(int score) {}
 
         @Override
-        public void onBoardUpdated(Board board) { boardUpdated = true; }
+        public void onBoardUpdated(Board board) {
+            boardUpdated = true;
+        }
 
         @Override
         public void onLinesCleared(int lines) {}
@@ -42,7 +44,9 @@ public class GameEnginePieceMovementTest {
         @Override
         public void onNextPiece(Tetromino piece) {}
 
-        void reset() { boardUpdated = false; }
+        void reset() {
+            boardUpdated = false;
+        }
     }
 
     @BeforeEach
@@ -318,18 +322,16 @@ public class GameEnginePieceMovementTest {
     @DisplayName("WEIGHT 아이템: 회전 불가")
     void testWeightItemCannotRotate() {
         // WEIGHT 아이템 생성
-        GameEngine itemEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.ITEM);
+        GameEngine itemEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.ITEM);
         itemEngine.startNewGame();
 
         // WEIGHT 아이템을 직접 테스트하기 위해 Tetromino 확인
         // Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
-        Tetromino weightItem = Tetromino.item(
-            Tetromino.Kind.WEIGHT,
-            0,
-            Tetromino.ItemType.WEIGHT,
-            0
-        );
-        
+        Tetromino weightItem =
+                Tetromino.item(Tetromino.Kind.WEIGHT, 0, Tetromino.ItemType.WEIGHT, 0);
+
         assertFalse(weightItem.canRotate(), "WEIGHT 아이템은 회전할 수 없어야 함");
 
         itemEngine.shutdown();
@@ -341,8 +343,7 @@ public class GameEnginePieceMovementTest {
     void testMoveLeftWithNullCurrent() {
         // 게임오버 상태로 만들어 current를 null로 설정
         for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < board.getWidth(); col++)
-                board.setCell(col, row, 1);
+            for (int col = 0; col < board.getWidth(); col++) board.setCell(col, row, 1);
         }
         engine.hardDrop(); // 게임오버 트리거
 
@@ -354,8 +355,7 @@ public class GameEnginePieceMovementTest {
     void testMoveRightWithNullCurrent() {
         // 게임오버 상태로 만들어 current를 null로 설정
         for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < board.getWidth(); col++)
-                board.setCell(col, row, 1);
+            for (int col = 0; col < board.getWidth(); col++) board.setCell(col, row, 1);
         }
         engine.hardDrop(); // 게임오버 트리거
 
@@ -367,8 +367,7 @@ public class GameEnginePieceMovementTest {
     void testRotateWithNullCurrent() {
         // 게임오버 상태로 만들어 current를 null로 설정
         for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < board.getWidth(); col++)
-                board.setCell(col, row, 1);
+            for (int col = 0; col < board.getWidth(); col++) board.setCell(col, row, 1);
         }
         engine.hardDrop(); // 게임오버 트리거
 

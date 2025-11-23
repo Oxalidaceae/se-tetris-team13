@@ -1,16 +1,17 @@
 package team13.tetris.game.logic;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-// GameEngine Drop 테스트: Tests soft drop and hard drop functionality, scoring, and auto-drop scheduling
+// GameEngine Drop 테스트: Tests soft drop and hard drop functionality, scoring, and auto-drop
+// scheduling
 @DisplayName("GameEngine Drop 테스트")
 public class GameEngineDropTest {
 
@@ -24,7 +25,9 @@ public class GameEngineDropTest {
         int boardUpdatedCount = 0;
 
         @Override
-        public void onScoreChanged(int newScore) { scoreChangedCount++; }
+        public void onScoreChanged(int newScore) {
+            scoreChangedCount++;
+        }
 
         @Override
         public void onGameOver() {}
@@ -33,7 +36,9 @@ public class GameEngineDropTest {
         public void onPieceSpawned(Tetromino piece, int x, int y) {}
 
         @Override
-        public void onBoardUpdated(Board board) { boardUpdatedCount++; }
+        public void onBoardUpdated(Board board) {
+            boardUpdatedCount++;
+        }
 
         @Override
         public void onLinesCleared(int linesCleared) {}
@@ -58,7 +63,9 @@ public class GameEngineDropTest {
 
     @AfterEach
     void tearDown() {
-        if (engine != null) { engine.shutdown(); }
+        if (engine != null) {
+            engine.shutdown();
+        }
     }
 
     @Test
@@ -77,7 +84,8 @@ public class GameEngineDropTest {
     @DisplayName("softDrop: 바닥 충돌 시 조각이 고정되고 false를 반환해야 함")
     void testSoftDropBottomCollision() {
         // 조각을 바닥 근처로 이동
-        while (board.fits(engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1)) {
+        while (board.fits(
+                engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1)) {
             engine.softDrop();
         }
 
@@ -95,7 +103,8 @@ public class GameEngineDropTest {
         for (int x = 0; x < board.getWidth(); x++) board.setCell(x, 19, 1);
 
         // 조각을 충돌 위치로 이동
-        while (board.fits(engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1))
+        while (board.fits(
+                engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1))
             engine.softDrop();
 
         Tetromino beforeDrop = engine.getCurrent();
@@ -175,7 +184,8 @@ public class GameEngineDropTest {
     @DisplayName("hardDrop: 0칸 떨어질 때는 점수가 추가되지 않아야 함")
     void testHardDropNoDistanceNoScore() {
         // 조각을 바닥까지 이동
-        while (board.fits(engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1)) {
+        while (board.fits(
+                engine.getCurrent().getShape(), engine.getPieceX(), engine.getPieceY() + 1)) {
             engine.softDrop();
         }
 
@@ -192,9 +202,11 @@ public class GameEngineDropTest {
     void testHardDropWithNullCurrent() {
         GameEngine newEngine = new GameEngine(board, listener);
 
-        assertDoesNotThrow(() -> {
-            newEngine.hardDrop();
-        }, "current가 null이어도 예외가 발생하지 않아야 함");
+        assertDoesNotThrow(
+                () -> {
+                    newEngine.hardDrop();
+                },
+                "current가 null이어도 예외가 발생하지 않아야 함");
     }
 
     @Test
@@ -209,7 +221,8 @@ public class GameEngineDropTest {
         Thread.sleep(1200);
 
         // Y 좌표가 변경되었거나 새 조각이 생성되었을 것
-        assertTrue(engine.getPieceY() > initialY || engine.getPieceY() == 0, "자동 하강으로 인해 조각이 이동했어야 함");
+        assertTrue(
+                engine.getPieceY() > initialY || engine.getPieceY() == 0, "자동 하강으로 인해 조각이 이동했어야 함");
     }
 
     @Test
@@ -230,11 +243,13 @@ public class GameEngineDropTest {
     @Test
     @DisplayName("startAutoDrop: 중복 호출해도 안전해야 함")
     void testStartAutoDropMultipleTimes() {
-        assertDoesNotThrow(() -> {
-            engine.startAutoDrop();
-            engine.startAutoDrop();
-            engine.startAutoDrop();
-        }, "중복 호출 시 예외가 발생하지 않아야 함");
+        assertDoesNotThrow(
+                () -> {
+                    engine.startAutoDrop();
+                    engine.startAutoDrop();
+                    engine.startAutoDrop();
+                },
+                "중복 호출 시 예외가 발생하지 않아야 함");
     }
 
     @Test
@@ -242,9 +257,11 @@ public class GameEngineDropTest {
     void testStopAutoDropWithoutStart() {
         GameEngine newEngine = new GameEngine(board, listener);
 
-        assertDoesNotThrow(() -> {
-            newEngine.stopAutoDrop();
-        }, "시작하지 않은 상태에서도 예외가 발생하지 않아야 함");
+        assertDoesNotThrow(
+                () -> {
+                    newEngine.stopAutoDrop();
+                },
+                "시작하지 않은 상태에서도 예외가 발생하지 않아야 함");
 
         newEngine.shutdown();
     }
@@ -260,13 +277,19 @@ public class GameEngineDropTest {
     @Test
     @DisplayName("setDropIntervalSeconds: 음수나 0은 허용되지 않아야 함")
     void testSetDropIntervalSecondsInvalid() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            engine.setDropIntervalSeconds(0);
-        }, "0은 허용되지 않아야 함");
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    engine.setDropIntervalSeconds(0);
+                },
+                "0은 허용되지 않아야 함");
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            engine.setDropIntervalSeconds(-1.0);
-        }, "음수는 허용되지 않아야 함");
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    engine.setDropIntervalSeconds(-1.0);
+                },
+                "음수는 허용되지 않아야 함");
     }
 
     @Test
@@ -277,9 +300,11 @@ public class GameEngineDropTest {
         engine.shutdown();
 
         // shutdown 후에는 새로운 작업이 예약되지 않아야 함
-        assertDoesNotThrow(() -> {
-            engine.shutdown(); // 중복 호출해도 안전
-        }, "shutdown 중복 호출 시 예외가 발생하지 않아야 함");
+        assertDoesNotThrow(
+                () -> {
+                    engine.shutdown(); // 중복 호출해도 안전
+                },
+                "shutdown 중복 호출 시 예외가 발생하지 않아야 함");
     }
 
     @Test

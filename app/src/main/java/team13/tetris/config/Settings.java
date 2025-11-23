@@ -9,7 +9,7 @@ public class Settings {
     private String keyRotate = "W";
     private String keyDrop = "SPACE";
     private String pause = "ESCAPE";
-    
+
     // Player 2 키 설정 (충돌 방지를 위해 다른 키 사용)
     private String keyLeftP2 = "LEFT";
     private String keyRightP2 = "RIGHT";
@@ -136,7 +136,7 @@ public class Settings {
         if (key == null || key.trim().isEmpty()) return false;
 
         key = key.toUpperCase();
-        
+
         return key.equals(keyLeft.toUpperCase())
                 || key.equals(keyRight.toUpperCase())
                 || key.equals(keyDown.toUpperCase())
@@ -157,7 +157,7 @@ public class Settings {
         setKeyRotate("W");
         setKeyDrop("SPACE");
         setPause("ESCAPE");
-        
+
         // Player 2 키도 기본값으로 복원
         setKeyLeftP2("LEFT");
         setKeyRightP2("RIGHT");
