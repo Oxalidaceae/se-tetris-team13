@@ -23,7 +23,7 @@ class NetworkGameControllerTest {
         settings = new Settings();
         // SceneManager는 JavaFX Stage가 필요하므로 null로 생성하거나 생략
         sceneManager = null; // 실제 UI 테스트가 아니므로 null로 처리
-        
+
         // 실제 테스트에서는 null SceneManager로도 동작하도록 구현되어야 함
         controller = new NetworkGameController(sceneManager, settings, true, "127.0.0.1");
     }
@@ -62,12 +62,12 @@ class NetworkGameControllerTest {
             controller.onError("Test error");
             controller.onGameModeSelected(GameModeMessage.GameMode.NORMAL);
         }, "ClientMessageListener 메서드들은 안전해야 함");
-        
+
         // JavaFX Platform.runLater 사용 메서드들은 IllegalStateException 발생
         assertThrows(IllegalStateException.class, () -> {
             controller.onConnectionRejected("Test reason");
         }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
-        
+
         assertThrows(IllegalStateException.class, () -> {
             controller.onPlayerReady("TestPlayer");
         }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
@@ -79,7 +79,7 @@ class NetworkGameControllerTest {
         assertDoesNotThrow(() -> {
             controller.onClientDisconnected("TestClient");
         }, "ServerMessageListener 메서드들은 안전해야 함");
-        
+
         // JavaFX Platform.runLater 사용 메서드는 IllegalStateException 발생
         assertThrows(IllegalStateException.class, () -> {
             controller.onClientConnected("TestClient");
@@ -90,8 +90,9 @@ class NetworkGameControllerTest {
     @DisplayName("보드 업데이트 메시지 처리 테스트")
     void testBoardUpdateMessage() {
         int[][] testBoard = new int[20][10];
-        BoardUpdateMessage message = new BoardUpdateMessage("TestPlayer", testBoard, 1, 2, 3, 4, 5, null, 6, 7, 8);
-        
+        BoardUpdateMessage message = new BoardUpdateMessage("TestPlayer", testBoard, 1, 2, 3, 4, false, null, -1, 5,
+                false, null, -1, null, 6, 7, 8);
+
         assertDoesNotThrow(() -> {
             controller.onBoardUpdate(message);
         }, "보드 업데이트 메시지 처리는 안전해야 함");
@@ -101,7 +102,7 @@ class NetworkGameControllerTest {
     @DisplayName("공격 메시지 처리 테스트")
     void testAttackMessage() {
         AttackMessage message = new AttackMessage("TestPlayer", 2, 2, null);
-        
+
         assertDoesNotThrow(() -> {
             controller.onAttackReceived(message);
         }, "공격 메시지 처리는 안전해야 함");
@@ -124,7 +125,7 @@ class NetworkGameControllerTest {
             controller.onGamePaused();
             controller.onGameResumed();
         }, "게임 시작 전 상태에서 메시지 처리는 안전해야 함");
-        
+
         // JavaFX 의존성이 있는 메서드는 예외 발생
         assertThrows(IllegalStateException.class, () -> {
             controller.onPlayerReady("TestPlayer");
@@ -139,12 +140,12 @@ class NetworkGameControllerTest {
             controller.onError(null);
             controller.onBoardUpdate(null);
         }, "null 파라미터 처리는 안전해야 함");
-        
+
         // JavaFX 의존성이 있는 메서드는 IllegalStateException 발생
         assertThrows(IllegalStateException.class, () -> {
             controller.onConnectionRejected(null);
         }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
-        
+
         // onAttackReceived는 null 체크가 없어서 NullPointerException 발생
         assertThrows(NullPointerException.class, () -> {
             controller.onAttackReceived(null);

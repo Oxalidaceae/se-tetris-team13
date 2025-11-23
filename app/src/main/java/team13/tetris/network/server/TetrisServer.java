@@ -531,7 +531,9 @@ public class TetrisServer {
     
     // 호스트의 보드 상태를 클라이언트에게 전송 (다음 블록, incoming blocks 포함)
     public boolean sendHostBoardUpdate(int[][] board, int pieceX, int pieceY,
-                                      int pieceType, int pieceRotation, int nextPieceType,
+                                      int pieceType, int pieceRotation,
+                                      boolean pieceIsItem, String pieceItemType, int pieceItemBlockIndex,
+                                      int nextPieceType, boolean nextIsItem, String nextItemType, int nextItemBlockIndex,
                                       java.util.Queue<int[][]> incomingBlocks,
                                       int score, int lines, int level) {
         if (!gameInProgress) {
@@ -539,7 +541,9 @@ public class TetrisServer {
         }
         
         BoardUpdateMessage boardMsg = new BoardUpdateMessage(hostPlayerId, board, pieceX, pieceY,
-                                                            pieceType, pieceRotation, nextPieceType,
+                                                            pieceType, pieceRotation,
+                                                            pieceIsItem, pieceItemType, pieceItemBlockIndex,
+                                                            nextPieceType, nextIsItem, nextItemType, nextItemBlockIndex,
                                                             incomingBlocks, score, lines, level);
         broadcastMessage(boardMsg);
         return true;

@@ -236,7 +236,9 @@ public class TetrisClient {
     
     // 보드 상태 업데이트 전송
     public boolean sendBoardUpdate(int[][] board, int pieceX, int pieceY,
-                                  int pieceType, int pieceRotation, int nextPieceType,
+                                  int pieceType, int pieceRotation,
+                                  boolean pieceIsItem, String pieceItemType, int pieceItemBlockIndex,
+                                  int nextPieceType, boolean nextIsItem, String nextItemType, int nextItemBlockIndex,
                                   java.util.Queue<int[][]> incomingBlocks,
                                   int score, int lines, int level) {
         if (!gameStarted) {
@@ -244,7 +246,9 @@ public class TetrisClient {
         }
 
         BoardUpdateMessage boardMsg = new BoardUpdateMessage(playerId, board, pieceX, pieceY,
-                                                            pieceType, pieceRotation, nextPieceType,
+                                                            pieceType, pieceRotation,
+                                                            pieceIsItem, pieceItemType, pieceItemBlockIndex,
+                                                            nextPieceType, nextIsItem, nextItemType, nextItemBlockIndex,
                                                             incomingBlocks, score, lines, level);
         return sendMessage(boardMsg);
     }
