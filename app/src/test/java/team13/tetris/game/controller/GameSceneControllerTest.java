@@ -851,4 +851,172 @@ public class GameSceneControllerTest {
 		assertEquals(0, testEngine.startAutoDropCalled, "첫 번째 컨트롤러는 시작되지 않음");
 		assertEquals(0, engine2.stopAutoDropCalled, "두 번째 컨트롤러는 일시정지되지 않음");
 	}
+
+	@Test
+	@DisplayName("이미 일시정지된 상태에서 pause 재호출 시 무시")
+	void testPauseWhenAlreadyPaused() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field pausedField = GameSceneController.class.getDeclaredField("paused");
+		pausedField.setAccessible(true);
+		
+		// 강제로 paused 상태로 설정 (JavaFX 없이)
+		pausedField.set(controller, true);
+		testEngine.reset();
+		
+		// when - 이미 일시정지된 상태에서 pause 재호출
+		try {
+			controller.pause();
+		} catch (Exception e) {
+			// JavaFX 예외 무시
+		}
+		
+		// then - pause 조건 (!paused)에 걸려서 stopAutoDrop이 호출되지 않아야 함
+		assertEquals(0, testEngine.stopAutoDropCalled, "이미 일시정지된 상태에서는 stopAutoDrop이 호출되지 않음");
+	}
+
+	@Test
+	@DisplayName("게임오버 상태에서 resume 시도 시 무시")
+	void testResumeWhenGameOver() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field gameOverField = GameSceneController.class.getDeclaredField("gameOver");
+		gameOverField.setAccessible(true);
+		Field pausedField = GameSceneController.class.getDeclaredField("paused");
+		pausedField.setAccessible(true);
+		
+		// 강제로 게임오버 상태로 설정 (JavaFX 없이)
+		gameOverField.set(controller, true);
+		pausedField.set(controller, true); // 일시정지도 설정
+		testEngine.reset();
+		
+		// when - 게임오버 상태에서 resume 시도
+		controller.resume();
+		
+		// then - resume 조건 (!gameOver)에 걸려서 startAutoDrop이 호출되지 않아야 함
+		assertEquals(0, testEngine.startAutoDropCalled, "게임오버 상태에서는 startAutoDrop이 호출되지 않음");
+	}
+
+	@Test
+	@DisplayName("일시정지되지 않은 상태에서 resume 시도 시 무시")
+	void testResumeWhenNotPaused() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field pausedField = GameSceneController.class.getDeclaredField("paused");
+		pausedField.setAccessible(true);
+		
+		// paused는 false인 상태 (초기 상태)
+		assertFalse((Boolean) pausedField.get(controller), "초기에는 일시정지 상태가 아님");
+		testEngine.reset();
+		
+		// when - 일시정지되지 않은 상태에서 resume 시도
+		controller.resume();
+		
+		// then - resume 조건 (paused)에 걸려서 startAutoDrop이 호출되지 않아야 함
+		assertEquals(0, testEngine.startAutoDropCalled, "일시정지되지 않은 상태에서는 startAutoDrop이 호출되지 않음");
+	}
+
+	@Test
+	@DisplayName("hardDrop throttling - 정확히 100ms 경계 테스트")
+	void testHardDropThrottlingBoundary() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field lastHardDropTimeField = GameSceneController.class.getDeclaredField("lastHardDropTime");
+		lastHardDropTimeField.setAccessible(true);
+		
+		// when - 첫 번째 하드드롭
+		controller.hardDrop();
+		assertEquals(1, testEngine.hardDropCalled, "첫 번째 하드드롭 실행");
+		
+		// 강제로 99ms 전 시간으로 설정 (throttling 범위 내)
+		lastHardDropTimeField.set(controller, System.currentTimeMillis() - 99);
+		testEngine.reset();
+		
+		// when - 99ms 후 시도 (throttling 적용되어야 함)
+		controller.hardDrop();
+		
+		// then
+		assertEquals(0, testEngine.hardDropCalled, "99ms 이내에는 throttling 적용");
+		
+		// 강제로 100ms 전 시간으로 설정 (throttling 범위 밖)
+		lastHardDropTimeField.set(controller, System.currentTimeMillis() - 100);
+		testEngine.reset();
+		
+		// when - 100ms 후 시도 (throttling 해제되어야 함)
+		controller.hardDrop();
+		
+		// then
+		assertEquals(1, testEngine.hardDropCalled, "100ms 이후에는 throttling 해제");
+	}
+
+	@Test
+	@DisplayName("게임오버 상태에서 이동 명령 무시 확인")
+	void testMovementBlockedWhenGameOver() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field gameOverField = GameSceneController.class.getDeclaredField("gameOver");
+		gameOverField.setAccessible(true);
+		
+		// 강제로 게임오버 상태로 설정
+		gameOverField.set(controller, true);
+		testEngine.reset();
+		
+		// when - 게임오버 상태에서 모든 이동 명령 시도
+		controller.moveLeft();
+		controller.moveRight();
+		controller.softDrop();
+		controller.hardDrop();
+		controller.rotateCW();
+		
+		// then - 모든 명령이 무시되어야 함
+		assertEquals(0, testEngine.moveLeftCalled, "게임오버 시 moveLeft 무시");
+		assertEquals(0, testEngine.moveRightCalled, "게임오버 시 moveRight 무시");
+		assertEquals(0, testEngine.softDropCalled, "게임오버 시 softDrop 무시");
+		assertEquals(0, testEngine.hardDropCalled, "게임오버 시 hardDrop 무시");
+		assertEquals(0, testEngine.rotateCWCalled, "게임오버 시 rotateCW 무시");
+	}
+
+	@Test
+	@DisplayName("onLinesCleared 호출 시 totalLinesCleared 증가 및 속도 업데이트")
+	void testOnLinesClearedUpdatesTotal() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field totalLinesClearedField = GameSceneController.class.getDeclaredField("totalLinesCleared");
+		totalLinesClearedField.setAccessible(true);
+		
+		// when & then - 첫 번째 라인 클리어 (GameScene이 null이므로 NPE 발생)
+		assertThrows(NullPointerException.class, () -> controller.onLinesCleared(1));
+		assertEquals(1, (int) totalLinesClearedField.get(controller), "totalLinesCleared가 1 증가");
+		assertEquals(1, testEngine.updateSpeedCalled, "속도 업데이트 호출");
+		
+		testEngine.reset();
+		
+		// when & then - 두 번째 라인 클리어
+		assertThrows(NullPointerException.class, () -> controller.onLinesCleared(3));
+		assertEquals(4, (int) totalLinesClearedField.get(controller), "totalLinesCleared가 누적되어 4");
+		assertEquals(1, testEngine.updateSpeedCalled, "속도 업데이트 다시 호출");
+	}
+
+	@Test
+	@DisplayName("onGameOver 호출 시 paused 상태가 false로 리셋")
+	void testOnGameOverResetsPausedState() throws Exception {
+		// given
+		controller.setEngine(testEngine);
+		Field pausedField = GameSceneController.class.getDeclaredField("paused");
+		pausedField.setAccessible(true);
+		Field gameOverField = GameSceneController.class.getDeclaredField("gameOver");
+		gameOverField.setAccessible(true);
+		
+		// 강제로 일시정지 상태로 설정
+		pausedField.set(controller, true);
+		assertTrue((Boolean) pausedField.get(controller), "일시정지 상태");
+		
+		// when - 게임오버 (GameScene이 null이므로 NPE 발생)
+		assertThrows(NullPointerException.class, () -> controller.onGameOver());
+		
+		// then - paused가 false로 리셋되어야 함
+		assertFalse((Boolean) pausedField.get(controller), "게임오버 시 paused가 false로 리셋");
+		assertTrue((Boolean) gameOverField.get(controller), "게임오버 상태는 true");
+		assertEquals(1, testEngine.stopAutoDropCalled, "자동하강 중지 호출");
+	}
 }
