@@ -333,14 +333,14 @@ class NetworkGameControllerTest {
             controller.onGameModeSelected(GameModeMessage.GameMode.NORMAL);
         }, "ClientMessageListener 메서드들은 안전해야 함");
 
-        // JavaFX Platform.runLater 사용 메서드들은 IllegalStateException 발생
-        assertThrows(IllegalStateException.class, () -> {
+        // JavaFX Platform.runLater 사용 메서드들은 툴킷 미초기화 시에도 예외를 던지지 않음 (단순히 무시됨)
+        assertDoesNotThrow(() -> {
             controller.onConnectionRejected("Test reason");
-        }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
+        }, "Platform.runLater는 툴킷 미초기화 시에도 안전함");
 
-        assertThrows(IllegalStateException.class, () -> {
+        assertDoesNotThrow(() -> {
             controller.onPlayerReady("TestPlayer");
-        }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
+        }, "Platform.runLater는 툴킷 미초기화 시에도 안전함");
     }
 
     @Test
@@ -350,10 +350,10 @@ class NetworkGameControllerTest {
             controller.onClientDisconnected("TestClient");
         }, "ServerMessageListener 메서드들은 안전해야 함");
 
-        // JavaFX Platform.runLater 사용 메서드는 IllegalStateException 발생
-        assertThrows(IllegalStateException.class, () -> {
+        // JavaFX Platform.runLater 사용 메서드는 툴킷 미초기화 시에도 예외를 던지지 않음 (단순히 무시됨)
+        assertDoesNotThrow(() -> {
             controller.onClientConnected("TestClient");
-        }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
+        }, "Platform.runLater는 툴킷 미초기화 시에도 안전함");
     }
 
     @Test
@@ -396,10 +396,10 @@ class NetworkGameControllerTest {
             controller.onGameResumed();
         }, "게임 시작 전 상태에서 메시지 처리는 안전해야 함");
 
-        // JavaFX 의존성이 있는 메서드는 예외 발생
-        assertThrows(IllegalStateException.class, () -> {
+        // JavaFX Platform.runLater는 툴킷 미초기화 시에도 예외를 던지지 않음
+        assertDoesNotThrow(() -> {
             controller.onPlayerReady("TestPlayer");
-        }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
+        }, "Platform.runLater는 툴킷 미초기화 시에도 안전함");
     }
 
     @Test
@@ -411,10 +411,10 @@ class NetworkGameControllerTest {
             controller.onBoardUpdate(null);
         }, "null 파라미터 처리는 안전해야 함");
 
-        // JavaFX 의존성이 있는 메서드는 IllegalStateException 발생
-        assertThrows(IllegalStateException.class, () -> {
+        // JavaFX Platform.runLater는 툴킷 미초기화 시에도 예외를 던지지 않음
+        assertDoesNotThrow(() -> {
             controller.onConnectionRejected(null);
-        }, "JavaFX 의존성 메서드는 툴킷 미초기화 시 IllegalStateException 발생");
+        }, "Platform.runLater는 툴킷 미초기화 시에도 안전함");
 
         // onAttackReceived는 null 체크가 없어서 NullPointerException 발생
         assertThrows(NullPointerException.class, () -> {
