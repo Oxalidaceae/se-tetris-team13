@@ -16,8 +16,9 @@ plugins {
 
 spotless {
     java {
-        googleJavaFormat()
+        googleJavaFormat('1.17.0')
             .aosp() // 4-space indentation
+        lineEndings 'UNIX'
     }
 }
 
