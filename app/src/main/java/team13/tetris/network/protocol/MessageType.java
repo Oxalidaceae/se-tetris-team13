@@ -26,6 +26,9 @@ public enum MessageType {
     RESUME, // 게임 재개
     GAME_OVER, // 게임 오버
 
+    // 채팅
+    CHAT, // 채팅 메시지
+
     // 시스템 메시지
     ERROR // 오류 메시지
 }

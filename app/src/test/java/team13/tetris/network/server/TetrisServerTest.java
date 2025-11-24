@@ -325,6 +325,11 @@ class TetrisServerTest {
             // 테스트용 구현
         }
 
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // 테스트용 구현
+        }
+
         public String getLastClientId() {
             return lastClientId;
         }

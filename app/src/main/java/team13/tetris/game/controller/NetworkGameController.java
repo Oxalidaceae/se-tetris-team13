@@ -119,6 +119,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 준비 버튼 핸들러
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
 
+        // 채팅 전송 버튼 핸들러
+        lobbyScene.setOnSendChatCallback(this::handleSendChat);
+
         // Cancel 버튼 핸들러
         lobbyScene.setOnCancelCallback(this::disconnect);
 
@@ -194,6 +197,22 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 client.requestUnready();
             }
         }
+    }
+
+    // 채팅 전송 처리
+    private void handleSendChat() {
+        String message = lobbyScene.getChatInput().trim();
+        if (message.isEmpty()) {
+            return;
+        }
+
+        if (isHost && server != null) {
+            server.sendChatMessage(message);
+        } else if (!isHost && client != null) {
+            client.sendChatMessage(message);
+        }
+
+        lobbyScene.clearChatInput();
     }
 
     // 게임 시작
@@ -905,6 +924,14 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     // 네트워크 정리 및 메인 메뉴로 복귀
                     cleanupAndReturnToMenu();
                 });
+    }
+
+    @Override
+    public void onChatMessageReceived(String senderId, String message) {
+        // 로비 씬에 채팅 메시지 표시
+        if (lobbyScene != null) {
+            lobbyScene.appendChatMessage(senderId, message);
+        }
     }
 
     // ServerMessageListener 구현

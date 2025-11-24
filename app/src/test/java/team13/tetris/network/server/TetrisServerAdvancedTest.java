@@ -364,6 +364,11 @@ class TetrisServerAdvancedTest {
             // 필요시 구현
         }
 
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // 필요시 구현
+        }
+
         public boolean waitForClientConnected(long timeoutMs) throws InterruptedException {
             return clientConnected.await(timeoutMs, TimeUnit.MILLISECONDS);
         }
@@ -499,6 +504,11 @@ class TetrisServerAdvancedTest {
 
         @Override
         public void onServerDisconnected(String reason) {
+            // Test implementation
+        }
+
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
             // Test implementation
         }
     }
