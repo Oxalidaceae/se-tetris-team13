@@ -60,6 +60,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     private boolean itemMode = false;
     private boolean timerMode = false;
     private boolean myReady = false;
+    // 내가 직접 퍼즈를 걸었는지 여부 (true면 풀 메뉴 표시, false면 단순 안내)
+    private boolean pauseInitiatedByMe = false;
 
     // 카운트다운
     private Timeline countdownTimeline;
@@ -484,7 +486,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (!gameStarted || myEngine == null) return;
 
         if (!paused) {
-            // 로컬 먼저 멈추고 네트워크로 PAUSE 전파
+            // 내가 퍼즈 시작
+            pauseInitiatedByMe = true;
             applyLocalPause();
             sendPauseToNetwork();
         } else {
@@ -495,6 +498,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // Pause 창 참조를 저장할 필드 추가
     private Stage pauseDialog = null;
+    // 상대가 건 퍼즈일 때 보여줄 단순 안내창
+    private Stage remotePauseDialog = null;
 
     private void applyLocalPause() {
         if (paused) return;
@@ -509,9 +514,19 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (networkCheckExecutor != null && !networkCheckExecutor.isShutdown()) {
             networkCheckExecutor.shutdownNow();
         }
-        // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
-        // Pause UI 표시
-        showPauseWindow();
+        // 내가 퍼즈를 건 경우 전체 메뉴, 아니면 단순 안내
+        if (pauseInitiatedByMe) {
+            showPauseWindow();
+        } else {
+            showRemotePauseWindow();
+        }
+    }
+
+    // 상대방이 퍼즈를 건 경우 호출 (단순 안내)
+    private void applyRemotePause() {
+        if (paused) return;
+        pauseInitiatedByMe = false;
+        applyLocalPause(); // 내부에서 pauseInitiatedByMe에 따라 창 선택
     }
 
     private void applyLocalResume() {
@@ -522,6 +537,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (pauseDialog != null && pauseDialog.isShowing()) {
             pauseDialog.close();
             pauseDialog = null;
+        }
+        if (remotePauseDialog != null && remotePauseDialog.isShowing()) {
+            remotePauseDialog.close();
+            remotePauseDialog = null;
         }
 
         if (myEngine != null) {
@@ -534,6 +553,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (gameStarted) {
             startNetworkStabilityCheck();
         }
+        pauseInitiatedByMe = false;
     }
 
     private void sendPauseToNetwork() {
@@ -864,7 +884,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     @Override
     public void onGamePaused() {
-        Platform.runLater(this::applyLocalPause);
+        // 상대가 퍼즈: 단순 안내만 표시
+        Platform.runLater(this::applyRemotePause);
     }
 
     @Override
@@ -1133,6 +1154,29 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     pauseDialog.setWidth(220);
                     pauseDialog.setHeight(150);
                     pauseDialog.showAndWait();
+                });
+    }
+
+    // 상대가 건 퍼즈에 대해 단순 Paused 안내창 표시
+    private void showRemotePauseWindow() {
+        Platform.runLater(
+                () -> {
+                    if (remotePauseDialog != null && remotePauseDialog.isShowing()) return;
+                    remotePauseDialog = new Stage();
+                    remotePauseDialog.initModality(Modality.NONE);
+                    remotePauseDialog.initOwner(gameScene.getScene().getWindow());
+                    Label pausedLabel = new Label("Paused");
+                    pausedLabel.getStyleClass().add("pause-option");
+                    VBox box = new VBox(12, pausedLabel);
+                    box.setAlignment(Pos.CENTER);
+                    box.getStyleClass().add("pause-box");
+                    Scene dialogScene = new Scene(box, 160, 80);
+                    dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+                    remotePauseDialog.setScene(dialogScene);
+                    remotePauseDialog.setTitle("Paused");
+                    remotePauseDialog.setResizable(false);
+                    remotePauseDialog.setOnCloseRequest(e -> remotePauseDialog = null);
+                    remotePauseDialog.show();
                 });
     }
 
