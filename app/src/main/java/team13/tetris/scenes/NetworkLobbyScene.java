@@ -213,6 +213,7 @@ public class NetworkLobbyScene {
                         buttonBox);
 
         scene = new Scene(root);
+        manager.enableArrowAsTab(scene); 
     }
 
     public Scene getScene() {
