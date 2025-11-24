@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -151,16 +150,9 @@ public class NetworkLobbyScene {
         chatArea = new TextArea();
         chatArea.setEditable(false);
         chatArea.setWrapText(true);
-        chatArea.setPrefHeight(200);
-        chatArea.setMaxHeight(200);
+        chatArea.setPrefHeight(300);
         chatArea.getStyleClass().add("text-area");
         chatArea.setFocusTraversable(false);
-
-        ScrollPane chatScrollPane = new ScrollPane(chatArea);
-        chatScrollPane.setFitToWidth(true);
-        chatScrollPane.setPrefHeight(200);
-        chatScrollPane.setMaxHeight(200);
-        chatScrollPane.setFocusTraversable(false);
 
         chatInput = new TextField();
         chatInput.setPromptText("Please enter a message");
@@ -179,7 +171,7 @@ public class NetworkLobbyScene {
         HBox.setHgrow(chatInput, Priority.ALWAYS);
         chatInputBox.getChildren().addAll(chatInput, chatSendButton);
 
-        chatBox.getChildren().addAll(chatTitleLabel, chatScrollPane, chatInputBox);
+        chatBox.getChildren().addAll(chatTitleLabel, chatArea, chatInputBox);
 
         // 준비 버튼
         readyButton = new Button("Start");
@@ -207,7 +199,6 @@ public class NetworkLobbyScene {
                         gameModeBox,
                         new Label(), // 간격
                         readyBox,
-                        new Label(), // 간격
                         chatBox,
                         new Label(), // 간격
                         buttonBox);
@@ -296,7 +287,7 @@ public class NetworkLobbyScene {
                 () -> {
                     chatArea.appendText(senderId + ": " + message + "\n");
                     // 자동 스크롤 (가장 최근 메시지로)
-                    chatArea.setScrollTop(Double.MAX_VALUE);
+                    chatArea.positionCaret(chatArea.getLength()-1);
                 });
     }
 
