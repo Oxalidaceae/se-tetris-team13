@@ -540,6 +540,7 @@ public class SettingsTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("설정 값 불변성 테스트")
     void testSettingsImmutability() {
         String originalKey = settings.getKeyLeft();

@@ -39,6 +39,9 @@ dependencies {
     // Mockito for mocking in tests
     testImplementation 'org.mockito:mockito-core:5.11.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+
+    testImplementation 'org.testfx:testfx-core:4.0.16-alpha'
+    testImplementation 'org.testfx:testfx-junit5:4.0.16-alpha'
 }
 
 testing {
@@ -89,14 +92,28 @@ tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
     useJUnitPlatform()
     
+    // OS 감지 - Linux CI 환경과 Windows 로컬 환경 구분
+    def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
+    def isCI = System.getenv('CI') != null
+    
     // JavaFX headless 모드 설정
-    systemProperty 'java.awt.headless', 'true'
+    // Linux/CI 환경에서만 java.awt.headless=true 적용
+    if (isLinux || isCI) {
+        systemProperty 'java.awt.headless', 'true'
+    }
+    
     systemProperty 'testfx.robot', 'glass'
     systemProperty 'testfx.headless', 'true'
     systemProperty 'prism.order', 'sw'
     systemProperty 'prism.text', 't2k'
     systemProperty 'glass.platform', 'Monocle'
     systemProperty 'monocle.platform', 'Headless'
+    
+    // JavaFX 모듈 초기화를 위한 JVM 인자
+    jvmArgs = [
+        '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED',
+        '--add-opens', 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    ]
     
     // Show standard output and error during test execution
     testLogging {
