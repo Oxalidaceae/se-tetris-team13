@@ -310,6 +310,7 @@ class KeyInputHandlerAdvancedTest {
     }
 
     // 테스트용 콜백 구현
+    @SuppressWarnings("unused")
     private static class TestKeyInputCallback implements KeyInputHandler.KeyInputCallback {
         private final AtomicInteger leftCount = new AtomicInteger(0);
         private final AtomicInteger rightCount = new AtomicInteger(0);

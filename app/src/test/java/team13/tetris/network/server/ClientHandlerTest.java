@@ -799,6 +799,7 @@ class ClientHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("isConnected - null socket 처리")
     void testIsConnectedWithNullSocket() throws Exception {
         ClientHandler handler = new ClientHandler(null, mockServer);
