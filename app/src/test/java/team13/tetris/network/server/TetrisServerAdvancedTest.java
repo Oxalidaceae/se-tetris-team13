@@ -376,6 +376,7 @@ class TetrisServerAdvancedTest {
             return lastConnectedClientId;
         }
 
+        @SuppressWarnings("unused")
         public String getLastDisconnectedClientId() {
             return lastDisconnectedClientId;
         }

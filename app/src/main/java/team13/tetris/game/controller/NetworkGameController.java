@@ -452,6 +452,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // 내가 줄을 지웠을 때 상대에게 전송 (더 이상 사용 안 함 - sendAttackPattern 사용)
     @Deprecated
+    @SuppressWarnings("unused")
     private void sendAttack(int clearedLines) {
         if (!gameStarted || clearedLines <= 0) return;
 

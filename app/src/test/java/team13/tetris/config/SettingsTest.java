@@ -360,6 +360,7 @@ public class SettingsTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("잘못된 창 크기 값 설정 테스트")
     void testInvalidWindowSizeValues() {
         String[] invalidSizes = {"small", "medium", "large", "EXTRA_LARGE", "TINY", null, "", "XL"};
@@ -539,6 +540,7 @@ public class SettingsTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("설정 값 불변성 테스트")
     void testSettingsImmutability() {
         String originalKey = settings.getKeyLeft();
