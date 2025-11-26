@@ -46,4 +46,7 @@ public interface ClientMessageListener {
 
     // 게임 모드가 선택되었을 때 호출
     void onGameModeSelected(GameModeMessage.GameMode gameMode);
+
+    // 채팅 메시지를 받았을 때 호출
+    void onChatMessageReceived(String senderId, String message);
 }

@@ -546,6 +546,13 @@ public class TetrisServer {
         }
     }
 
+    // 클라이언트 채팅 메시지를 호스트에게 알림
+    public void notifyHostChatMessage(String senderId, String message) {
+        if (hostMessageListener != null) {
+            hostMessageListener.onChatMessageReceived(senderId, message);
+        }
+    }
+
     // 호스트의 보드 상태를 클라이언트에게 전송 (다음 블록, incoming blocks 포함)
     public boolean sendHostBoardUpdate(
             int[][] board,
@@ -618,6 +625,17 @@ public class TetrisServer {
                 new ConnectionMessage(MessageType.RESUME, hostPlayerId, "Game resumed by host");
         broadcastMessage(resumeMsg);
         return true;
+    }
+
+    // 호스트가 채팅 메시지 전송
+    public void sendChatMessage(String message) {
+        ChatMessage chatMsg = new ChatMessage(hostPlayerId, message);
+        broadcastMessage(chatMsg);
+
+        // 호스트에게도 자신의 메시지를 알림 (에코)
+        if (hostMessageListener != null) {
+            hostMessageListener.onChatMessageReceived(hostPlayerId, message);
+        }
     }
 
     // 호스트가 준비 완료

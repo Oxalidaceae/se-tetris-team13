@@ -426,5 +426,10 @@ class TetrisClientAdvancedTest {
         public void onServerDisconnected(String reason) {
             // Test implementation
         }
+
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // Test implementation
+        }
     }
 }

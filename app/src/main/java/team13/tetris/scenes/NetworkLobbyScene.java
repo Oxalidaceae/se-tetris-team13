@@ -6,7 +6,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import team13.tetris.SceneManager;
@@ -44,6 +47,12 @@ public class NetworkLobbyScene {
 
     private boolean myReady = false;
     private boolean opponentReady = false;
+
+    // 채팅 UI 컴포넌트
+    private TextArea chatArea;
+    private TextField chatInput;
+    private Button chatSendButton;
+    private Runnable onSendChatCallback;
 
     public NetworkLobbyScene(SceneManager manager, Settings settings, boolean isHost) {
         this.manager = manager;
@@ -129,6 +138,41 @@ public class NetworkLobbyScene {
 
         readyBox.getChildren().addAll(readyTitleLabel, myReadyLabel, opponentReadyLabel);
 
+        // 채팅 UI
+        VBox chatBox = new VBox(10);
+        chatBox.setAlignment(Pos.CENTER);
+        chatBox.setPrefWidth(500);
+        chatBox.setMaxWidth(500);
+
+        Label chatTitleLabel = new Label("Chat");
+        chatTitleLabel.getStyleClass().add("label");
+
+        chatArea = new TextArea();
+        chatArea.setEditable(false);
+        chatArea.setWrapText(true);
+        chatArea.setPrefHeight(300);
+        chatArea.getStyleClass().add("text-area");
+        chatArea.setFocusTraversable(false);
+
+        chatInput = new TextField();
+        chatInput.setPromptText("Please enter a message");
+        chatInput.getStyleClass().add("text-field");
+        chatInput.setPrefWidth(400);
+
+        chatSendButton = new Button("Send");
+        chatSendButton.getStyleClass().add("button");
+        chatSendButton.setPrefWidth(80);
+
+        // Enter 키로 전송
+        chatInput.setOnAction(e -> chatSendButton.fire());
+
+        HBox chatInputBox = new HBox(10);
+        chatInputBox.setAlignment(Pos.CENTER);
+        HBox.setHgrow(chatInput, Priority.ALWAYS);
+        chatInputBox.getChildren().addAll(chatInput, chatSendButton);
+
+        chatBox.getChildren().addAll(chatTitleLabel, chatArea, chatInputBox);
+
         // 준비 버튼
         readyButton = new Button("Start");
         readyButton.getStyleClass().add("button");
@@ -155,10 +199,12 @@ public class NetworkLobbyScene {
                         gameModeBox,
                         new Label(), // 간격
                         readyBox,
+                        chatBox,
                         new Label(), // 간격
                         buttonBox);
 
         scene = new Scene(root);
+        manager.enableArrowAsTab(scene); 
     }
 
     public Scene getScene() {
@@ -234,4 +280,36 @@ public class NetworkLobbyScene {
         itemModeButton.setDisable(disabled);
         timerModeButton.setDisable(disabled);
     }
+
+    // 채팅 메시지 추가
+    public void appendChatMessage(String senderId, String message) {
+        Platform.runLater(
+                () -> {
+                    chatArea.appendText(senderId + ": " + message + "\n");
+                    // 자동 스크롤 (가장 최근 메시지로)
+                    chatArea.positionCaret(chatArea.getLength()-1);
+                });
+    }
+
+    // 채팅 입력 필드 가져오기
+    public String getChatInput() {
+        return chatInput.getText();
+    }
+
+    // 채팅 입력 필드 초기화
+    public void clearChatInput() {
+        Platform.runLater(() -> chatInput.clear());
+    }
+
+    // 채팅 전송 버튼에 콜백 설정
+    public void setOnSendChatCallback(Runnable callback) {
+        this.onSendChatCallback = callback;
+        chatSendButton.setOnAction(
+                e -> {
+                    if (onSendChatCallback != null) {
+                        onSendChatCallback.run();
+                    }
+                });
+    }
+
 }

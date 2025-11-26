@@ -494,6 +494,11 @@ class TetrisClientTest {
             // 테스트용 구현
         }
 
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // 테스트용 구현
+        }
+
         public boolean isConnectionAccepted() {
             return connectionAccepted;
         }

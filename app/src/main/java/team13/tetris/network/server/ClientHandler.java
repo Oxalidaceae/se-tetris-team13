@@ -143,6 +143,15 @@ public class ClientHandler implements Runnable {
                 server.broadcastGameOverToOthers(playerId, reason);
             }
 
+            case CHAT -> {
+                if (message instanceof ChatMessage chatMsg) {
+                    // 호스트에게 채팅 메시지 알림
+                    server.notifyHostChatMessage(chatMsg.getSenderId(), chatMsg.getMessage());
+                    // 다른 클라이언트들에게 브로드캐스트
+                    server.broadcastToOthers(playerId, chatMsg);
+                }
+            }
+
             case DISCONNECT -> {
                 close();
             }
