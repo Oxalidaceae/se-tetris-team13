@@ -312,12 +312,4 @@ public class NetworkLobbyScene {
                 });
     }
 
-    // 채팅 입력 활성화/비활성화
-    public void setChatDisabled(boolean disabled) {
-        Platform.runLater(
-                () -> {
-                    chatInput.setDisable(disabled);
-                    chatSendButton.setDisable(disabled);
-                });
-    }
 }
