@@ -327,7 +327,7 @@ public class VersusGameScene extends BaseGameScene {
                         if (remainingSeconds <= 30) {
                             timerLabel1.setStyle("-fx-font-size: 20px; -fx-text-fill: red;");
                             timerLabel2.setStyle("-fx-font-size: 20px; -fx-text-fill: red;");
-                            
+
                             // 30초가 되는 순간 한 번만 효과음 재생
                             if (!timeWarningSoundPlayed) {
                                 team13.tetris.audio.SoundManager.getInstance().playEffect("time");

@@ -248,7 +248,7 @@ public class NetworkGameScene extends BaseGameScene {
                         if (seconds <= 30) {
                             timerLabelLocal.setStyle("-fx-text-fill: red;");
                             timerLabelRemote.setStyle("-fx-text-fill: red;");
-                            
+
                             // 30초가 되는 순간 한 번만 효과음 재생
                             if (!timeWarningSoundPlayed) {
                                 team13.tetris.audio.SoundManager.getInstance().playEffect("time");

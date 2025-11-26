@@ -80,10 +80,10 @@ public class GameEngine {
         totalLinesCleared = 0; // 아이템 생성 카운터 초기화
         nextItemPiece = null; // 대기 중인 아이템 피스 초기화
         next = randomPiece(); // 다음 피스 생성
-        
+
         // spawnNext 플래그 초기화 (이전 게임의 상태가 남아있을 수 있음)
         isSpawning = false;
-        
+
         spawnNext();
         listener.onScoreChanged(score);
         stopAutoDrop(); // 오토 드랍 재시작
@@ -507,13 +507,13 @@ public class GameEngine {
         if (isSpawning) {
             return;
         }
-        
+
         isSpawning = true; // 플래그 설정
-        
+
         try {
             // 새로운 미노 생성 시 무게추 충돌 상태 리셋
             weightCollisionDetected = false;
-            
+
             current = next != null ? next : randomPiece();
 
             // 아이템 모드에서 nextItemPiece가 설정되어 있으면 그것을 next로 사용
@@ -707,10 +707,10 @@ public class GameEngine {
                 current = rotated;
                 px = nx;
                 py = ny;
-                
+
                 // 회전 성공 시 효과음 재생
                 team13.tetris.audio.SoundManager.getInstance().playEffect("rotate");
-                
+
                 listener.onBoardUpdated(board);
                 return;
             }
