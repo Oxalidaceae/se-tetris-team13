@@ -45,6 +45,9 @@ public class GameEngine {
     // 무게추 충돌 상태 추적
     private boolean weightCollisionDetected = false; // 무게추가 충돌을 감지했는지 여부
 
+    // spawnNext 중복 호출 방지 (고속 플레이 시 race condition 방지)
+    private boolean isSpawning = false;
+
     // 마지막으로 고정된 블록의 위치 정보 (대전 모드용)
     private java.util.Set<Integer> lastLockedColumns = new java.util.HashSet<>();
     private java.util.Set<Integer> tempLockedColumnsForEvent = null; // onLinesCleared 이벤트용 임시 저장
@@ -77,6 +80,10 @@ public class GameEngine {
         totalLinesCleared = 0; // 아이템 생성 카운터 초기화
         nextItemPiece = null; // 대기 중인 아이템 피스 초기화
         next = randomPiece(); // 다음 피스 생성
+        
+        // spawnNext 플래그 초기화 (이전 게임의 상태가 남아있을 수 있음)
+        isSpawning = false;
+        
         spawnNext();
         listener.onScoreChanged(score);
         stopAutoDrop(); // 오토 드랍 재시작
@@ -494,44 +501,57 @@ public class GameEngine {
         }
     }
 
+    // 다음 블록을 화면에 스폰합니다.
     private void spawnNext() {
-        // 새로운 미노 생성 시 무게추 충돌 상태 리셋
-        weightCollisionDetected = false;
-
-        current = next != null ? next : randomPiece();
-
-        // 아이템 모드에서 nextItemPiece가 설정되어 있으면 그것을 next로 사용
-        if (itemModeEnabled && nextItemPiece != null) {
-            next = nextItemPiece;
-            nextItemPiece = null; // 한 번 사용 후 초기화
-        } else {
-            next = randomPiece();
-        }
-
-        px = (board.getWidth() - current.getWidth()) / 2;
-        py = 0;
-
-        // 게임오버 조건: 새 블록이 생성 위치에 배치될 수 없을 때
-        if (!board.fits(current.getShape(), px, py)) {
-            // 게임오버 즉시 처리
-            stopAutoDrop(); // 자동 하강을 먼저 완전히 중지
-            current = null; // current를 null로 설정하여 더 이상의 조작 방지
-
-            // JavaFX Application Thread에서 안전하게 게임오버 처리
-            javafx.application.Platform.runLater(
-                    () -> {
-                        listener.onGameOver(); // 게임오버 이벤트 발생
-                    });
+        // 중복 호출 방지 (고속 플레이 시 race condition)
+        if (isSpawning) {
             return;
         }
+        
+        isSpawning = true; // 플래그 설정
+        
+        try {
+            // 새로운 미노 생성 시 무게추 충돌 상태 리셋
+            weightCollisionDetected = false;
+            
+            current = next != null ? next : randomPiece();
 
-        // 새 블록이 생성될 때 보드 상태 스냅샷 저장 (블록 배치 전)
-        boardSnapshotBeforeClear = board.snapshot();
+            // 아이템 모드에서 nextItemPiece가 설정되어 있으면 그것을 next로 사용
+            if (itemModeEnabled && nextItemPiece != null) {
+                next = nextItemPiece;
+                nextItemPiece = null; // 한 번 사용 후 초기화
+            } else {
+                next = randomPiece();
+            }
 
-        // 정상적으로 생성된 경우에만 리스너 호출
-        listener.onPieceSpawned(current, px, py);
-        listener.onNextPiece(next);
-        listener.onBoardUpdated(board);
+            px = (board.getWidth() - current.getWidth()) / 2;
+            py = 0;
+
+            // 게임오버 조건: 새 블록이 생성 위치에 배치될 수 없을 때
+            if (!board.fits(current.getShape(), px, py)) {
+                // 게임오버 즉시 처리
+                stopAutoDrop(); // 자동 하강을 먼저 완전히 중지
+                current = null; // current를 null로 설정하여 더 이상의 조작 방지
+
+                // JavaFX Application Thread에서 안전하게 게임오버 처리
+                javafx.application.Platform.runLater(
+                        () -> {
+                            listener.onGameOver(); // 게임오버 이벤트 발생
+                        });
+                return;
+            }
+
+            // 새 블록이 생성될 때 보드 상태 스냅샷 저장 (블록 배치 전)
+            boardSnapshotBeforeClear = board.snapshot();
+
+            // 정상적으로 생성된 경우에만 리스너 호출
+            listener.onPieceSpawned(current, px, py);
+            listener.onNextPiece(next);
+            listener.onBoardUpdated(board);
+        } finally {
+            // 항상 플래그 해제 (예외가 발생해도)
+            isSpawning = false;
+        }
     }
 
     // 현재 설정된 하강 간격을 사용하여 자동 하강 스케줄러를 시작합니다.
@@ -687,6 +707,10 @@ public class GameEngine {
                 current = rotated;
                 px = nx;
                 py = ny;
+                
+                // 회전 성공 시 효과음 재생
+                team13.tetris.audio.SoundManager.getInstance().playEffect("rotate");
+                
                 listener.onBoardUpdated(board);
                 return;
             }
@@ -753,7 +777,11 @@ public class GameEngine {
         int dropDistance = py - startY; // 떨어진 거리 계산
 
         // 하드 드롭 점수 추가 (거리 > 0일 때만)
-        if (dropDistance > 0) addHardDropScore(dropDistance);
+        if (dropDistance > 0) {
+            addHardDropScore(dropDistance);
+            // 하드 드롭 효과음 재생 (실제로 떨어졌을 때만, 강제 재시작)
+            team13.tetris.audio.SoundManager.getInstance().playEffect("hard_drop", true);
+        }
 
         placeCurrentPiece(); // 현재 블록을 보드에 배치
         recordLastLockedColumns(); // 마지막으로 고정된 블록의 열 위치 저장
@@ -851,7 +879,11 @@ public class GameEngine {
         final int lineCount = fullLines.size();
 
         // 라인 삭제 이벤트를 즉시 발생 (lastLockedColumns 정보가 유효한 동안)
-        if (lineCount > 0) listener.onLinesCleared(lineCount);
+        if (lineCount > 0) {
+            listener.onLinesCleared(lineCount);
+            // 라인 클리어 효과음 재생
+            team13.tetris.audio.SoundManager.getInstance().playEffect("line_clear");
+        }
 
         // Timer를 사용하여 250ms 후 라인 제거 및 게임 진행
         java.util.Timer delayTimer = new java.util.Timer();

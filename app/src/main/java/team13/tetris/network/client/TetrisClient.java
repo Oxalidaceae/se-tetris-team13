@@ -197,7 +197,8 @@ public class TetrisClient {
             case CHAT -> {
                 // 채팅 메시지 수신
                 if (message instanceof ChatMessage chatMsg) {
-                    messageListener.onChatMessageReceived(chatMsg.getSenderId(), chatMsg.getMessage());
+                    messageListener.onChatMessageReceived(
+                            chatMsg.getSenderId(), chatMsg.getMessage());
                 }
             }
 
