@@ -1264,6 +1264,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     // 버튼 핸들러 재설정
                     lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
                     lobbyScene.setOnCancelCallback(this::disconnect);
+                    lobbyScene.setOnSendChatCallback(this::handleSendChat);
 
                     manager.changeScene(lobbyScene.getScene());
                 });
