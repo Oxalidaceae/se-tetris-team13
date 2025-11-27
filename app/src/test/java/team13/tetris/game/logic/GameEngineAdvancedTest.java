@@ -17,6 +17,7 @@ class GameEngineAdvancedTest {
     private Board board;
 
     // 테스트용 GameStateListener 구현
+    @SuppressWarnings("unused")
     private static class TestGameStateListener implements GameStateListener {
         private int scoreChanged = 0;
         private int linesCleared = 0;

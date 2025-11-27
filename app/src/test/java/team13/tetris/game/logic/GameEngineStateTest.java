@@ -402,6 +402,7 @@ public class GameEngineStateTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("spawnNext 반복 호출 테스트")
     void testRepeatedSpawnNext() {
         engine.startNewGame();

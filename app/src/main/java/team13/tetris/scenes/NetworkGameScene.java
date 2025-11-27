@@ -550,6 +550,8 @@ public class NetworkGameScene extends BaseGameScene {
     }
 
     // Remote Player용 Next 렌더링 (아이템 정보 없이 O로만 표시)
+    @SuppressWarnings("unused")
+    @Deprecated
     private void drawRemoteNext(Map<String, CellView> cache, Tetromino next) {
         // 4x4 클리어
         for (int r = 0; r < 4; r++) {

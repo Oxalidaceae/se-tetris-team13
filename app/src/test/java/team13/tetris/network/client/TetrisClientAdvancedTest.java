@@ -309,6 +309,7 @@ class TetrisClientAdvancedTest {
     }
 
     // 고급 테스트용 리스너
+    @SuppressWarnings("unused")
     private static class TestAdvancedListener implements ClientMessageListener {
         private final CountDownLatch connectionAccepted = new CountDownLatch(1);
         private final CountDownLatch gameStarted = new CountDownLatch(1);

@@ -34,6 +34,7 @@ public class TetrisServer {
     private ServerMessageListener hostMessageListener;
 
     // 플레이어 상태를 관리하기 위한 내부 클래스
+    @SuppressWarnings("unused")
     private static class PlayerInfo {
         private final String playerId;
         private volatile boolean ready;

@@ -428,6 +428,7 @@ class TetrisClientTest {
     }
 
     // 테스트용 ClientMessageListener 구현
+    @SuppressWarnings("unused")
     private static class TestClientMessageListener implements ClientMessageListener {
         private boolean connectionAccepted = false;
         private String rejectionReason = null;
