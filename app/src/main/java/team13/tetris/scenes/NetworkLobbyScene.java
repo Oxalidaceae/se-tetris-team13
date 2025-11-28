@@ -204,7 +204,7 @@ public class NetworkLobbyScene {
                     if (onCancelCallback != null) {
                         onCancelCallback.run();
                     }
-                    manager.showMainMenu(settings);
+                    manager.showHostOrJoin(settings);
                 });
 
         HBox buttonBox = new HBox(20, readyButton, backButton);
