@@ -1268,6 +1268,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 로비 씬 재생성
         Platform.runLater(
                 () -> {
+                    manager.restoreWindowSize();
                     lobbyScene = new NetworkLobbyScene(manager, settings, isHost);
                     lobbyScene.setStatusText("Connected. Ready for next game!");
 
