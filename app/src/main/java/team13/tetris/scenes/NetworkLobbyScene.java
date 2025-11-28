@@ -10,6 +10,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import team13.tetris.SceneManager;
@@ -71,6 +72,8 @@ public class NetworkLobbyScene {
         statusLabel.getStyleClass().add("label");
         statusLabel.setStyle("-fx-text-fill: yellow;");
         statusLabel.setTextAlignment(TextAlignment.CENTER);
+        statusLabel.setWrapText(true);
+        statusLabel.setMinHeight(Region.USE_PREF_SIZE);
 
         // 게임 모드 선택 (서버만)
         VBox gameModeBox = new VBox(10);
@@ -141,8 +144,6 @@ public class NetworkLobbyScene {
         // 채팅 UI
         VBox chatBox = new VBox(10);
         chatBox.setAlignment(Pos.CENTER);
-        chatBox.setPrefWidth(500);
-        chatBox.setMaxWidth(500);
 
         Label chatTitleLabel = new Label("Chat");
         chatTitleLabel.getStyleClass().add("label");
@@ -150,28 +151,46 @@ public class NetworkLobbyScene {
         chatArea = new TextArea();
         chatArea.setEditable(false);
         chatArea.setWrapText(true);
-        chatArea.setPrefHeight(300);
         chatArea.getStyleClass().add("text-area");
         chatArea.setFocusTraversable(false);
+
+        VBox.setVgrow(chatArea, Priority.ALWAYS);
 
         chatInput = new TextField();
         chatInput.setPromptText("Please enter a message");
         chatInput.getStyleClass().add("text-field");
-        chatInput.setPrefWidth(400);
 
         chatSendButton = new Button("Send");
         chatSendButton.getStyleClass().add("button");
-        chatSendButton.setPrefWidth(80);
 
         // Enter 키로 전송
         chatInput.setOnAction(e -> chatSendButton.fire());
 
         HBox chatInputBox = new HBox(10);
         chatInputBox.setAlignment(Pos.CENTER);
-        HBox.setHgrow(chatInput, Priority.ALWAYS);
+
+        // 채팅 입력창과 전송 버튼 크기 비율 조정
+        chatInput.prefWidthProperty().bind(chatInputBox.widthProperty().subtract(10).multiply(0.7));
+        chatSendButton.prefWidthProperty().bind(chatInputBox.widthProperty().subtract(10).multiply(0.3));
         chatInputBox.getChildren().addAll(chatInput, chatSendButton);
 
         chatBox.getChildren().addAll(chatTitleLabel, chatArea, chatInputBox);
+
+        // 준비 상태와 채팅 박스 가로 배치
+        HBox readyAndChatbox = new HBox(20);
+        readyAndChatbox.setAlignment(Pos.CENTER);
+
+        readyBox.setMaxWidth(Double.MAX_VALUE);
+        chatBox.setMaxWidth(Double.MAX_VALUE);
+
+        readyBox.setPrefWidth(0);
+        chatBox.setPrefWidth(0);
+
+        HBox.setHgrow(readyBox, Priority.ALWAYS);
+        HBox.setHgrow(chatBox, Priority.ALWAYS);
+        readyAndChatbox.getChildren().addAll(readyBox,chatBox);
+
+        VBox.setVgrow(readyAndChatbox, Priority.ALWAYS);
 
         // 준비 버튼
         readyButton = new Button("Start");
@@ -198,8 +217,7 @@ public class NetworkLobbyScene {
                         new Label(), // 간격
                         gameModeBox,
                         new Label(), // 간격
-                        readyBox,
-                        chatBox,
+                        readyAndChatbox,
                         new Label(), // 간격
                         buttonBox);
 
