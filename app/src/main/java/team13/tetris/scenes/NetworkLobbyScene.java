@@ -39,6 +39,7 @@ public class NetworkLobbyScene {
     private Label opponentReadyLabel;
 
     private Button readyButton;
+    private Button backButton;
 
     private Label gameModeLabel;
     private Button normalModeButton;
@@ -196,7 +197,7 @@ public class NetworkLobbyScene {
         readyButton = new Button("Start");
         readyButton.getStyleClass().add("button");
 
-        Button backButton = new Button("Back");
+        backButton = new Button("Back");
         backButton.getStyleClass().add("button");
 
         backButton.setOnAction(
@@ -328,6 +329,10 @@ public class NetworkLobbyScene {
                         onSendChatCallback.run();
                     }
                 });
+    }
+
+    public void setBackButtonDisabled(boolean disabled) {
+        Platform.runLater(() -> backButton.setDisable(disabled));
     }
 
 }
