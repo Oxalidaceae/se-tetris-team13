@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -143,11 +144,9 @@ public class HostOrJoinScene {
         root.getChildren()
                 .addAll(
                         titleLabel,
-                        new Label(),
                         roleLabel,
                         hostButton,
                         joinButton,
-                        new Label(),
                         ipDisplayLabel, // IP for host
                         recentIPLabel, // Recent IP for client
                         ipInputLabel, // Label for client
