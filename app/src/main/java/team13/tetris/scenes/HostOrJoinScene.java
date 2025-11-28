@@ -52,6 +52,8 @@ public class HostOrJoinScene {
                                 + TetrisServer.getServerIP()
                                 + "\n\nPlease let the client know this address.");
         ipDisplayLabel.getStyleClass().add("label");
+        ipDisplayLabel.setWrapText(true);
+        ipDisplayLabel.setMinHeight(Region.USE_PREF_SIZE);
 
         // Controls for joining a server
         Label ipInputLabel = new Label("Server IP Address:");
