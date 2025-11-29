@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+import team13.tetris.audio.SoundManager;
 import team13.tetris.config.Settings;
 import team13.tetris.config.SettingsRepository;
 import team13.tetris.data.ScoreBoard;
@@ -26,6 +27,7 @@ import team13.tetris.scenes.SettingsScene;
 
 public class SceneManager {
     private final Stage stage;
+    private final SoundManager soundManager; // 사운드 매니저 추가
     private boolean colorBlindMode = false;
     private String windowSizeClass = "window-medium";
     private Scene previousScene = null;
@@ -36,51 +38,62 @@ public class SceneManager {
 
     public SceneManager(Stage stage) {
         this.stage = stage;
+        this.soundManager = SoundManager.getInstance(); // 사운드 매니저 초기화
     }
 
     public void showMainMenu(Settings settings) {
         // 대전 모드에서 나온 경우 창 크기 복원
         restoreWindowSize();
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new MainMenuScene(this, settings).getScene());
     }
 
     public void showSettings(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new SettingsScene(this, settings).getScene());
     }
 
     public void showScoreboard(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new ScoreboardScene(this, settings).getScene());
     }
 
     public void showScoreboard(
             Settings settings, String name, int score, ScoreBoard.ScoreEntry.Mode difficulty) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         ScoreboardScene scene = new ScoreboardScene(this, settings, name, score, difficulty);
         changeScene(scene.getScene());
     }
 
     public void showDifficultySelection(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new DifficultySelectionScene(this, settings).getScene());
     }
 
     public void showGameModeSelection(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new team13.tetris.scenes.GameModeSelectionScene(this, settings).getScene());
     }
 
     public void showSoloModeSelection(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new team13.tetris.scenes.SoloModeSelectionScene(this, settings).getScene());
     }
 
     public void showMultiModeSelection(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new team13.tetris.scenes.MultiModeSelectionScene(this, settings).getScene());
     }
 
     public void showLocalMultiModeSelection(Settings settings) {
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(
                 new team13.tetris.scenes.LocalMultiModeSelectionScene(this, settings).getScene());
     }
 
     public void showHostOrJoin(Settings settings) {
         restoreWindowSize();
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
         changeScene(new HostOrJoinScene(this, settings).getScene());
     }
 
@@ -97,6 +110,7 @@ public class SceneManager {
         }
         // windowSizeClass는 의도적으로 변경하지 않음 (UI 요소 크기 유지를 위해)
 
+        soundManager.playMenuBGM(); // 로비도 메뉴 BGM
         NetworkGameController controller =
                 new NetworkGameController(this, settings, isHost, serverIP);
         controller.initializeLobby();
@@ -134,6 +148,8 @@ public class SceneManager {
             show2PGame(settings, true, false);
             return;
         }
+
+        soundManager.playGameBGM(); // 게임 시작 시 게임 BGM 재생
 
         Board board = new Board(10, 20);
         CompositeGameStateListener composite = new CompositeGameStateListener();
@@ -196,6 +212,8 @@ public class SceneManager {
     }
 
     private void showVersusGame(Settings settings, boolean timerMode, boolean itemMode) {
+        soundManager.playGameBGM(); // 대전 모드도 게임 BGM 재생
+
         // Player 1 설정 (아이템 모드 여부에 따라 Mode 설정)
         Board board1 = new Board(10, 20);
         CompositeGameStateListener composite1 = new CompositeGameStateListener();
@@ -237,6 +255,8 @@ public class SceneManager {
 
     public void showGameOver(
             Settings settings, int finalScore, ScoreBoard.ScoreEntry.Mode difficulty) {
+        soundManager.stopBGM(); // 게임 오버 시 BGM 중지
+        soundManager.playEffect("win"); // 솔로 게임 완료 시 win 효과음
         changeScene(new GameOverScene(this, settings, finalScore, difficulty).getScene());
     }
 
@@ -269,6 +289,20 @@ public class SceneManager {
             String currentPlayer,
             boolean isNetworkMode,
             Runnable onPlayAgain) {
+        soundManager.stopBGM(); // 게임 오버 시 BGM 중지
+
+        // 네트워크 모드: 이긴 사람은 win, 진 사람은 lose
+        // 로컬 대전: 무조건 win (누가 이기든 같은 화면)
+        if (isNetworkMode) {
+            if (winner.equals(currentPlayer)) {
+                soundManager.playEffect("win"); // 승리 효과음
+            } else {
+                soundManager.playEffect("lose"); // 패배 효과음
+            }
+        } else {
+            soundManager.playEffect("win"); // 로컬 대전은 무조건 win
+        }
+
         // 창 크기를 원래대로 복원
         restoreWindowSize();
 
@@ -297,6 +331,7 @@ public class SceneManager {
     }
 
     public void showKeySettings(Settings settings) {
+        soundManager.playMenuBGM(); // 설정 화면도 메뉴 BGM
         changeScene(new KeySettingsScene(this, settings).getScene());
     }
 
@@ -321,6 +356,7 @@ public class SceneManager {
     public void exitWithSave(Settings settings) {
         settings.setColorBlindMode(isColorBlindMode());
         SettingsRepository.save(settings);
+        soundManager.cleanup(); // 사운드 리소스 정리
         javafx.application.Platform.exit(); // JavaFX 애플리케이션 스레드 종료
         stage.close();
         System.exit(0); // JVM 강제 종료
@@ -417,6 +453,7 @@ public class SceneManager {
 
     // 애플리케이션 종료 시 모든 리소스 정리
     public void cleanup() {
+        soundManager.cleanup(); // 사운드 리소스 정리
         javafx.application.Platform.exit(); // JavaFX 애플리케이션 스레드 종료
         System.exit(0);
     }
