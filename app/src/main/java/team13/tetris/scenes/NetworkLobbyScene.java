@@ -172,7 +172,9 @@ public class NetworkLobbyScene {
 
         // 채팅 입력창과 전송 버튼 크기 비율 조정
         chatInput.prefWidthProperty().bind(chatInputBox.widthProperty().subtract(10).multiply(0.7));
-        chatSendButton.prefWidthProperty().bind(chatInputBox.widthProperty().subtract(10).multiply(0.3));
+        chatSendButton
+                .prefWidthProperty()
+                .bind(chatInputBox.widthProperty().subtract(10).multiply(0.3));
         chatInputBox.getChildren().addAll(chatInput, chatSendButton);
 
         chatBox.getChildren().addAll(chatTitleLabel, chatArea, chatInputBox);
@@ -189,7 +191,7 @@ public class NetworkLobbyScene {
 
         HBox.setHgrow(readyBox, Priority.ALWAYS);
         HBox.setHgrow(chatBox, Priority.ALWAYS);
-        readyAndChatbox.getChildren().addAll(readyBox,chatBox);
+        readyAndChatbox.getChildren().addAll(readyBox, chatBox);
 
         VBox.setVgrow(readyAndChatbox, Priority.ALWAYS);
 
@@ -334,5 +336,4 @@ public class NetworkLobbyScene {
     public void setBackButtonDisabled(boolean disabled) {
         Platform.runLater(() -> backButton.setDisable(disabled));
     }
-
 }

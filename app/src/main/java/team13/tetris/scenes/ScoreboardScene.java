@@ -86,12 +86,16 @@ public class ScoreboardScene {
         setupListNavigation(scoreList, backBtn, exitBtn);
         applyHighlight(scoreList);
 
-        // 초기 포커스 설정: 스코어보드가 비어있으면 Back 버튼, 아니면 첫 번째 엔트리
+        // 초기 포커스 설정
         if (scoreList.getItems().isEmpty()) {
             backBtn.requestFocus();
         } else {
             scoreList.requestFocus();
-            scoreList.getSelectionModel().select(0);
+            // applyHighlight가 이미 하이라이트된 항목을 선택했으므로
+            // 선택된 항목이 없을 때만 첫 번째 항목 선택
+            if (scoreList.getSelectionModel().getSelectedIndex() == -1) {
+                scoreList.getSelectionModel().select(0);
+            }
         }
 
         return scene;
