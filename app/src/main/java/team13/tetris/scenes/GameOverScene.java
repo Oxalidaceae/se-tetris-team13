@@ -42,7 +42,7 @@ public class GameOverScene {
                 new TextFormatter<String>(
                         change -> {
                             String newText = change.getControlNewText();
-                            if (newText.length() <= 10) {
+                            if (newText.length() <= 25) {
                                 return change;
                             }
                             return null;
@@ -68,16 +68,15 @@ public class GameOverScene {
         Button backToMenuBtn = new Button("Back to Menu");
         backToMenuBtn.setOnAction(e -> manager.showMainMenu(settings));
 
-        VBox layout =
-                new VBox(
-                        15,
-                        title,
-                        scoreLabel,
-                        difficultyLabel,
-                        nameField,
-                        statusLabel,
-                        saveBtn,
-                        backToMenuBtn);
+        VBox layout = new VBox(
+                15,
+                title,
+                scoreLabel,
+                difficultyLabel,
+                nameField,
+                statusLabel,
+                saveBtn,
+                backToMenuBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
