@@ -38,13 +38,15 @@ public class GameOverScene {
         nameField.setPromptText("Enter your name");
 
         // Limit input to 10 characters
-        nameField.setTextFormatter(new TextFormatter<String>(change -> {
-            String newText = change.getControlNewText();
-            if (newText.length() <= 10) {
-                return change;
-            }
-            return null;
-        }));
+        nameField.setTextFormatter(
+                new TextFormatter<String>(
+                        change -> {
+                            String newText = change.getControlNewText();
+                            if (newText.length() <= 10) {
+                                return change;
+                            }
+                            return null;
+                        }));
 
         Label statusLabel = new Label();
 
