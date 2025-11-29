@@ -68,15 +68,16 @@ public class GameOverScene {
         Button backToMenuBtn = new Button("Back to Menu");
         backToMenuBtn.setOnAction(e -> manager.showMainMenu(settings));
 
-        VBox layout = new VBox(
-                15,
-                title,
-                scoreLabel,
-                difficultyLabel,
-                nameField,
-                statusLabel,
-                saveBtn,
-                backToMenuBtn);
+        VBox layout =
+                new VBox(
+                        15,
+                        title,
+                        scoreLabel,
+                        difficultyLabel,
+                        nameField,
+                        statusLabel,
+                        saveBtn,
+                        backToMenuBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);
