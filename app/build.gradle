@@ -126,7 +126,7 @@ tasks.test {
 // 추가
 javafx {
     version = "17.0.12"
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.media' ]
 }
 
 // Ensure Java compiler reads source files as UTF-8 so non-ASCII comments compile

@@ -316,6 +316,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         gameScene.requestFocus();
         gameScene.setConnected(true);
 
+        // 게임 BGM 재생
+        team13.tetris.audio.SoundManager.getInstance().playGameBGM();
+
         // 게임 시작
         myEngine.startNewGame();
         gameScene.updateLocalGrid();
@@ -623,12 +626,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
                     manager.showVersusGameOver(
                             settings,
-                            "Opponent", // 진 경우이므로 상대가 이겼음
+                            "Opponent", // 상대가 이겼음
                             opponentScore, // winner score
                             myScore, // loser score
                             false, // timerMode
                             itemMode,
-                            "You", // currentPlayer (나는 진 사람)
+                            "You", // currentPlayer (항상 "You" - 현재 보는 플레이어)
                             true, // isNetworkMode
                             this::returnToLobby // Play Again 콜백
                             );
@@ -659,12 +662,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
                     manager.showVersusGameOver(
                             settings,
-                            "You", // 상대가 진 경우이므로 내가 이겼음
+                            "You", // 내가 이겼음
                             myScore, // winner score
                             opponentScore, // loser score
                             false, // timerMode
                             itemMode,
-                            "Opponent", // currentPlayer (상대는 진 사람)
+                            "You", // currentPlayer = winner (나)
                             true, // isNetworkMode
                             this::returnToLobby // Play Again 콜백
                             );
@@ -1264,6 +1267,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
         gameScene = null;
 
+        // 로비로 복귀 시 메뉴 BGM 재생
+        team13.tetris.audio.SoundManager.getInstance().playMenuBGM();
+
         // 로비 씬 재생성
         Platform.runLater(
                 () -> {
@@ -1303,6 +1309,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     // 버튼 핸들러 재설정
                     lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
                     lobbyScene.setOnCancelCallback(this::disconnect);
+                    lobbyScene.setOnSendChatCallback(this::handleSendChat);
 
                     manager.changeScene(lobbyScene.getScene());
                 });

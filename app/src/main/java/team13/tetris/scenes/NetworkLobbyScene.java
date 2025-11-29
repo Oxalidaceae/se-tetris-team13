@@ -204,7 +204,7 @@ public class NetworkLobbyScene {
                         buttonBox);
 
         scene = new Scene(root);
-        manager.enableArrowAsTab(scene); 
+        manager.enableArrowAsTab(scene);
     }
 
     public Scene getScene() {
@@ -287,7 +287,7 @@ public class NetworkLobbyScene {
                 () -> {
                     chatArea.appendText(senderId + ": " + message + "\n");
                     // 자동 스크롤 (가장 최근 메시지로)
-                    chatArea.positionCaret(chatArea.getLength()-1);
+                    chatArea.positionCaret(chatArea.getLength() - 1);
                 });
     }
 
@@ -311,5 +311,4 @@ public class NetworkLobbyScene {
                     }
                 });
     }
-
 }

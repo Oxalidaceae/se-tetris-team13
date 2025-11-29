@@ -74,6 +74,7 @@ public class NetworkGameScene extends BaseGameScene {
     // Throttle
     private volatile boolean updatePending = false;
     private final boolean timerMode;
+    private boolean timeWarningSoundPlayed = false; // 30초 경고음 재생 여부
 
     public NetworkGameScene(
             SceneManager manager,
@@ -247,6 +248,12 @@ public class NetworkGameScene extends BaseGameScene {
                         if (seconds <= 30) {
                             timerLabelLocal.setStyle("-fx-text-fill: red;");
                             timerLabelRemote.setStyle("-fx-text-fill: red;");
+
+                            // 30초가 되는 순간 한 번만 효과음 재생
+                            if (!timeWarningSoundPlayed) {
+                                team13.tetris.audio.SoundManager.getInstance().playEffect("time");
+                                timeWarningSoundPlayed = true;
+                            }
                         } else {
                             // 30초 이상일 때 기본 스타일로 되돌림
                             timerLabelLocal.setStyle("");

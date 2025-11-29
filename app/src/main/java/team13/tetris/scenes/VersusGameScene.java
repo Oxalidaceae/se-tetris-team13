@@ -29,6 +29,7 @@ public class VersusGameScene extends BaseGameScene {
     private final boolean timerMode;
     private Label timerLabel1; // Player 1 타이머 표시용
     private Label timerLabel2; // Player 2 타이머 표시용
+    private boolean timeWarningSoundPlayed = false; // 30초 경고음 재생 여부
 
     // UI 업데이트 throttle을 위한 변수
     private volatile boolean updatePending = false;
@@ -326,6 +327,12 @@ public class VersusGameScene extends BaseGameScene {
                         if (remainingSeconds <= 30) {
                             timerLabel1.setStyle("-fx-font-size: 20px; -fx-text-fill: red;");
                             timerLabel2.setStyle("-fx-font-size: 20px; -fx-text-fill: red;");
+
+                            // 30초가 되는 순간 한 번만 효과음 재생
+                            if (!timeWarningSoundPlayed) {
+                                team13.tetris.audio.SoundManager.getInstance().playEffect("time");
+                                timeWarningSoundPlayed = true;
+                            }
                         }
                     });
         }
