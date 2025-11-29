@@ -4,6 +4,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -35,6 +36,15 @@ public class GameOverScene {
 
         TextField nameField = new TextField();
         nameField.setPromptText("Enter your name");
+
+        // Limit input to 10 characters
+        nameField.setTextFormatter(new TextFormatter<String>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.length() <= 10) {
+                return change;
+            }
+            return null;
+        }));
 
         Label statusLabel = new Label();
 
