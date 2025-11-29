@@ -827,6 +827,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         Platform.runLater(
                 () -> {
                     lobbyScene.setControlsDisabled(true);
+                    lobbyScene.setBackButtonDisabled(true);
                     lobbyScene.setStatusText("Start soon...");
                     countdownSeconds.set(5);
 
@@ -1273,6 +1274,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         // 로비 씬 재생성
         Platform.runLater(
                 () -> {
+                    manager.restoreWindowSize();
                     lobbyScene = new NetworkLobbyScene(manager, settings, isHost);
                     lobbyScene.setStatusText("Connected. Ready for next game!");
 

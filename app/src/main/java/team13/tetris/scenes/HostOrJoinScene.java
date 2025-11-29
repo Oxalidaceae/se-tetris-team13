@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -52,6 +53,8 @@ public class HostOrJoinScene {
                                 + TetrisServer.getServerIP()
                                 + "\n\nPlease let the client know this address.");
         ipDisplayLabel.getStyleClass().add("label");
+        ipDisplayLabel.setWrapText(true);
+        ipDisplayLabel.setMinHeight(Region.USE_PREF_SIZE);
 
         // Controls for joining a server
         Label ipInputLabel = new Label("Server IP Address:");
@@ -141,11 +144,9 @@ public class HostOrJoinScene {
         root.getChildren()
                 .addAll(
                         titleLabel,
-                        new Label(),
                         roleLabel,
                         hostButton,
                         joinButton,
-                        new Label(),
                         ipDisplayLabel, // IP for host
                         recentIPLabel, // Recent IP for client
                         ipInputLabel, // Label for client
