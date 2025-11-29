@@ -35,6 +35,7 @@ public class NetworkLobbyScene {
     private Label opponentReadyLabel;
 
     private Button readyButton;
+    private Button backButton;
 
     private Label gameModeLabel;
     private Button normalModeButton;
@@ -133,7 +134,7 @@ public class NetworkLobbyScene {
         readyButton = new Button("Start");
         readyButton.getStyleClass().add("button");
 
-        Button backButton = new Button("Back");
+        backButton = new Button("Back");
         backButton.getStyleClass().add("button");
 
         backButton.setOnAction(
@@ -141,7 +142,7 @@ public class NetworkLobbyScene {
                     if (onCancelCallback != null) {
                         onCancelCallback.run();
                     }
-                    manager.showMainMenu(settings);
+                    manager.showHostOrJoin(settings);
                 });
 
         HBox buttonBox = new HBox(20, readyButton, backButton);
@@ -233,5 +234,9 @@ public class NetworkLobbyScene {
         normalModeButton.setDisable(disabled);
         itemModeButton.setDisable(disabled);
         timerModeButton.setDisable(disabled);
+    }
+
+    public void setBackButtonDisabled(boolean disabled) {
+        Platform.runLater(() -> backButton.setDisable(disabled));
     }
 }
