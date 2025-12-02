@@ -30,6 +30,7 @@ public class ConnectionMessage extends NetworkMessage {
             case DISCONNECT:
             case PLAYER_READY:
             case PLAYER_UNREADY:
+            case LOBBY_STATE_UPDATE:
             case GAME_START:
             case COUNTDOWN_START:
             case PAUSE:

@@ -2,6 +2,7 @@ package team13.tetris.game.controller;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -814,6 +815,11 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     }
 
     @Override
+    public void onGameEnd(List<String> rankings) {
+        // Not used in 1v1 mode - only for Squad PVP
+    }
+
+    @Override
     public void onBoardUpdate(BoardUpdateMessage boardUpdate) {
         if (gameScene == null) {
             return;
@@ -917,6 +923,11 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     lobbyScene.setStatusText(
                             "Client connected!\nBoth players must be ready to start the game.");
                 });
+    }
+
+    @Override
+    public void onLobbyStateUpdate(List<LobbyStateMessage.PlayerState> playerStates) {
+        // 1v1 모드에서는 사용하지 않음 (Squad 모드 전용)
     }
 
     @Override
