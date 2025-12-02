@@ -274,6 +274,7 @@ class TetrisServerTest {
     }
 
     // 테스트용 ServerMessageListener 구현
+    @SuppressWarnings("unused")
     private static class TestServerMessageListener implements ServerMessageListener {
         private String lastClientId = null;
         private boolean gameStarted = false;
@@ -328,6 +329,11 @@ class TetrisServerTest {
             // 테스트용 구현
         }
 
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // 테스트용 구현
+        }
+
         public String getLastClientId() {
             return lastClientId;
         }
@@ -355,6 +361,7 @@ class TetrisServerTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     @DisplayName("클라이언트 등록 및 해제 테스트")
     void testClientRegistrationAndUnregistration() {
         assertDoesNotThrow(

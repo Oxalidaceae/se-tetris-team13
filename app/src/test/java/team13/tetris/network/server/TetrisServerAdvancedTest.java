@@ -366,6 +366,11 @@ class TetrisServerAdvancedTest {
             // 필요시 구현
         }
 
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
+            // 필요시 구현
+        }
+
         public boolean waitForClientConnected(long timeoutMs) throws InterruptedException {
             return clientConnected.await(timeoutMs, TimeUnit.MILLISECONDS);
         }
@@ -378,6 +383,7 @@ class TetrisServerAdvancedTest {
             return lastConnectedClientId;
         }
 
+        @SuppressWarnings("unused")
         public String getLastDisconnectedClientId() {
             return lastDisconnectedClientId;
         }
@@ -526,6 +532,10 @@ class TetrisServerAdvancedTest {
         public void onGameEnd(List<String> rankings) {
             // TODO Auto-generated method stub
             throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
+        }
+      
+        public void onChatMessageReceived(String senderId, String message) {
+            // Test implementation
         }
     }
 }

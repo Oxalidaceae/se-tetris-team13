@@ -44,4 +44,7 @@ public interface ServerMessageListener {
 
     // 게임이 재개되었을 때 호출
     void onGameResumed();
+
+    // 채팅 메시지를 받았을 때 호출
+    void onChatMessageReceived(String senderId, String message);
 }

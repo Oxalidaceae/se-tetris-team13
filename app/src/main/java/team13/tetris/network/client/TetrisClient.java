@@ -217,6 +217,14 @@ public class TetrisClient {
                 }
             }
 
+            case CHAT -> {
+                // 채팅 메시지 수신
+                if (message instanceof ChatMessage chatMsg) {
+                    messageListener.onChatMessageReceived(
+                            chatMsg.getSenderId(), chatMsg.getMessage());
+                }
+            }
+
             case ERROR -> {
                 // 에러 메시지 수신
                 if (message instanceof SystemMessage sysMsg) {
@@ -325,6 +333,16 @@ public class TetrisClient {
         ConnectionMessage resumeMsg =
                 new ConnectionMessage(MessageType.RESUME, playerId, "Game resumed by " + playerId);
         return sendMessage(resumeMsg);
+    }
+
+    // 채팅 메시지 전송
+    public boolean sendChatMessage(String message) {
+        if (!isConnected) {
+            return false;
+        }
+        ChatMessage chatMsg = new ChatMessage(playerId, message);
+        messageListener.onChatMessageReceived(playerId, message);
+        return sendMessage(chatMsg);
     }
 
     // 연결 해제

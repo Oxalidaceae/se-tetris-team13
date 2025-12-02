@@ -431,6 +431,7 @@ class TetrisClientTest {
     }
 
     // 테스트용 ClientMessageListener 구현
+    @SuppressWarnings("unused")
     private static class TestClientMessageListener implements ClientMessageListener {
         private boolean connectionAccepted = false;
         private String rejectionReason = null;
@@ -494,6 +495,11 @@ class TetrisClientTest {
 
         @Override
         public void onGameModeSelected(GameModeMessage.GameMode gameMode) {
+            // 테스트용 구현
+        }
+
+        @Override
+        public void onChatMessageReceived(String senderId, String message) {
             // 테스트용 구현
         }
 

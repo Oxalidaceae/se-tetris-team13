@@ -61,6 +61,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
     private boolean itemMode = false;
     private boolean timerMode = false;
     private boolean myReady = false;
+    // 내가 직접 퍼즈를 걸었는지 여부 (true면 풀 메뉴 표시, false면 단순 안내)
+    private boolean pauseInitiatedByMe = false;
 
     // 카운트다운
     private Timeline countdownTimeline;
@@ -119,6 +121,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
         // 준비 버튼 핸들러
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
+
+        // 채팅 전송 버튼 핸들러
+        lobbyScene.setOnSendChatCallback(this::handleSendChat);
 
         // Cancel 버튼 핸들러
         lobbyScene.setOnCancelCallback(this::disconnect);
@@ -195,6 +200,22 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 client.requestUnready();
             }
         }
+    }
+
+    // 채팅 전송 처리
+    private void handleSendChat() {
+        String message = lobbyScene.getChatInput().trim();
+        if (message.isEmpty()) {
+            return;
+        }
+
+        if (isHost && server != null) {
+            server.sendChatMessage(message);
+        } else if (!isHost && client != null) {
+            client.sendChatMessage(message);
+        }
+
+        lobbyScene.clearChatInput();
     }
 
     // 게임 시작
@@ -295,6 +316,9 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         manager.changeScene(gameScene.getScene());
         gameScene.requestFocus();
         gameScene.setConnected(true);
+
+        // 게임 BGM 재생
+        team13.tetris.audio.SoundManager.getInstance().playGameBGM();
 
         // 게임 시작
         myEngine.startNewGame();
@@ -451,6 +475,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // 내가 줄을 지웠을 때 상대에게 전송 (더 이상 사용 안 함 - sendAttackPattern 사용)
     @Deprecated
+    @SuppressWarnings("unused")
     private void sendAttack(int clearedLines) {
         if (!gameStarted || clearedLines <= 0) return;
 
@@ -485,7 +510,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (!gameStarted || myEngine == null) return;
 
         if (!paused) {
-            // 로컬 먼저 멈추고 네트워크로 PAUSE 전파
+            // 내가 퍼즈 시작
+            pauseInitiatedByMe = true;
             applyLocalPause();
             sendPauseToNetwork();
         } else {
@@ -496,6 +522,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // Pause 창 참조를 저장할 필드 추가
     private Stage pauseDialog = null;
+    // 상대가 건 퍼즈일 때 보여줄 단순 안내창
+    private Stage remotePauseDialog = null;
 
     private void applyLocalPause() {
         if (paused) return;
@@ -510,9 +538,19 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (networkCheckExecutor != null && !networkCheckExecutor.isShutdown()) {
             networkCheckExecutor.shutdownNow();
         }
-        // 필요하다면 별도의 Pause UI를 NetworkGameScene에 추가 가능
-        // Pause UI 표시
-        showPauseWindow();
+        // 내가 퍼즈를 건 경우 전체 메뉴, 아니면 단순 안내
+        if (pauseInitiatedByMe) {
+            showPauseWindow();
+        } else {
+            showRemotePauseWindow();
+        }
+    }
+
+    // 상대방이 퍼즈를 건 경우 호출 (단순 안내)
+    private void applyRemotePause() {
+        if (paused) return;
+        pauseInitiatedByMe = false;
+        applyLocalPause(); // 내부에서 pauseInitiatedByMe에 따라 창 선택
     }
 
     private void applyLocalResume() {
@@ -523,6 +561,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (pauseDialog != null && pauseDialog.isShowing()) {
             pauseDialog.close();
             pauseDialog = null;
+        }
+        if (remotePauseDialog != null && remotePauseDialog.isShowing()) {
+            remotePauseDialog.close();
+            remotePauseDialog = null;
         }
 
         if (myEngine != null) {
@@ -535,6 +577,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         if (gameStarted) {
             startNetworkStabilityCheck();
         }
+        pauseInitiatedByMe = false;
     }
 
     private void sendPauseToNetwork() {
@@ -584,12 +627,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
                     manager.showVersusGameOver(
                             settings,
-                            "Opponent", // 진 경우이므로 상대가 이겼음
+                            "Opponent", // 상대가 이겼음
                             opponentScore, // winner score
                             myScore, // loser score
                             false, // timerMode
                             itemMode,
-                            "You", // currentPlayer (나는 진 사람)
+                            "You", // currentPlayer (항상 "You" - 현재 보는 플레이어)
                             true, // isNetworkMode
                             this::returnToLobby // Play Again 콜백
                             );
@@ -620,12 +663,12 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     int opponentScore = gameScene != null ? gameScene.getOpponentScore() : 0;
                     manager.showVersusGameOver(
                             settings,
-                            "You", // 상대가 진 경우이므로 내가 이겼음
+                            "You", // 내가 이겼음
                             myScore, // winner score
                             opponentScore, // loser score
                             false, // timerMode
                             itemMode,
-                            "Opponent", // currentPlayer (상대는 진 사람)
+                            "You", // currentPlayer = winner (나)
                             true, // isNetworkMode
                             this::returnToLobby // Play Again 콜백
                             );
@@ -785,6 +828,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
         Platform.runLater(
                 () -> {
                     lobbyScene.setControlsDisabled(true);
+                    lobbyScene.setBackButtonDisabled(true);
                     lobbyScene.setStatusText("Start soon...");
                     countdownSeconds.set(5);
 
@@ -870,7 +914,8 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     @Override
     public void onGamePaused() {
-        Platform.runLater(this::applyLocalPause);
+        // 상대가 퍼즈: 단순 안내만 표시
+        Platform.runLater(this::applyRemotePause);
     }
 
     @Override
@@ -911,6 +956,14 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     // 네트워크 정리 및 메인 메뉴로 복귀
                     cleanupAndReturnToMenu();
                 });
+    }
+
+    @Override
+    public void onChatMessageReceived(String senderId, String message) {
+        // 로비 씬에 채팅 메시지 표시
+        if (lobbyScene != null) {
+            lobbyScene.appendChatMessage(senderId, message);
+        }
     }
 
     // ServerMessageListener 구현
@@ -1147,6 +1200,29 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                 });
     }
 
+    // 상대가 건 퍼즈에 대해 단순 Paused 안내창 표시
+    private void showRemotePauseWindow() {
+        Platform.runLater(
+                () -> {
+                    if (remotePauseDialog != null && remotePauseDialog.isShowing()) return;
+                    remotePauseDialog = new Stage();
+                    remotePauseDialog.initModality(Modality.NONE);
+                    remotePauseDialog.initOwner(gameScene.getScene().getWindow());
+                    Label pausedLabel = new Label("Paused");
+                    pausedLabel.getStyleClass().add("pause-option");
+                    VBox box = new VBox(12, pausedLabel);
+                    box.setAlignment(Pos.CENTER);
+                    box.getStyleClass().add("pause-box");
+                    Scene dialogScene = new Scene(box, 160, 80);
+                    dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+                    remotePauseDialog.setScene(dialogScene);
+                    remotePauseDialog.setTitle("Paused");
+                    remotePauseDialog.setResizable(false);
+                    remotePauseDialog.setOnCloseRequest(e -> remotePauseDialog = null);
+                    remotePauseDialog.show();
+                });
+    }
+
     private void applySelection(Label resume, Label mainMenu, Label quit, int selectedIndex) {
         // 모든 라벨에서 selected 클래스 제거
         resume.getStyleClass().remove("selected");
@@ -1203,9 +1279,13 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
         gameScene = null;
 
+        // 로비로 복귀 시 메뉴 BGM 재생
+        team13.tetris.audio.SoundManager.getInstance().playMenuBGM();
+
         // 로비 씬 재생성
         Platform.runLater(
                 () -> {
+                    manager.restoreWindowSize();
                     lobbyScene = new NetworkLobbyScene(manager, settings, isHost);
                     lobbyScene.setStatusText("Connected. Ready for next game!");
 
@@ -1242,6 +1322,7 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
                     // 버튼 핸들러 재설정
                     lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
                     lobbyScene.setOnCancelCallback(this::disconnect);
+                    lobbyScene.setOnSendChatCallback(this::handleSendChat);
 
                     manager.changeScene(lobbyScene.getScene());
                 });
