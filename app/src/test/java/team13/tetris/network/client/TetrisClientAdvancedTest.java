@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import team13.tetris.network.listener.ClientMessageListener;
 import team13.tetris.network.protocol.*;
+import team13.tetris.network.protocol.LobbyStateMessage.PlayerState;
 import team13.tetris.network.server.TetrisServer;
 
 @Disabled("Network tests are unstable and cause timeouts")
@@ -425,6 +427,18 @@ class TetrisClientAdvancedTest {
         @Override
         public void onServerDisconnected(String reason) {
             // Test implementation
+        }
+
+        @Override
+        public void onLobbyStateUpdate(List<PlayerState> playerStates) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onLobbyStateUpdate'");
+        }
+
+        @Override
+        public void onGameEnd(List<String> rankings) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
         }
     }
 }

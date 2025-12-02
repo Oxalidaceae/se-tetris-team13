@@ -2,11 +2,14 @@ package team13.tetris.network.server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import team13.tetris.network.listener.ServerMessageListener;
 import team13.tetris.network.protocol.*;
+import team13.tetris.network.protocol.LobbyStateMessage.PlayerState;
 
 class TetrisServerTest {
 
@@ -336,6 +339,18 @@ class TetrisServerTest {
         @Override
         public void onPlayerUnready(String playerId) {
             // Test implementation
+        }
+
+        @Override
+        public void onLobbyStateUpdate(List<PlayerState> playerStates) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onLobbyStateUpdate'");
+        }
+
+        @Override
+        public void onGameEnd(List<String> rankings) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
         }
     }
 
