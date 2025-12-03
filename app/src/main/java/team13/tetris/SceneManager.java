@@ -92,14 +92,13 @@ public class SceneManager {
     }
 
     public void showHostOrJoin(Settings settings) {
-        restoreWindowSize();
-        soundManager.playMenuBGM(); // 메뉴 BGM 재생
-        changeScene(new HostOrJoinScene(this, settings).getScene());
+        showHostOrJoin(settings, "p2p"); // 기본값은 P2P
     }
 
-    public void showSquadHostOrJoin(Settings settings) {
+    public void showHostOrJoin(Settings settings, String gameMode) {
         restoreWindowSize();
-        changeScene(new team13.tetris.scenes.SquadHostOrJoinScene(this, settings).getScene());
+        soundManager.playMenuBGM(); // 메뉴 BGM 재생
+        changeScene(new HostOrJoinScene(this, settings, gameMode).getScene());
     }
 
     public void showNetworkLobby(Settings settings, boolean isHost, String serverIP) {

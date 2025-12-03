@@ -26,8 +26,8 @@ public class MultiModeSelectionScene {
         Button backBtn = new Button("Back");
 
         localMultiBtn.setOnAction(e -> manager.showLocalMultiModeSelection(settings));
-        p2pBtn.setOnAction(e -> manager.showHostOrJoin(settings));
-        squadPvpBtn.setOnAction(e -> manager.showSquadHostOrJoin(settings));
+        p2pBtn.setOnAction(e -> manager.showHostOrJoin(settings, "p2p"));
+        squadPvpBtn.setOnAction(e -> manager.showHostOrJoin(settings, "squad"));
         backBtn.setOnAction(e -> manager.showGameModeSelection(settings));
 
         VBox layout = new VBox(15, title, localMultiBtn, p2pBtn, squadPvpBtn, backBtn);

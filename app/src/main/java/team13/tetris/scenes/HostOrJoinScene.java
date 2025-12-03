@@ -26,6 +26,10 @@ public class HostOrJoinScene {
     private String selectedRole = "host"; // "host" or "client"
 
     public HostOrJoinScene(SceneManager manager, Settings settings) {
+        this(manager, settings, "p2p"); // 기본값은 P2P
+    }
+
+    public HostOrJoinScene(SceneManager manager, Settings settings, String gameMode) {
         this.manager = manager;
         this.settings = settings;
 
@@ -34,7 +38,8 @@ public class HostOrJoinScene {
         root.getStyleClass().add("menu-root");
         root.setPadding(new Insets(40));
 
-        Label titleLabel = new Label("P2P Multiplayer");
+        String title = "squad".equals(gameMode) ? "Squad PVP (3 Players)" : "P2P Multiplayer";
+        Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("label-title");
 
         Label roleLabel = new Label("Select Role:");
@@ -47,11 +52,15 @@ public class HostOrJoinScene {
         joinButton.getStyleClass().add("button");
 
         // Label to display host's IP
-        Label ipDisplayLabel =
-                new Label(
-                        "Your IP address: "
+        String ipMessage =
+                "squad".equals(gameMode)
+                        ? "Your IP address: "
                                 + TetrisServer.getServerIP()
-                                + "\n\nPlease let the client know this address.");
+                                + "\n\nPlease let the clients know this address.\n(Max 2 clients can join)"
+                        : "Your IP address: "
+                                + TetrisServer.getServerIP()
+                                + "\n\nPlease let the client know this address.";
+        Label ipDisplayLabel = new Label(ipMessage);
         ipDisplayLabel.getStyleClass().add("label");
         ipDisplayLabel.setWrapText(true);
         ipDisplayLabel.setMinHeight(Region.USE_PREF_SIZE);
@@ -120,7 +129,12 @@ public class HostOrJoinScene {
         continueButton.setOnAction(
                 e -> {
                     if ("host".equals(selectedRole)) {
-                        manager.showNetworkLobby(settings, true, null);
+                        // 호스트인 경우 게임 모드에 따라 적절한 로비로 이동
+                        if ("squad".equals(gameMode)) {
+                            manager.showSquadNetworkLobby(settings, true, null);
+                        } else {
+                            manager.showNetworkLobby(settings, true, null);
+                        }
                     } else {
                         String serverIP = ipTextField.getText().trim();
 
@@ -132,7 +146,12 @@ public class HostOrJoinScene {
                             return;
                         }
 
-                        manager.showNetworkLobby(settings, false, serverIP);
+                        // 클라이언트인 경우도 게임 모드에 따라 적절한 로비로 이동
+                        if ("squad".equals(gameMode)) {
+                            manager.showSquadNetworkLobby(settings, false, serverIP);
+                        } else {
+                            manager.showNetworkLobby(settings, false, serverIP);
+                        }
                     }
                 });
 
