@@ -299,4 +299,9 @@ public class SquadNetworkLobbyScene {
         itemModeButton.setDisable(disabled);
         timerModeButton.setDisable(disabled);
     }
+
+    public void setBackButtonDisabled(boolean disabled) {
+        // Back button is not stored as a field, so this is a no-op for now
+        // If needed, store backButton reference in the constructor
+    }
 }
