@@ -21,6 +21,7 @@ public class SquadResultScene {
     private final Settings settings;
     private final Scene scene;
     private final Map<Integer, String> playerIds; // index -> playerId mapping
+    private Runnable onReturnToLobbyCallback;
 
     public SquadResultScene(
             SceneManager manager,
@@ -59,11 +60,18 @@ public class SquadResultScene {
             rankingsBox.getChildren().add(rankLabel);
         }
 
-        // Return to menu button
-        Button returnButton = new Button("Return to Main Menu");
+        // Return to lobby button
+        Button returnButton = new Button("Return to Lobby");
         returnButton.setStyle(
                 "-fx-font-size: 18px; -fx-padding: 10 20; -fx-background-color: #4CAF50; -fx-text-fill: white;");
-        returnButton.setOnAction(e -> manager.showMainMenu(settings));
+        returnButton.setOnAction(
+                e -> {
+                    if (onReturnToLobbyCallback != null) {
+                        onReturnToLobbyCallback.run();
+                    } else {
+                        manager.showMainMenu(settings);
+                    }
+                });
 
         root.getChildren().addAll(title, winnerLabel, rankingsBox, returnButton);
 
@@ -72,6 +80,10 @@ public class SquadResultScene {
 
     public Scene getScene() {
         return scene;
+    }
+
+    public void setOnReturnToLobbyCallback(Runnable callback) {
+        this.onReturnToLobbyCallback = callback;
     }
 
     /**

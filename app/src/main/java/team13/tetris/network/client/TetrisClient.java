@@ -110,8 +110,7 @@ public class TetrisClient {
                 }
             } catch (IOException e) {
                 if (isConnected) {
-                    notifyError("Connection lost: " + e.getMessage());
-                    // 서버 연결 종료 알림
+                    // 서버 연결 종료 알림만 - 컨트롤러에서 팝업 처리
                     if (messageListener != null) {
                         messageListener.onServerDisconnected("Server disconnected");
                     }

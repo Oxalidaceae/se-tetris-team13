@@ -232,12 +232,8 @@ public class TetrisSquadServer {
             return;
         }
 
-        // All players ready - notify host and start game
-        if (hostMessageListener != null) {
-            hostMessageListener.onGameStart();
-        }
-
-        startGame();
+        // All players ready - start countdown
+        startCountdown();
     }
 
     public void selectGameMode(GameModeMessage.GameMode mode) {
@@ -245,8 +241,36 @@ public class TetrisSquadServer {
         broadcast(new GameModeMessage(hostPlayerId, mode));
     }
 
+    private void startCountdown() {
+        // 카운트다운 시작 메시지 브로드캐스트
+        ConnectionMessage countdownMsg = ConnectionMessage.createCountdownStart(hostPlayerId);
+        broadcast(countdownMsg);
+        
+        // 호스트에게도 알림
+        if (hostMessageListener != null) {
+            hostMessageListener.onCountdownStart();
+        }
+        
+        // 5초 후 게임 시작
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                startGame();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     public void startGame() {
         gameInProgress = true;
+        
+        // 호스트에게 게임 시작 알림
+        if (hostMessageListener != null) {
+            hostMessageListener.onGameStart();
+        }
+        
+        // 모든 클라이언트에게 게임 시작 메시지 전송
         broadcast(ConnectionMessage.createGameStart(hostPlayerId));
     }
 
@@ -303,6 +327,10 @@ public class TetrisSquadServer {
         if (hostMessageListener != null) {
             hostMessageListener.onGameEnd(finalRankings);
         }
+
+        // Reset game state immediately after sending rankings
+        // This ensures all players who return to lobby will have reset ready states
+        resetGameState();
     }
 
     public List<String> getEliminationOrder() {
@@ -311,6 +339,36 @@ public class TetrisSquadServer {
 
     public Set<String> getAlivePlayers() {
         return new HashSet<>(alivePlayers);
+    }
+
+    /** Reset game state for a new game while keeping network connections */
+    public void resetGameState() {
+        gameInProgress = false;
+        eliminationOrder.clear();
+        alivePlayers.clear();
+
+        // Re-add all connected players as alive
+        alivePlayers.add(hostPlayerId);
+        for (String clientId : connectedClients.keySet()) {
+            alivePlayers.add(clientId);
+        }
+
+        // Reset all ready states
+        PlayerInfo hostInfo = players.get(hostPlayerId);
+        if (hostInfo != null) {
+            hostInfo.setReady(false);
+        }
+        for (String clientId : connectedClients.keySet()) {
+            PlayerInfo clientInfo = players.get(clientId);
+            if (clientInfo != null) {
+                clientInfo.setReady(false);
+            }
+        }
+
+        System.out.println("Game state reset. Alive players: " + alivePlayers);
+
+        // Broadcast updated lobby state to all clients
+        broadcastLobbyState();
     }
 
     // 호스트의 공격을 랜덤하게 분배
@@ -438,6 +496,20 @@ public class TetrisSquadServer {
                     setClientReady(clientId, false);
                 } else if (connMsg.getType() == MessageType.GAME_OVER) {
                     handleGameOver(clientId);
+                } else if (connMsg.getType() == MessageType.PAUSE) {
+                    // 클라이언트의 일시정지 요청을 다른 모든 플레이어에게 브로드캐스트
+                    broadcast(message);
+                    // 호스트에게도 알림
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onGamePaused();
+                    }
+                } else if (connMsg.getType() == MessageType.RESUME) {
+                    // 클라이언트의 일시정지 해제 요청을 다른 모든 플레이어에게 브로드캐스트
+                    broadcast(message);
+                    // 호스트에게도 알림
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onGameResumed();
+                    }
                 }
             } else if (message instanceof BoardUpdateMessage) {
                 // 다른 모든 플레이어에게 브로드캐스트 (클라이언트들 + 호스트)
@@ -506,6 +578,19 @@ public class TetrisSquadServer {
                     players.remove(clientId);
                     alivePlayers.remove(clientId);
                     System.out.println("Client disconnected: " + clientId);
+
+                    // 호스트에게 클라이언트 연결 끊김 알리기
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onClientDisconnected(clientId);
+                    }
+
+                    // 다른 클라이언트들에게 이 클라이언트의 연결 끊김 알리기
+                    ConnectionMessage disconnectMsg =
+                            new ConnectionMessage(
+                                    MessageType.GAME_OVER, clientId, "Player disconnected");
+                    for (ClientHandler otherClient : connectedClients.values()) {
+                        otherClient.send(disconnectMsg);
+                    }
                 }
                 if (socket != null && !socket.isClosed()) {
                     socket.close();
