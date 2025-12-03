@@ -170,7 +170,7 @@ public class SquadNetworkLobbyScene {
                     if (onCancelCallback != null) {
                         onCancelCallback.run();
                     }
-                    manager.showMainMenu(settings);
+                    manager.showHostOrJoin(settings, "squad");
                 });
 
         HBox buttonBox = new HBox(20, readyButton, backButton);
