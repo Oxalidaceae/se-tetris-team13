@@ -377,10 +377,15 @@ public class TetrisSquadServer {
         List<String> targets = new ArrayList<>(alivePlayers);
         targets.remove(hostPlayerId);
 
+        System.out.println("[SERVER] Host attack - alivePlayers: " + alivePlayers + ", targets: " + targets);
+
         if (!targets.isEmpty()) {
             // Random selection
             String target = targets.get(new Random().nextInt(targets.size()));
+            System.out.println("[SERVER] Host attack sent to: " + target);
             sendToClient(target, attack);
+        } else {
+            System.out.println("[SERVER] Host attack - no targets available!");
         }
     }
 
@@ -540,9 +545,12 @@ public class TetrisSquadServer {
             List<String> targets = new ArrayList<>(alivePlayers);
             targets.remove(clientId);
 
+            System.out.println("[SERVER] " + clientId + " attack - alivePlayers: " + alivePlayers + ", targets: " + targets);
+
             if (!targets.isEmpty()) {
                 // Random selection
                 String target = targets.get(new Random().nextInt(targets.size()));
+                System.out.println("[SERVER] " + clientId + " attack sent to: " + target);
 
                 // 타겟이 호스트인 경우
                 if (target.equals(hostPlayerId)) {
@@ -553,6 +561,8 @@ public class TetrisSquadServer {
                     // 타겟이 클라이언트인 경우
                     sendToClient(target, attack);
                 }
+            } else {
+                System.out.println("[SERVER] " + clientId + " attack - no targets available!");
             }
         }
 

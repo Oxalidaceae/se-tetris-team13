@@ -392,10 +392,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
         Board board = myEngine.getBoard();
         
-        // 디버깅: 보드 업데이트 전송 로그
-        System.out.println("[SquadGameController] Sending board update - myPlayerId: " + myPlayerId + 
-                          ", score: " + myEngine.getScore() + ", isHost: " + isHost);
-        
         BoardUpdateMessage msg =
                 new BoardUpdateMessage(
                         myPlayerId,
@@ -417,10 +413,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         0);
 
         if (isHost) {
-            System.out.println("[SquadGameController] Host broadcasting board update");
             server.broadcast(msg);
         } else {
-            System.out.println("[SquadGameController] Client sending board update to server");
             client.sendMessage(msg);
         }
     }
@@ -1003,17 +997,14 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         String senderId = boardUpdate.getPlayerId();
         if (senderId.equals(myPlayerId)) return; // 자기 자신의 보드는 무시
 
-        System.out.println("[SquadGameController] ===== BOARD UPDATE RECEIVED =====");
-        System.out.println("[SquadGameController] From: " + senderId + ", MyID: " + myPlayerId);
-        System.out.println("[SquadGameController] PlayerIds map: " + playerIds);
-        System.out.println("[SquadGameController] Board size: " + 
-                          (boardUpdate.getBoardState() != null ? boardUpdate.getBoardState().length : "null") +
-                          ", Score: " + boardUpdate.getScore());
-
         Platform.runLater(
                 () -> {
+                    // gameScene이 null이면 무시 (경쟁 조건 방지)
+                    if (gameScene == null) {
+                        return;
+                    }
+                    
                     // senderId로 직접 판단하여 상대방 보드 업데이트
-                    System.out.println("[SquadGameController] Processing board update from: " + senderId);
                     
                     if (isHost) {
                         // 호스트 관점: 모든 클라이언트는 상대방
@@ -1030,11 +1021,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 }
                             }
                             
-                            System.out.println("[SquadGameController] Client " + senderId + " mapped to slot " + clientSlot);
-                            
                             if (clientSlot == 1) {
                                 // 첫 번째 클라이언트 -> opponent1
-                                System.out.println("[SquadGameController] Updating opponent1 with " + senderId);
                                 gameScene.updateOpponent1(
                                         boardUpdate.getBoardState(),
                                         0, 0, 0, 0, -1,
@@ -1043,7 +1031,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 gameScene.setOpponent1Name("Client 1");
                             } else if (clientSlot == 2) {
                                 // 두 번째 클라이언트 -> opponent2
-                                System.out.println("[SquadGameController] Updating opponent2 with " + senderId);
                                 gameScene.updateOpponent2(
                                         boardUpdate.getBoardState(),
                                         0, 0, 0, 0, -1,
@@ -1052,13 +1039,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 gameScene.setOpponent2Name("Client 2");
                             } else {
                                 // playerIds에 없는 경우 - 새로운 클라이언트를 순서대로 할당
-                                System.out.println("[SquadGameController] Unknown client " + senderId + ", assigning to available slot");
-                                System.out.println("[SquadGameController] Current state - opponent1Id: " + opponent1Id + ", opponent2Id: " + opponent2Id);
-                                
                                 if (opponent1Id == null) {
                                     // opponent1 슬롯이 비어있으면 여기에 할당
                                     opponent1Id = senderId;
-                                    System.out.println("[SquadGameController] Assigned " + senderId + " to opponent1");
                                     gameScene.updateOpponent1(
                                             boardUpdate.getBoardState(),
                                             0, 0, 0, 0, -1,
@@ -1068,7 +1051,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 } else if (opponent2Id == null && !senderId.equals(opponent1Id)) {
                                     // opponent2 슬롯이 비어있고 opponent1과 다른 클라이언트면 여기에 할당
                                     opponent2Id = senderId;
-                                    System.out.println("[SquadGameController] Assigned " + senderId + " to opponent2");
                                     gameScene.updateOpponent2(
                                             boardUpdate.getBoardState(),
                                             0, 0, 0, 0, -1,
@@ -1077,16 +1059,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     gameScene.setOpponent2Name("Client 2");
                                 } else {
                                     // 이미 할당된 클라이언트 중 하나인지 확인하여 업데이트
-                                    System.out.println("[SquadGameController] Both slots filled. Checking for existing assignment...");
                                     if (senderId.equals(opponent1Id)) {
-                                        System.out.println("[SquadGameController] Updating existing opponent1: " + senderId);
                                         gameScene.updateOpponent1(
                                                 boardUpdate.getBoardState(),
                                                 0, 0, 0, 0, -1,
                                                 null,
                                                 boardUpdate.getScore());
                                     } else if (senderId.equals(opponent2Id)) {
-                                        System.out.println("[SquadGameController] Updating existing opponent2: " + senderId);
                                         gameScene.updateOpponent2(
                                                 boardUpdate.getBoardState(),
                                                 0, 0, 0, 0, -1,
@@ -1102,7 +1081,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         // 클라이언트 관점
                         if (senderId.equals("Host")) {
                             // Host의 보드 -> opponent1에 할당
-                            System.out.println("[SquadGameController] Updating opponent1 with Host board");
                             gameScene.updateOpponent1(
                                     boardUpdate.getBoardState(),
                                     0, 0, 0, 0, -1,
@@ -1111,15 +1089,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                             gameScene.setOpponent1Name("Host");
                         } else if (!senderId.equals(myPlayerId)) {
                             // 다른 클라이언트의 보드 -> opponent2에 할당
-                            System.out.println("[SquadGameController] Updating opponent2 with other client: " + senderId);
                             gameScene.updateOpponent2(
                                     boardUpdate.getBoardState(),
                                     0, 0, 0, 0, -1,
                                     null,
                                     boardUpdate.getScore());
                             gameScene.setOpponent2Name(senderId);
-                        } else {
-                            System.out.println("[SquadGameController] Ignoring own board update from " + senderId);
                         }
                     }
                 });
