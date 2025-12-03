@@ -410,6 +410,20 @@ public class TetrisSquadServer {
                     setClientReady(clientId, false);
                 } else if (connMsg.getType() == MessageType.GAME_OVER) {
                     handleGameOver(clientId);
+                } else if (connMsg.getType() == MessageType.PAUSE) {
+                    // 클라이언트의 일시정지 요청을 다른 모든 플레이어에게 브로드캐스트
+                    broadcast(message);
+                    // 호스트에게도 알림
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onGamePaused();
+                    }
+                } else if (connMsg.getType() == MessageType.RESUME) {
+                    // 클라이언트의 일시정지 해제 요청을 다른 모든 플레이어에게 브로드캐스트
+                    broadcast(message);
+                    // 호스트에게도 알림
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onGameResumed();
+                    }
                 }
             } else if (message instanceof BoardUpdateMessage) {
                 // 다른 모든 플레이어에게 브로드캐스트 (클라이언트들 + 호스트)
