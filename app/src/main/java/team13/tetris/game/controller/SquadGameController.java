@@ -3,11 +3,15 @@ package team13.tetris.game.controller;
 import java.io.IOException;
 import java.util.*;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
@@ -57,6 +61,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private boolean gameStarted = false;
     private boolean myReady = false;
     private boolean isAlive = true; // Track if local player is still alive
+    private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
+    private boolean paused = false;
+    private boolean pauseInitiatedByMe = false;
 
     // Squad-specific: Player management
     private boolean hostReady = false;
@@ -521,6 +528,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
             } else {
                 returnToLobby();
             }
+            togglePause();
         }
     }
 
@@ -613,6 +621,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         if (client != null) {
             client.disconnect();
         }
+        disconnectionHandled = false; // Reset for next game
     }
 
     private void showError(String title, String message) {
@@ -624,6 +633,217 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     alert.setContentText(message);
                     alert.showAndWait();
                 });
+    }
+
+    // ===== Pause/Resume Methods (from NetworkGameController) =====
+
+    private void togglePause() {
+        if (!gameStarted || myEngine == null) return;
+
+        if (!paused) {
+            // 내가 퍼즈 시작
+            pauseInitiatedByMe = true;
+            applyLocalPause();
+            sendPauseToNetwork();
+        } else {
+            applyLocalResume();
+            sendResumeToNetwork();
+        }
+    }
+
+    private void sendPauseToNetwork() {
+        ConnectionMessage pauseMsg =
+                new ConnectionMessage(
+                        MessageType.PAUSE, myPlayerId, "Game paused by " + myPlayerId);
+        if (isHost && server != null) {
+            server.broadcast(pauseMsg);
+        } else if (!isHost && client != null) {
+            client.sendMessage(pauseMsg);
+        }
+    }
+
+    private void sendResumeToNetwork() {
+        ConnectionMessage resumeMsg =
+                new ConnectionMessage(
+                        MessageType.RESUME, myPlayerId, "Game resumed by " + myPlayerId);
+        if (isHost && server != null) {
+            server.broadcast(resumeMsg);
+        } else if (!isHost && client != null) {
+            client.sendMessage(resumeMsg);
+        }
+    }
+
+    private Stage pauseDialog = null;
+    private Stage remotePauseDialog = null;
+
+    private void applyLocalPause() {
+        if (paused) return;
+        paused = true;
+        if (myEngine != null) {
+            myEngine.stopAutoDrop();
+        }
+        // 내가 퍼즈를 건 경우 전체 메뉴, 아니면 단순 안내
+        if (pauseInitiatedByMe) {
+            showPauseWindow();
+        } else {
+            showRemotePauseWindow();
+        }
+    }
+
+    private void applyRemotePause() {
+        if (paused) return;
+        pauseInitiatedByMe = false;
+        applyLocalPause(); // 내부에서 pauseInitiatedByMe에 따라 창 선택
+    }
+
+    private void applyLocalResume() {
+        if (!paused) return;
+        paused = false;
+
+        // Pause 창이 열려있다면 닫기
+        if (pauseDialog != null && pauseDialog.isShowing()) {
+            pauseDialog.close();
+            pauseDialog = null;
+        }
+        if (remotePauseDialog != null && remotePauseDialog.isShowing()) {
+            remotePauseDialog.close();
+            remotePauseDialog = null;
+        }
+
+        if (myEngine != null) {
+            myEngine.startAutoDrop();
+        }
+        pauseInitiatedByMe = false;
+    }
+
+    private void showPauseWindow() {
+        Platform.runLater(
+                () -> {
+                    pauseDialog = new Stage();
+                    pauseDialog.initModality(Modality.APPLICATION_MODAL);
+                    pauseDialog.initOwner(gameScene.getScene().getWindow());
+
+                    Label resume = new Label("Resume");
+                    Label mainMenu = new Label("Main Menu");
+                    Label quit = new Label("Quit");
+
+                    // CSS 클래스 부여
+                    resume.getStyleClass().add("pause-option");
+                    mainMenu.getStyleClass().add("pause-option");
+                    quit.getStyleClass().add("pause-option");
+
+                    VBox box = new VBox(8, resume, mainMenu, quit);
+                    box.getStyleClass().add("pause-box");
+                    box.setAlignment(Pos.CENTER);
+
+                    Scene dialogScene = new Scene(box);
+                    dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+
+                    // 선택 상태 관리
+                    final int[] selected = new int[] {0}; // 기본 Resume 선택
+                    applySelection(resume, mainMenu, quit, selected[0]);
+
+                    dialogScene.setOnKeyPressed(
+                            ev -> {
+                                if (ev.getCode() == KeyCode.UP) {
+                                    selected[0] = (selected[0] == 0) ? 0 : selected[0] - 1;
+                                    applySelection(resume, mainMenu, quit, selected[0]);
+                                } else if (ev.getCode() == KeyCode.DOWN) {
+                                    selected[0] = (selected[0] == 2) ? 2 : selected[0] + 1;
+                                    applySelection(resume, mainMenu, quit, selected[0]);
+                                } else if (ev.getCode() == KeyCode.ENTER) {
+                                    pauseDialog.close();
+                                    pauseDialog = null;
+
+                                    if (selected[0] == 0) {
+                                        // Resume 선택
+                                        applyLocalResume();
+                                        sendResumeToNetwork();
+                                    } else if (selected[0] == 1) {
+                                        // Main Menu 선택
+                                        manager.showConfirmScene(
+                                                settings,
+                                                "Return to Main Menu?",
+                                                () -> {
+                                                    disconnect();
+                                                    manager.showMainMenu(settings);
+                                                },
+                                                () -> {
+                                                    manager.restorePreviousScene();
+                                                    paused = true;
+                                                    showPauseWindow();
+                                                });
+                                    } else {
+                                        // Quit 선택
+                                        manager.showConfirmScene(
+                                                settings,
+                                                "Exit Game?",
+                                                () -> {
+                                                    disconnect();
+                                                    manager.exitWithSave(settings);
+                                                },
+                                                () -> {
+                                                    manager.restorePreviousScene();
+                                                    paused = true;
+                                                    showPauseWindow();
+                                                });
+                                    }
+                                } else if (ev.getCode() == KeyCode.ESCAPE) {
+                                    // ESC로 Resume
+                                    pauseDialog.close();
+                                    pauseDialog = null;
+                                    applyLocalResume();
+                                    sendResumeToNetwork();
+                                }
+                            });
+
+                    // 창이 닫힐 때 참조 정리
+                    pauseDialog.setOnCloseRequest(e -> pauseDialog = null);
+
+                    pauseDialog.setScene(dialogScene);
+                    pauseDialog.setTitle("Paused");
+                    pauseDialog.setWidth(220);
+                    pauseDialog.setHeight(150);
+                    pauseDialog.showAndWait();
+                });
+    }
+
+    private void showRemotePauseWindow() {
+        Platform.runLater(
+                () -> {
+                    if (remotePauseDialog != null && remotePauseDialog.isShowing()) return;
+                    remotePauseDialog = new Stage();
+                    remotePauseDialog.initModality(Modality.NONE);
+                    remotePauseDialog.initOwner(gameScene.getScene().getWindow());
+                    Label pausedLabel = new Label("Paused");
+                    pausedLabel.getStyleClass().add("pause-option");
+                    VBox box = new VBox(12, pausedLabel);
+                    box.setAlignment(Pos.CENTER);
+                    box.getStyleClass().add("pause-box");
+                    Scene dialogScene = new Scene(box, 160, 80);
+                    dialogScene.getStylesheets().addAll(gameScene.getScene().getStylesheets());
+                    remotePauseDialog.setScene(dialogScene);
+                    remotePauseDialog.setTitle("Paused");
+                    remotePauseDialog.setResizable(false);
+                    remotePauseDialog.setOnCloseRequest(e -> remotePauseDialog = null);
+                    remotePauseDialog.show();
+                });
+    }
+
+    private void applySelection(Label resume, Label mainMenu, Label quit, int selectedIndex) {
+        // 모든 라벨에서 selected 클래스 제거
+        resume.getStyleClass().remove("selected");
+        mainMenu.getStyleClass().remove("selected");
+        quit.getStyleClass().remove("selected");
+
+        // 선택된 라벨에만 selected 클래스 추가
+        if (selectedIndex == 0) {
+            resume.getStyleClass().add("selected");
+        } else if (selectedIndex == 1) {
+            mainMenu.getStyleClass().add("selected");
+        } else {
+            quit.getStyleClass().add("selected");
+        }
     }
 
     // ===== ClientMessageListener Implementation =====
@@ -649,6 +869,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onServerDisconnected(String reason) {
+        if (disconnectionHandled) return;
+        disconnectionHandled = true;
         Platform.runLater(
                 () -> {
                     showError("Server Disconnected", reason);
@@ -685,8 +907,20 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onGameOver(String reason) {
-        // This is called when we receive GAME_OVER message
-        // For now, wait for GameEndMessage with rankings
+        // 다른 플레이어의 연결이 끊어진 경우만 처리
+        if (reason != null && reason.contains("disconnected") && !reason.contains("Server")) {
+            if (disconnectionHandled) return;
+            disconnectionHandled = true;
+            if (gameStarted) {
+                Platform.runLater(
+                        () -> {
+                            showError("Player Disconnected", "A player has left the game.");
+                            disconnect();
+                            manager.showMainMenu(settings);
+                        });
+            }
+        }
+        // 일반적인 게임 오버의 경우: GameEndMessage를 기다림
     }
 
     public void onGameEnd(List<String> rankings) {
@@ -779,12 +1013,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onGamePaused() {
-        // TODO
+        // 상대가 퍼즈: 단순 안내만 표시
+        Platform.runLater(this::applyRemotePause);
     }
 
     @Override
     public void onGameResumed() {
-        // TODO
+        Platform.runLater(this::applyLocalResume);
     }
 
     @Override
@@ -967,28 +1202,36 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     public void onClientDisconnected(String clientId) {
         Platform.runLater(
                 () -> {
-                    // Determine which client disconnected
-                    int clientIndex = getClientIndex(clientId);
-                    if (clientIndex == 1) {
-                        client1Connected = false;
-                        client1Ready = false;
-                        lobbyScene.setClient1Connected(false);
-                        lobbyScene.setClient1Ready(false);
-                    } else if (clientIndex == 2) {
-                        client2Connected = false;
-                        client2Ready = false;
-                        lobbyScene.setClient2Connected(false);
-                        lobbyScene.setClient2Ready(false);
-                    }
-
-                    int connectedCount = connectedClients();
-                    lobbyScene.setStatusText(
-                            "Client disconnected. " + connectedCount + "/2 clients connected");
-
+                    // 게임이 시작된 경우 즉시 대전 종료
                     if (gameStarted) {
                         showError("Player Disconnected", "A player has left the game.");
                         disconnect();
                         manager.showMainMenu(settings);
+                        return;
+                    }
+
+                    // 로비 중인 경우: Determine which client disconnected
+                    int clientIndex = getClientIndex(clientId);
+                    if (clientIndex == 1) {
+                        client1Connected = false;
+                        client1Ready = false;
+                        if (lobbyScene != null) {
+                            lobbyScene.setClient1Connected(false);
+                            lobbyScene.setClient1Ready(false);
+                        }
+                    } else if (clientIndex == 2) {
+                        client2Connected = false;
+                        client2Ready = false;
+                        if (lobbyScene != null) {
+                            lobbyScene.setClient2Connected(false);
+                            lobbyScene.setClient2Ready(false);
+                        }
+                    }
+
+                    int connectedCount = connectedClients();
+                    if (lobbyScene != null) {
+                        lobbyScene.setStatusText(
+                                "Client disconnected. " + connectedCount + "/2 clients connected");
                     }
                 });
     }
