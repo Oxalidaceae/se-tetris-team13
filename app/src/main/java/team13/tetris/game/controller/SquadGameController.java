@@ -66,6 +66,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     // State
     private boolean gameStarted = false;
     private boolean myReady = false;
+    private long lastReadyChangeTime = 0; // Track when ready state was last changed
     private boolean isAlive = true; // Track if local player is still alive
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
@@ -196,6 +197,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         }
 
         myReady = !myReady;
+        lastReadyChangeTime = System.currentTimeMillis(); // Track when ready state changed
         System.out.println(
                 "[SquadGameController] handleReadyButton - isHost: "
                         + isHost
@@ -1146,12 +1148,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 }
                             }
                         } else {
-                            // 클라이언트: 서버에서 보낸 정보를 기반으로 자신인지 판단
-                            // playerId가 myPlayerId와 같으면 자신의 메시지
+                            // 클라이언트: playerId로 자신인지 명확하게 판단
                             if (playerId.equals(myPlayerId)) {
-                                // 자신의 준비 상태 - 버튼과 상태 라벨 모두 업데이트
-                                myReady = ready;
-
                                 // 자신의 playerIds 맵에 자신을 추가
                                 if (!playerIds.containsKey(order)) {
                                     playerIds.put(order, myPlayerId);
@@ -1162,19 +1160,38 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                                     + myPlayerId);
                                 }
 
-                                if (lobbyScene != null) {
-                                    lobbyScene
-                                            .getReadyButton()
-                                            .setText(ready ? "Cancel Ready" : "Ready");
-                                    
-                                    // Apply or remove selected style
-                                    if (ready) {
-                                        lobbyScene.getReadyButton().getStyleClass().add("selected");
-                                    } else {
-                                        lobbyScene.getReadyButton().getStyleClass().remove("selected");
-                                    }
+                                // 자신의 준비 상태 - 최근 변경이 없었다면 서버 상태로 동기화
+                                long timeSinceLastChange = System.currentTimeMillis() - lastReadyChangeTime;
+                                if (timeSinceLastChange > 500) {
+                                    // 500ms 이상 지났으면 서버 상태를 신뢰
+                                    System.out.println(
+                                            "[SquadGameController] onLobbyStateUpdate - Updating myReady from "
+                                                    + myReady
+                                                    + " to "
+                                                    + ready);
+                                    myReady = ready;
 
-                                    // 자신의 order에 따라 적절한 라벨 업데이트
+                                    if (lobbyScene != null) {
+                                        lobbyScene
+                                                .getReadyButton()
+                                                .setText(ready ? "Cancel Ready" : "Ready");
+                                        
+                                        // Apply or remove selected style
+                                        if (ready) {
+                                            lobbyScene.getReadyButton().getStyleClass().add("selected");
+                                        } else {
+                                            lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                                        }
+                                    }
+                                } else {
+                                    System.out.println(
+                                            "[SquadGameController] onLobbyStateUpdate - Ignoring stale update (timeSince="
+                                                    + timeSinceLastChange
+                                                    + "ms)");
+                                }
+
+                                // 자신의 order에 따라 적절한 라벨 업데이트 (항상 수행)
+                                if (lobbyScene != null) {
                                     if (order == 1) {
                                         if (!client1Connected) {
                                             client1Connected = true;
