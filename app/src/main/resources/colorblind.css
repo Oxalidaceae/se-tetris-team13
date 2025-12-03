@@ -1,6 +1,6 @@
 .root {
     -fx-background-color: #1a1a1a;
-    -fx-font-family: "Roboto", "Noto Sans", sans-serif;
+    -fx-font-family: "Consolas", "Courier New", "Lucida Console", monospace;
     -fx-text-fill: #F5F5F5;
 }
 
@@ -88,14 +88,14 @@
 .window-small .button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
-    -fx-pref-width: 150px;
+    -fx-pref-width: 174px;
     -fx-pref-height: 30px;
 }
 
 .window-small .toggle-button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
-    -fx-pref-width: 150px;
+    -fx-pref-width: 174px;
     -fx-pref-height: 30px;
 }
 
@@ -165,14 +165,14 @@
 .window-medium .button {
     -fx-font-size: 16px;
     -fx-padding: 8 16;
-    -fx-pref-width: 200px;
+    -fx-pref-width: 231px;
     -fx-pref-height: 40px;
 }
 
 .window-medium .toggle-button {
     -fx-font-size: 16px;
     -fx-padding: 8 16;
-    -fx-pref-width: 200px;
+    -fx-pref-width: 231px;
     -fx-pref-height: 40px;
 }
 
@@ -234,14 +234,14 @@
 .window-large .button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
-    -fx-pref-width: 250px;
+    -fx-pref-width: 290px;
     -fx-pref-height: 50px;
 }
 
 .window-large .toggle-button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
-    -fx-pref-width: 250px;
+    -fx-pref-width: 290px;
     -fx-pref-height: 50px;
 }
 
