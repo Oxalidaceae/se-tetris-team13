@@ -2,7 +2,11 @@ package team13.tetris.game.controller;
 
 import java.io.IOException;
 import java.util.*;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -13,6 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
@@ -77,6 +82,10 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     // Incoming attacks queue
     private final Queue<int[][]> myIncomingBlocks = new LinkedList<>();
+
+    // 카운트다운
+    private Timeline countdownTimeline;
+    private final IntegerProperty countdownSeconds = new SimpleIntegerProperty();
 
     public SquadGameController(
             SceneManager manager, Settings settings, boolean isHost, String serverIP) {
@@ -817,7 +826,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onGameStart() {
-        startGame();
+        Platform.runLater(() -> {
+            if (countdownTimeline != null) {
+                countdownTimeline.stop();
+            }
+            startGame();
+        });
     }
 
     @Override
@@ -1162,7 +1176,28 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onCountdownStart() {
-        // TODO: Implement countdown if needed
+        Platform.runLater(() -> {
+            if (lobbyScene != null) {
+                lobbyScene.setControlsDisabled(true);
+                lobbyScene.setStatusText("Game starting soon...");
+                countdownSeconds.set(5);
+                
+                // 준비 버튼 텍스트를 카운트다운에 바인딩
+                lobbyScene.getReadyButton().textProperty().bind(countdownSeconds.asString());
+                
+                countdownTimeline = new Timeline(
+                    new KeyFrame(Duration.seconds(1), e -> {
+                        countdownSeconds.set(countdownSeconds.get() - 1);
+                    })
+                );
+                countdownTimeline.setCycleCount(5);
+                countdownTimeline.setOnFinished(e -> {
+                    lobbyScene.getReadyButton().textProperty().unbind();
+                    lobbyScene.getReadyButton().setText("Starting...");
+                });
+                countdownTimeline.play();
+            }
+        });
     }
 
     @Override

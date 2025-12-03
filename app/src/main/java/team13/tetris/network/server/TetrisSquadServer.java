@@ -222,12 +222,8 @@ public class TetrisSquadServer {
             return;
         }
 
-        // All players ready - notify host and start game
-        if (hostMessageListener != null) {
-            hostMessageListener.onGameStart();
-        }
-
-        startGame();
+        // All players ready - start countdown
+        startCountdown();
     }
 
     public void selectGameMode(GameModeMessage.GameMode mode) {
@@ -235,8 +231,36 @@ public class TetrisSquadServer {
         broadcast(new GameModeMessage(hostPlayerId, mode));
     }
 
+    private void startCountdown() {
+        // 카운트다운 시작 메시지 브로드캐스트
+        ConnectionMessage countdownMsg = ConnectionMessage.createCountdownStart(hostPlayerId);
+        broadcast(countdownMsg);
+        
+        // 호스트에게도 알림
+        if (hostMessageListener != null) {
+            hostMessageListener.onCountdownStart();
+        }
+        
+        // 5초 후 게임 시작
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                startGame();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     public void startGame() {
         gameInProgress = true;
+        
+        // 호스트에게 게임 시작 알림
+        if (hostMessageListener != null) {
+            hostMessageListener.onGameStart();
+        }
+        
+        // 모든 클라이언트에게 게임 시작 메시지 전송
         broadcast(ConnectionMessage.createGameStart(hostPlayerId));
     }
 
