@@ -75,8 +75,12 @@ public class TetrisClient {
 
             if (msg.getType() == MessageType.CONNECTION_ACCEPTED) {
                 isConnected = true;
-                System.out.println("Connected successfully!");
-                if (messageListener != null) messageListener.onConnectionAccepted();
+                
+                // 서버가 할당한 새 클라이언트 ID 추출
+                String assignedClientId = msg.getTargetPlayerId();
+                System.out.println("Connected successfully! Assigned ID: " + assignedClientId);
+                
+                if (messageListener != null) messageListener.onConnectionAccepted(assignedClientId);
 
                 // 메시지 수신 루프 스레드 시작 (Future 저장하여 나중에 취소 가능)
                 messageLoopFuture = messageHandler.submit(this::messageLoop);

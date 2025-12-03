@@ -423,7 +423,7 @@ class TetrisServerAdvancedTest {
         private volatile GameModeMessage.GameMode selectedGameMode;
 
         @Override
-        public void onConnectionAccepted() {
+        public void onConnectionAccepted(String assignedClientId) {
             // 기본 구현
         }
 

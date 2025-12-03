@@ -19,6 +19,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import team13.tetris.SceneManager;
+import team13.tetris.audio.SoundManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.logic.GameEngine;
@@ -61,10 +62,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     // State
     private boolean gameStarted = false;
     private boolean myReady = false;
+    private long lastReadyChangeTime = 0; // Track when ready state was last changed
     private boolean isAlive = true; // Track if local player is still alive
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
     private boolean pauseInitiatedByMe = false;
+    private long lastReadyChangeTime = 0; // Track when client last changed ready state
 
     // Squad-specific: Player management
     private boolean hostReady = false;
@@ -192,6 +195,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         }
 
         myReady = !myReady;
+        lastReadyChangeTime = System.currentTimeMillis(); // Track when ready state changed
         System.out.println(
                 "[SquadGameController] handleReadyButton - isHost: "
                         + isHost
@@ -216,8 +220,17 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
             checkAllReady();
         } else {
-            // Client: send ready message to server
+            // Client: send ready message to server and update UI immediately
             System.out.println("[SquadGameController] Client sending ready message: " + myReady);
+            
+            // Record the time of this ready state change
+            lastReadyChangeTime = System.currentTimeMillis();
+            
+            // Update button text immediately for responsive UI
+            if (lobbyScene != null) {
+                lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+            }
+            
             if (myReady) {
                 client.sendMessage(ConnectionMessage.createPlayerReady(myPlayerId));
             } else {
@@ -257,6 +270,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         opponent1Id = null;
         opponent2Id = null;
         System.out.println("[SquadGameController] Initialized opponent tracking variables");
+        // Play game BGM when starting the squad game
+        SoundManager.getInstance().playGameBGM();
 
         gameStarted = true; // 먼저 플래그 설정
         lobbyScene = null; // 그 다음 로비 씬 참조 제거
@@ -556,9 +571,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
             if (isHost && server != null && server.getAlivePlayers().size() == 1 && isAlive) {
                 server.endGame(); // Trigger game end with rankings
             } else {
-                returnToLobby();
+                togglePause();
             }
-            togglePause();
         }
     }
 
@@ -574,16 +588,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         isAlive = true;
         myIncomingBlocks.clear();
 
-        // Don't reset ready states here - they should already be reset by server's resetGameState()
+        // Don't reset ready states here - they were already reset by server's resetGameState()
         // which was called in endGame() and broadcasted via onLobbyStateUpdate()
-        // Just ensure server state is clean (safe to call multiple times)
-
-        if (isHost && server != null) {
-            // Reset server game state
-            // This is safe to call even if already called in endGame()
-            server.resetGameState();
-        }
-        // Client: don't send unready message - server already reset all states
+        // Do NOT call resetGameState() again here - it would reset states of players who
+        // returned to lobby earlier and already pressed ready
+        
+        // Client: don't send unready message - server already reset all states in endGame()
 
         // Recreate lobby scene WITHOUT reconnecting
         Platform.runLater(
@@ -633,12 +643,26 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         lobbyScene.setOnSendChatCallback(this::handleSendChat);
         lobbyScene.setOnCancelCallback(this::disconnect);
 
-        // Sync button text with actual myReady state
-        // Host always shows "Start", clients show "Ready"/"Unready"
+        // Set initial button text
+        // Host always shows "Start", clients show "Ready" initially (will be updated by onLobbyStateUpdate)
         if (isHost) {
             lobbyScene.getReadyButton().setText("Start");
+            
+            // Request server to broadcast current lobby state so returning players see current ready states
+            if (server != null) {
+                server.broadcastLobbyState();
+            }
         } else {
-            lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+            // Always start with "Ready" - server will send updated state via onLobbyStateUpdate
+            lobbyScene.getReadyButton().setText("Ready");
+            
+            // Request current lobby state from server by sending unready then ready if needed
+            // This triggers server to broadcast current state to all players
+            if (client != null) {
+                // Send a dummy unready to trigger server's broadcastLobbyState
+                // Server will respond with current state of all players
+                client.sendMessage(ConnectionMessage.createPlayerUnready(myPlayerId));
+            }
         }
 
         manager.changeScene(lobbyScene.getScene());
@@ -880,10 +904,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     // ===== ClientMessageListener Implementation =====
 
     @Override
-    public void onConnectionAccepted() {
-        System.out.println("[SquadGameController] Connection accepted for client: " + myPlayerId);
+    public void onConnectionAccepted(String assignedClientId) {
         Platform.runLater(
                 () -> {
+                    // 서버가 할당한 새 ID로 업데이트
+                    System.out.println("[SquadGameController] Updating myPlayerId from " + myPlayerId + " to " + assignedClientId);
+                    myPlayerId = assignedClientId;
+                    
                     lobbyScene.setStatusText("Connected to server!");
                     System.out.println("[SquadGameController] Client playerIds before: " + playerIds);
                     // 클라이언트는 자신의 ID를 저장 (서버에서 할당받은 슬롯 정보는 onLobbyStateUpdate에서 처리)
@@ -1242,6 +1269,74 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 hostReady = ready;
                                 if (lobbyScene != null) {
                                     lobbyScene.setHostReady(ready);
+                            // 클라이언트: playerId로 자신인지 명확하게 판단
+                            if (playerId.equals(myPlayerId)) {
+                                // 자신의 playerIds 맵에 자신을 추가
+                                if (!playerIds.containsKey(order)) {
+                                    playerIds.put(order, myPlayerId);
+                                    System.out.println(
+                                            "[SquadGameController] Client added self to playerIds: index="
+                                                    + order
+                                                    + ", id="
+                                                    + myPlayerId);
+                                }
+
+                                // 자신의 준비 상태 - 최근 변경이 없었다면 서버 상태로 동기화
+                                long timeSinceLastChange = System.currentTimeMillis() - lastReadyChangeTime;
+                                if (timeSinceLastChange > 500) {
+                                    // 500ms 이상 지났으면 서버 상태를 신뢰
+                                    System.out.println(
+                                            "[SquadGameController] onLobbyStateUpdate - Updating myReady from "
+                                                    + myReady
+                                                    + " to "
+                                                    + ready);
+                                    myReady = ready;
+
+                                    if (lobbyScene != null) {
+                                        lobbyScene
+                                                .getReadyButton()
+                                                .setText(ready ? "Cancel Ready" : "Ready");
+                                        
+                                        // Apply or remove selected style
+                                        if (ready) {
+                                            lobbyScene.getReadyButton().getStyleClass().add("selected");
+                                        } else {
+                                            lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                                        }
+                                    }
+                                } else {
+                                    System.out.println(
+                                            "[SquadGameController] onLobbyStateUpdate - Ignoring stale update (timeSince="
+                                                    + timeSinceLastChange
+                                                    + "ms)");
+                                }
+
+                                // 자신의 order에 따라 적절한 라벨 업데이트 (항상 수행)
+                                if (lobbyScene != null) {
+                                    if (order == 1) {
+                                        if (!client1Connected) {
+                                            client1Connected = true;
+                                            lobbyScene.setClient1Connected(true);
+                                        }
+                                        lobbyScene.setClient1Ready(ready);
+                                    } else if (order == 2) {
+                                        if (!client2Connected) {
+                                            client2Connected = true;
+                                            lobbyScene.setClient2Connected(true);
+                                        }
+                                        lobbyScene.setClient2Ready(ready);
+                                    }
+                                }
+                            } else {
+                                // 다른 플레이어: 서버가 보낸 order를 기준으로 표시
+                                // order 0 = Host, order 1 = Client1, order 2 = Client2
+
+                                if (!otherPlayerConnectionOrder.contains(playerId)) {
+                                    otherPlayerConnectionOrder.add(playerId);
+                                }
+
+                                if (!playerIds.containsValue(playerId)) {
+                                    playerIds.put(order, playerId);
                                 }
                             } else if (order == 1) {
                                 // Client 1
@@ -1326,7 +1421,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         Platform.runLater(() -> {
             if (lobbyScene != null) {
                 lobbyScene.setControlsDisabled(true);
-                lobbyScene.setStatusText("Game starting soon...");
+                lobbyScene.setStatusText("Game starting in...");
+                
+                // 카운트다운 전에 기존 바인딩 해제 및 스타일 정리
+                lobbyScene.getReadyButton().textProperty().unbind();
+                lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                
                 countdownSeconds.set(5);
                 
                 // 준비 버튼 텍스트를 카운트다운에 바인딩
@@ -1337,7 +1437,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         countdownSeconds.set(countdownSeconds.get() - 1);
                     })
                 );
-                countdownTimeline.setCycleCount(5);
+                countdownTimeline.setCycleCount(5); // 5초 동안 5번 실행: 4, 3, 2, 1, 0
                 countdownTimeline.setOnFinished(e -> {
                     lobbyScene.getReadyButton().textProperty().unbind();
                     lobbyScene.getReadyButton().setText("Starting...");

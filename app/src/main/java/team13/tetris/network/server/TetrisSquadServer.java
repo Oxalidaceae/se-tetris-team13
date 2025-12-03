@@ -183,7 +183,7 @@ public class TetrisSquadServer {
         this.hostMessageListener = listener;
     }
 
-    private void broadcastLobbyState() {
+    public void broadcastLobbyState() {
         List<LobbyStateMessage.PlayerState> playerStates = new ArrayList<>();
 
         // Host \ucd94\uac00 (order = 0)
@@ -421,19 +421,21 @@ public class TetrisSquadServer {
                 ConnectionMessage connMsg = (ConnectionMessage) firstMessage;
                 String originalClientId = connMsg.getSenderId();
                 
-                // 연결 순서에 따라 친근한 클라이언트 이름 부여
-                int connectionIndex = clientConnectionOrder.size();
-                clientId = "Client " + (connectionIndex + 1);
-                
-                // 원래 ID와 새로운 ID 간 매핑 저장
-                clientIdMapping.put(originalClientId, clientId);
+                // 연결 순서에 따라 친근한 클라이언트 이름 부여 (동기화)
+                synchronized (clientConnectionOrder) {
+                    int connectionIndex = clientConnectionOrder.size();
+                    clientId = "Client " + (connectionIndex + 1);
+                    
+                    // 원래 ID와 새로운 ID 간 매핑 저장
+                    clientIdMapping.put(originalClientId, clientId);
 
-                // Accept connection and track connection order
-                connectedClients.put(clientId, this);
-                clientConnectionOrder.add(clientId);
-                PlayerInfo playerInfo = new PlayerInfo(clientId);
-                players.put(clientId, playerInfo);
-                alivePlayers.add(clientId);
+                    // Accept connection and track connection order
+                    connectedClients.put(clientId, this);
+                    clientConnectionOrder.add(clientId);
+                    PlayerInfo playerInfo = new PlayerInfo(clientId);
+                    players.put(clientId, playerInfo);
+                    alivePlayers.add(clientId);
+                }
 
                 output.writeObject(
                         ConnectionMessage.createConnectionAccepted(hostPlayerId, clientId));
