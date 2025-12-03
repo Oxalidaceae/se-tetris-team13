@@ -441,7 +441,7 @@ class TetrisClientAdvancedTest {
             // TODO Auto-generated method stub
             throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
         }
-      
+
         public void onChatMessageReceived(String senderId, String message) {
             // Test implementation
         }
