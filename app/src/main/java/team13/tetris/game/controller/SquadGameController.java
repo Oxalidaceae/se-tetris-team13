@@ -19,6 +19,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import team13.tetris.SceneManager;
+import team13.tetris.audio.SoundManager;
 import team13.tetris.config.Settings;
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.logic.GameEngine;
@@ -65,6 +66,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     // State
     private boolean gameStarted = false;
     private boolean myReady = false;
+    private long lastReadyChangeTime = 0; // Track when ready state was last changed
     private boolean isAlive = true; // Track if local player is still alive
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
@@ -196,6 +198,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         }
 
         myReady = !myReady;
+        lastReadyChangeTime = System.currentTimeMillis(); // Track when ready state changed
         System.out.println(
                 "[SquadGameController] handleReadyButton - isHost: "
                         + isHost
@@ -265,6 +268,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         + ", isHost: "
                         + isHost);
         System.out.println("[SquadGameController] Starting game - playerIds: " + playerIds);
+
+        // Play game BGM when starting the squad game
+        SoundManager.getInstance().playGameBGM();
 
         gameStarted = true; // 먼저 플래그 설정
         lobbyScene = null; // 그 다음 로비 씬 참조 제거
@@ -562,9 +568,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
             if (isHost && server != null && server.getAlivePlayers().size() == 1 && isAlive) {
                 server.endGame(); // Trigger game end with rankings
             } else {
-                returnToLobby();
+                togglePause();
             }
-            togglePause();
         }
     }
 
@@ -1193,7 +1198,14 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     if (lobbyScene != null) {
                                         lobbyScene
                                                 .getReadyButton()
-                                                .setText(ready ? "Unready" : "Ready");
+                                                .setText(ready ? "Cancel Ready" : "Ready");
+                                        
+                                        // Apply or remove selected style
+                                        if (ready) {
+                                            lobbyScene.getReadyButton().getStyleClass().add("selected");
+                                        } else {
+                                            lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                                        }
                                     }
                                 } else {
                                     System.out.println(
@@ -1322,7 +1334,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         Platform.runLater(() -> {
             if (lobbyScene != null) {
                 lobbyScene.setControlsDisabled(true);
-                lobbyScene.setStatusText("Game starting soon...");
+                lobbyScene.setStatusText("Game starting in...");
+                
+                // 카운트다운 전에 기존 바인딩 해제 및 스타일 정리
+                lobbyScene.getReadyButton().textProperty().unbind();
+                lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                
                 countdownSeconds.set(5);
                 
                 // 준비 버튼 텍스트를 카운트다운에 바인딩
@@ -1333,7 +1350,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         countdownSeconds.set(countdownSeconds.get() - 1);
                     })
                 );
-                countdownTimeline.setCycleCount(5);
+                countdownTimeline.setCycleCount(5); // 5초 동안 5번 실행: 4, 3, 2, 1, 0
                 countdownTimeline.setOnFinished(e -> {
                     lobbyScene.getReadyButton().textProperty().unbind();
                     lobbyScene.getReadyButton().setText("Starting...");
