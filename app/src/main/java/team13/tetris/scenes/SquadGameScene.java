@@ -391,17 +391,22 @@ public class SquadGameScene extends BaseGameScene {
             int nextPiece,
             Queue<int[][]> incoming,
             int score) {
+        System.out.println("[SquadGameScene] ===== UPDATING OPPONENT1 =====");
+        System.out.println("[SquadGameScene] Board: " + (board != null ? board.length + "x" + (board.length > 0 ? board[0].length : 0) : "null"));
+        System.out.println("[SquadGameScene] Score: " + score + ", Name: " + opponent1Name);
+        
         opponent1.board = board;
         opponent1.pieceX = pieceX;
         opponent1.pieceY = pieceY;
-        opponent1.pieceType = pieceType;
+        opponent1.pieceType = pieceType; // 떨어지는 블록은 보여주지 않으므로 0이어야 함
         opponent1.rotation = rotation;
-        opponent1.nextPiece = nextPiece;
+        opponent1.nextPiece = nextPiece; // 다음 블록도 보여주지 않으므로 -1이어야 함
         opponent1.incomingQueue =
                 (incoming != null) ? new LinkedList<>(incoming) : new LinkedList<>();
         opponent1.score = score;
 
         updateGrid();
+        System.out.println("[SquadGameScene] Opponent1 update completed");
     }
 
     // Update opponent 2 state
@@ -414,17 +419,22 @@ public class SquadGameScene extends BaseGameScene {
             int nextPiece,
             Queue<int[][]> incoming,
             int score) {
+        System.out.println("[SquadGameScene] ===== UPDATING OPPONENT2 =====");
+        System.out.println("[SquadGameScene] Board: " + (board != null ? board.length + "x" + (board.length > 0 ? board[0].length : 0) : "null"));
+        System.out.println("[SquadGameScene] Score: " + score + ", Name: " + opponent2Name);
+        
         opponent2.board = board;
         opponent2.pieceX = pieceX;
         opponent2.pieceY = pieceY;
-        opponent2.pieceType = pieceType;
+        opponent2.pieceType = pieceType; // 떨어지는 블록은 보여주지 않으므로 0이어야 함
         opponent2.rotation = rotation;
-        opponent2.nextPiece = nextPiece;
+        opponent2.nextPiece = nextPiece; // 다음 블록도 보여주지 않으므로 -1이어야 함
         opponent2.incomingQueue =
                 (incoming != null) ? new LinkedList<>(incoming) : new LinkedList<>();
         opponent2.score = score;
 
         updateGrid();
+        System.out.println("[SquadGameScene] Opponent2 update completed");
     }
 
     /** Gray out local board when player dies (spectator mode) */
@@ -524,15 +534,25 @@ public class SquadGameScene extends BaseGameScene {
                     scoreLabelLocal.setText(localName + "\nScore: " + localEngine.getScore());
 
                     // Update opponents
+                    System.out.println("[SquadGameScene] updateGrid - opponent1: board=" + 
+                                     (opponent1.board != null) + ", alive=" + opponent1.isAlive + ", name=" + opponent1Name);
                     if (opponent1.board != null && opponent1.isAlive) {
                         updateOpponentGrid(opponent1, boardCacheOpp1);
-                        drawNextPiece(previewCacheOpp1, opponent1.nextPiece);
+                        // 다음 블록은 보여주지 않으므로 -1인 경우 그리지 않음
+                        if (opponent1.nextPiece > 0) {
+                            drawNextPiece(previewCacheOpp1, opponent1.nextPiece);
+                        }
                         scoreLabelOpponent1.setText(opponent1Name + "\nScore: " + opponent1.score);
                     }
 
+                    System.out.println("[SquadGameScene] updateGrid - opponent2: board=" + 
+                                     (opponent2.board != null) + ", alive=" + opponent2.isAlive + ", name=" + opponent2Name);
                     if (opponent2.board != null && opponent2.isAlive) {
                         updateOpponentGrid(opponent2, boardCacheOpp2);
-                        drawNextPiece(previewCacheOpp2, opponent2.nextPiece);
+                        // 다음 블록은 보여주지 않으므로 -1인 경우 그리지 않음
+                        if (opponent2.nextPiece > 0) {
+                            drawNextPiece(previewCacheOpp2, opponent2.nextPiece);
+                        }
                         scoreLabelOpponent2.setText(opponent2Name + "\nScore: " + opponent2.score);
                     }
                 });
@@ -676,11 +696,17 @@ public class SquadGameScene extends BaseGameScene {
     }
 
     private void updateOpponentGrid(OpponentState opp, Map<String, CellView> cache) {
-        if (opp.board == null) return;
+        if (opp.board == null) {
+            System.out.println("[SquadGameScene] updateOpponentGrid: board is null!");
+            return;
+        }
 
         int h = opp.board.length;
         int w = opp.board[0].length;
-
+        
+        System.out.println("[SquadGameScene] updateOpponentGrid: updating " + h + "x" + w + " board");
+        
+        // 상대방 보드의 고정된 블록들만 표시 (떨어지는 블록은 표시하지 않음)
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int v = opp.board[y][x];
@@ -690,6 +716,8 @@ public class SquadGameScene extends BaseGameScene {
                 }
             }
         }
+        
+        System.out.println("[SquadGameScene] updateOpponentGrid: completed");
     }
 
     private void drawNextPiece(Map<String, CellView> cache, int pieceType) {
