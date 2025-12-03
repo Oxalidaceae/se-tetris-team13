@@ -6,7 +6,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import team13.tetris.SceneManager;
@@ -36,6 +39,7 @@ public class SquadNetworkLobbyScene {
     private Label client2ReadyLabel;
 
     private Button readyButton;
+    private Button backButton;
 
     private Label gameModeLabel;
     private Button normalModeButton;
@@ -49,6 +53,12 @@ public class SquadNetworkLobbyScene {
 
     private boolean isClient1Connected = false;
     private boolean isClient2Connected = false;
+
+    // 채팅 UI 컴포넌트
+    private TextArea chatArea;
+    private TextField chatInput;
+    private Button chatSendButton;
+    private Runnable onSendChatCallback;
 
     public SquadNetworkLobbyScene(SceneManager manager, Settings settings, boolean isHost) {
         this.manager = manager;
@@ -67,55 +77,6 @@ public class SquadNetworkLobbyScene {
         statusLabel.getStyleClass().add("label");
         statusLabel.setStyle("-fx-text-fill: yellow;");
         statusLabel.setTextAlignment(TextAlignment.CENTER);
-
-        // 게임 모드 선택 (서버만)
-        VBox gameModeBox = new VBox(10);
-        gameModeBox.setAlignment(Pos.CENTER);
-
-        gameModeLabel = new Label("Select Game Mode:");
-        gameModeLabel.getStyleClass().add("label");
-
-        normalModeButton = new Button("Normal Mode");
-        normalModeButton.getStyleClass().addAll("button", "selected");
-
-        itemModeButton = new Button("Item Mode");
-        itemModeButton.getStyleClass().add("button");
-
-        timerModeButton = new Button("Timer Mode");
-        timerModeButton.getStyleClass().add("button");
-
-        normalModeButton.setOnAction(
-                e -> {
-                    selectedGameMode = GameModeMessage.GameMode.NORMAL;
-                    normalModeButton.getStyleClass().add("selected");
-                    itemModeButton.getStyleClass().remove("selected");
-                    timerModeButton.getStyleClass().remove("selected");
-                });
-        itemModeButton.setOnAction(
-                e -> {
-                    selectedGameMode = GameModeMessage.GameMode.ITEM;
-                    normalModeButton.getStyleClass().remove("selected");
-                    itemModeButton.getStyleClass().add("selected");
-                    timerModeButton.getStyleClass().remove("selected");
-                });
-        timerModeButton.setOnAction(
-                e -> {
-                    selectedGameMode = GameModeMessage.GameMode.TIMER;
-                    normalModeButton.getStyleClass().remove("selected");
-                    itemModeButton.getStyleClass().remove("selected");
-                    timerModeButton.getStyleClass().add("selected");
-                });
-
-        HBox modeButtonBox = new HBox(10, normalModeButton, itemModeButton, timerModeButton);
-        modeButtonBox.setAlignment(Pos.CENTER);
-
-        if (isHost) {
-            gameModeBox.getChildren().addAll(gameModeLabel, modeButtonBox);
-        } else {
-            // 클라이언트는 모드 표시만
-            gameModeLabel.setText("Game Mode: Waiting...");
-            gameModeBox.getChildren().add(gameModeLabel);
-        }
 
         // 준비 상태 (3명)
         VBox readyBox = new VBox(15);
@@ -139,6 +100,60 @@ public class SquadNetworkLobbyScene {
         readyBox.getChildren()
                 .addAll(readyTitleLabel, hostReadyLabel, client1ReadyLabel, client2ReadyLabel);
 
+        // 채팅 UI
+        VBox chatBox = new VBox(10);
+        chatBox.setAlignment(Pos.CENTER);
+
+        Label chatTitleLabel = new Label("Chat");
+        chatTitleLabel.getStyleClass().add("label");
+
+        chatArea = new TextArea();
+        chatArea.setEditable(false);
+        chatArea.setWrapText(true);
+        chatArea.getStyleClass().add("text-area");
+        chatArea.setFocusTraversable(false);
+        chatArea.setFocusTraversable(false);
+
+        VBox.setVgrow(chatArea, Priority.ALWAYS);
+
+        chatInput = new TextField();
+        chatInput.setPromptText("Please enter a message");
+        chatInput.getStyleClass().add("text-field");
+
+        chatSendButton = new Button("Send");
+        chatSendButton.getStyleClass().add("button");
+
+        // Enter 키로 전송
+        chatInput.setOnAction(e -> chatSendButton.fire());
+
+        HBox chatInputBox = new HBox(10);
+        chatInputBox.setAlignment(Pos.CENTER);
+
+        // 채팅 입력창과 전송 버튼 크기 비율 조정
+        chatInput.prefWidthProperty().bind(chatInputBox.widthProperty().subtract(10).multiply(0.7));
+        chatSendButton
+                .prefWidthProperty()
+                .bind(chatInputBox.widthProperty().subtract(10).multiply(0.3));
+        chatInputBox.getChildren().addAll(chatInput, chatSendButton);
+
+        chatBox.getChildren().addAll(chatTitleLabel, chatArea, chatInputBox);
+
+        // 준비 상태와 채팅 박스 가로 배치
+        HBox readyAndChatbox = new HBox(20);
+        readyAndChatbox.setAlignment(Pos.CENTER);
+
+        readyBox.setMaxWidth(Double.MAX_VALUE);
+        chatBox.setMaxWidth(Double.MAX_VALUE);
+
+        readyBox.setPrefWidth(0);
+        chatBox.setPrefWidth(0);
+
+        HBox.setHgrow(readyBox, Priority.ALWAYS);
+        HBox.setHgrow(chatBox, Priority.ALWAYS);
+        readyAndChatbox.getChildren().addAll(readyBox, chatBox);
+
+        VBox.setVgrow(readyAndChatbox, Priority.ALWAYS);
+
         // 준비 버튼
         if (isHost) {
             readyButton = new Button("Ready");
@@ -155,7 +170,7 @@ public class SquadNetworkLobbyScene {
                     if (onCancelCallback != null) {
                         onCancelCallback.run();
                     }
-                    manager.showMainMenu(settings);
+                    manager.showHostOrJoin(settings, "squad");
                 });
 
         HBox buttonBox = new HBox(20, readyButton, backButton);
@@ -166,13 +181,12 @@ public class SquadNetworkLobbyScene {
                         titleLabel,
                         statusLabel,
                         new Label(), // 간격
-                        gameModeBox,
-                        new Label(), // 간격
-                        readyBox,
+                        readyAndChatbox,
                         new Label(), // 간격
                         buttonBox);
 
         scene = new Scene(root);
+        manager.enableArrowAsTab(scene);
     }
 
     public Scene getScene() {
@@ -300,8 +314,39 @@ public class SquadNetworkLobbyScene {
         timerModeButton.setDisable(disabled);
     }
 
+    // 채팅 메시지 추가
+    public void appendChatMessage(String senderId, String message) {
+        Platform.runLater(
+                () -> {
+                    chatArea.appendText(senderId + ": " + message + "\n");
+                    // 자동 스크롤 (가장 최근 메시지로)
+                    chatArea.positionCaret(chatArea.getLength() - 1);
+                });
+    }
+
+    // 채팅 입력 필드 가져오기
+    public String getChatInput() {
+        return chatInput.getText();
+    }
+
+    // 채팅 입력 필드 초기화
+    public void clearChatInput() {
+        Platform.runLater(() -> chatInput.clear());
+    }
+
+    // 채팅 전송 버튼에 콜백 설정
+    public void setOnSendChatCallback(Runnable callback) {
+        this.onSendChatCallback = callback;
+        chatSendButton.setOnAction(
+                e -> {
+                    if (onSendChatCallback != null) {
+                        onSendChatCallback.run();
+                    }
+                });
+    }
+
+    // Back 버튼 비활성화
     public void setBackButtonDisabled(boolean disabled) {
-        // Back button is not stored as a field, so this is a no-op for now
-        // If needed, store backButton reference in the constructor
+        Platform.runLater(() -> backButton.setDisable(disabled));
     }
 }

@@ -635,7 +635,7 @@ public class TetrisServer {
 
         // 호스트에게도 자신의 메시지를 알림 (에코)
         if (hostMessageListener != null) {
-            hostMessageListener.onChatMessageReceived(hostPlayerId, message);
+            hostMessageListener.onChatMessageReceived("Me", message);
         }
     }
 

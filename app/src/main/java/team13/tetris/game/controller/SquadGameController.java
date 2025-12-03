@@ -119,13 +119,14 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
             // Poll server for client connections
             new Thread(this::pollServerConnections).start();
         } else {
-            // Generate unique client ID
-            myPlayerId = "Client-" + System.currentTimeMillis();
+            // 고유한 임시 클라이언트 ID 생성
+            myPlayerId = "TempClient-" + System.currentTimeMillis();
             connectToServer();
         }
 
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
         lobbyScene.setOnCancelCallback(this::disconnect);
+        lobbyScene.setOnSendChatCallback(this::handleSendChat);
         manager.changeScene(lobbyScene.getScene());
     }
 
@@ -169,6 +170,22 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                             }
                         })
                 .start();
+    }
+
+    // 채팅 메시지 전송 처리
+    private void handleSendChat() {
+        String message = lobbyScene.getChatInput().trim();
+        if (message.isEmpty()) {
+            return;
+        }
+        
+        if (isHost && server != null) {
+            server.sendChatMessage(message);
+        } else if (!isHost && client != null) {
+            client.sendChatMessage(message);
+        }
+        
+        lobbyScene.clearChatInput();
     }
 
     private void handleReadyButton() {
@@ -1126,8 +1143,16 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 }
                             }
                         } else {
-                            // 클라이언트: 자신 제외하고 서버의 order를 기준으로 매핑
-                            if (playerId.equals(myPlayerId)) {
+                            // 클라이언트: 서버에서 보낸 정보를 기반으로 자신인지 판단
+                            // 서버가 이미 친근한 ID로 변환해서 보내주므로, 자신의 order에 해당하는지 확인
+                            if (!playerIds.containsKey(order) || playerIds.get(order).equals(myPlayerId)) {
+                                // 처음 받는 정보이거나 이미 자신으로 설정된 경우
+                                if (!playerIds.containsKey(order)) {
+                                    // 새로운 클라이언트 정보 - 자신일 가능성이 높음
+                                    myPlayerId = playerId;
+                                    System.out.println("[SquadGameController] Updated client ID to: " + myPlayerId);
+                                }
+                                
                                 // 자신의 준비 상태 - 버튼과 상태 라벨 모두 업데이트
                                 myReady = ready;
 
@@ -1288,7 +1313,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onChatMessageReceived(String senderId, String message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onChatMessageReceived'");
+        System.out.println("[SquadGameController] Chat message received from " + senderId + ": " + message);
+        if (lobbyScene != null) {
+            lobbyScene.appendChatMessage(senderId, message);
+        }
     }
 }

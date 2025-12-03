@@ -340,7 +340,7 @@ public class TetrisClient {
             return false;
         }
         ChatMessage chatMsg = new ChatMessage(playerId, message);
-        messageListener.onChatMessageReceived(playerId, message);
+        messageListener.onChatMessageReceived("ME", message);
         return sendMessage(chatMsg);
     }
 
