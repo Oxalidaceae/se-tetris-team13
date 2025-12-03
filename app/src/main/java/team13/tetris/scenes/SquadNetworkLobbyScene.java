@@ -161,9 +161,15 @@ public class SquadNetworkLobbyScene {
             readyButton = new Button("Ready");
         }
         readyButton.getStyleClass().add("button");
+        readyButton.setMinWidth(150);
+        readyButton.setPrefWidth(150);
+        readyButton.setMaxWidth(150);
 
-        Button backButton = new Button("Back");
+        backButton = new Button("Back");
         backButton.getStyleClass().add("button");
+        backButton.setMinWidth(150);
+        backButton.setPrefWidth(150);
+        backButton.setMaxWidth(150);
 
         backButton.setOnAction(
                 e -> {
@@ -208,7 +214,7 @@ public class SquadNetworkLobbyScene {
     public void setGameMode(String mode) {
         Platform.runLater(
                 () -> {
-                    if (!isHost) {
+                    if (!isHost && gameModeLabel != null) {
                         gameModeLabel.setText("Game Mode: " + mode);
                     }
                 });
@@ -303,15 +309,27 @@ public class SquadNetworkLobbyScene {
 
     public void setControlsDisabled(boolean disabled) {
         readyButton.setDisable(disabled);
-        normalModeButton.setDisable(disabled);
-        itemModeButton.setDisable(disabled);
-        timerModeButton.setDisable(disabled);
+        if (normalModeButton != null) {
+            normalModeButton.setDisable(disabled);
+        }
+        if (itemModeButton != null) {
+            itemModeButton.setDisable(disabled);
+        }
+        if (timerModeButton != null) {
+            timerModeButton.setDisable(disabled);
+        }
     }
 
     public void setModeSelectionDisabled(boolean disabled) {
-        normalModeButton.setDisable(disabled);
-        itemModeButton.setDisable(disabled);
-        timerModeButton.setDisable(disabled);
+        if (normalModeButton != null) {
+            normalModeButton.setDisable(disabled);
+        }
+        if (itemModeButton != null) {
+            itemModeButton.setDisable(disabled);
+        }
+        if (timerModeButton != null) {
+            timerModeButton.setDisable(disabled);
+        }
     }
 
     // 채팅 메시지 추가
