@@ -928,4 +928,10 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     public void onCountdownStart() {
         // TODO: Implement countdown if needed
     }
+
+    @Override
+    public void onChatMessageReceived(String senderId, String message) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'onChatMessageReceived'");
+    }
 }
