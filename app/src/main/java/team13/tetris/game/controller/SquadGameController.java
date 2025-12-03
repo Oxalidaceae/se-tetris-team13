@@ -178,13 +178,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         if (message.isEmpty()) {
             return;
         }
-        
+
         if (isHost && server != null) {
             server.sendChatMessage(message);
         } else if (!isHost && client != null) {
             client.sendChatMessage(message);
         }
-        
+
         lobbyScene.clearChatInput();
     }
 
@@ -222,11 +222,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         } else {
             // Client: send ready message to server and update UI immediately
             System.out.println("[SquadGameController] Client sending ready message: " + myReady);
-            
+
             // Update button text and style immediately for responsive UI
             if (lobbyScene != null) {
                 lobbyScene.getReadyButton().setText(myReady ? "Cancel Ready" : "Ready");
-                
+
                 // Apply or remove selected style
                 if (myReady) {
                     lobbyScene.getReadyButton().getStyleClass().add("selected");
@@ -234,7 +234,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     lobbyScene.getReadyButton().getStyleClass().remove("selected");
                 }
             }
-            
+
             if (myReady) {
                 client.sendMessage(ConnectionMessage.createPlayerReady(myPlayerId));
             } else {
@@ -391,15 +391,15 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         if (myEngine == null) return;
 
         Board board = myEngine.getBoard();
-        
+
         BoardUpdateMessage msg =
                 new BoardUpdateMessage(
                         myPlayerId,
                         board.snapshot(),
-                        0,  // currentPieceX - 떨어지는 블록은 보여주지 않음
-                        0,  // currentPieceY
-                        0,  // currentPieceType
-                        0,  // currentPieceRotation
+                        0, // currentPieceX - 떨어지는 블록은 보여주지 않음
+                        0, // currentPieceY
+                        0, // currentPieceType
+                        0, // currentPieceRotation
                         false,
                         null,
                         -1, // nextPieceType - 다음 블록도 보여주지 않음
@@ -589,7 +589,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         // which was called in endGame() and broadcasted via onLobbyStateUpdate()
         // Do NOT call resetGameState() again here - it would reset states of players who
         // returned to lobby earlier and already pressed ready
-        
+
         // Client: don't send unready message - server already reset all states in endGame()
 
         // Recreate lobby scene WITHOUT reconnecting
@@ -641,18 +641,20 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         lobbyScene.setOnCancelCallback(this::disconnect);
 
         // Set initial button text
-        // Host always shows "Start", clients show "Ready" initially (will be updated by onLobbyStateUpdate)
+        // Host always shows "Start", clients show "Ready" initially (will be updated by
+        // onLobbyStateUpdate)
         if (isHost) {
             lobbyScene.getReadyButton().setText("Start");
-            
-            // Request server to broadcast current lobby state so returning players see current ready states
+
+            // Request server to broadcast current lobby state so returning players see current
+            // ready states
             if (server != null) {
                 server.broadcastLobbyState();
             }
         } else {
             // Always start with "Ready" - server will send updated state via onLobbyStateUpdate
             lobbyScene.getReadyButton().setText("Ready");
-            
+
             // Request current lobby state from server by sending unready then ready if needed
             // This triggers server to broadcast current state to all players
             if (client != null) {
@@ -905,13 +907,19 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         Platform.runLater(
                 () -> {
                     // 서버가 할당한 새 ID로 업데이트
-                    System.out.println("[SquadGameController] Updating myPlayerId from " + myPlayerId + " to " + assignedClientId);
+                    System.out.println(
+                            "[SquadGameController] Updating myPlayerId from "
+                                    + myPlayerId
+                                    + " to "
+                                    + assignedClientId);
                     myPlayerId = assignedClientId;
-                    
+
                     lobbyScene.setStatusText("Connected to server!");
-                    System.out.println("[SquadGameController] Client playerIds before: " + playerIds);
+                    System.out.println(
+                            "[SquadGameController] Client playerIds before: " + playerIds);
                     // 클라이언트는 자신의 ID를 저장 (서버에서 할당받은 슬롯 정보는 onLobbyStateUpdate에서 처리)
-                    System.out.println("[SquadGameController] Client playerIds after: " + playerIds);
+                    System.out.println(
+                            "[SquadGameController] Client playerIds after: " + playerIds);
                 });
     }
 
@@ -959,12 +967,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onGameStart() {
-        Platform.runLater(() -> {
-            if (countdownTimeline != null) {
-                countdownTimeline.stop();
-            }
-            startGame();
-        });
+        Platform.runLater(
+                () -> {
+                    if (countdownTimeline != null) {
+                        countdownTimeline.stop();
+                    }
+                    startGame();
+                });
     }
 
     @Override
@@ -1003,15 +1012,15 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     if (gameScene == null) {
                         return;
                     }
-                    
+
                     // senderId로 직접 판단하여 상대방 보드 업데이트
-                    
+
                     if (isHost) {
                         // 호스트 관점: 모든 클라이언트는 상대방
                         if (!senderId.equals("Host") && !senderId.equals(myPlayerId)) {
                             // 클라이언트 보드 업데이트를 받음
                             // senderId를 기준으로 고정된 슬롯에 할당 (동일한 클라이언트는 항상 같은 슬롯)
-                            
+
                             // playerIds에서 해당 senderId가 어느 슬롯에 있는지 확인
                             int clientSlot = -1;
                             for (Map.Entry<Integer, String> entry : playerIds.entrySet()) {
@@ -1020,12 +1029,16 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     break;
                                 }
                             }
-                            
+
                             if (clientSlot == 1) {
                                 // 첫 번째 클라이언트 -> opponent1
                                 gameScene.updateOpponent1(
                                         boardUpdate.getBoardState(),
-                                        0, 0, 0, 0, -1,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        -1,
                                         null,
                                         boardUpdate.getScore());
                                 gameScene.setOpponent1Name("Client 1");
@@ -1033,7 +1046,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 // 두 번째 클라이언트 -> opponent2
                                 gameScene.updateOpponent2(
                                         boardUpdate.getBoardState(),
-                                        0, 0, 0, 0, -1,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        -1,
                                         null,
                                         boardUpdate.getScore());
                                 gameScene.setOpponent2Name("Client 2");
@@ -1044,7 +1061,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     opponent1Id = senderId;
                                     gameScene.updateOpponent1(
                                             boardUpdate.getBoardState(),
-                                            0, 0, 0, 0, -1,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            -1,
                                             null,
                                             boardUpdate.getScore());
                                     gameScene.setOpponent1Name("Client 1");
@@ -1053,7 +1074,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     opponent2Id = senderId;
                                     gameScene.updateOpponent2(
                                             boardUpdate.getBoardState(),
-                                            0, 0, 0, 0, -1,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            -1,
                                             null,
                                             boardUpdate.getScore());
                                     gameScene.setOpponent2Name("Client 2");
@@ -1062,17 +1087,31 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     if (senderId.equals(opponent1Id)) {
                                         gameScene.updateOpponent1(
                                                 boardUpdate.getBoardState(),
-                                                0, 0, 0, 0, -1,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                -1,
                                                 null,
                                                 boardUpdate.getScore());
                                     } else if (senderId.equals(opponent2Id)) {
                                         gameScene.updateOpponent2(
                                                 boardUpdate.getBoardState(),
-                                                0, 0, 0, 0, -1,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                -1,
                                                 null,
                                                 boardUpdate.getScore());
                                     } else {
-                                        System.out.println("[SquadGameController] ERROR: Unknown senderId " + senderId + " not matching opponent1Id=" + opponent1Id + " or opponent2Id=" + opponent2Id);
+                                        System.out.println(
+                                                "[SquadGameController] ERROR: Unknown senderId "
+                                                        + senderId
+                                                        + " not matching opponent1Id="
+                                                        + opponent1Id
+                                                        + " or opponent2Id="
+                                                        + opponent2Id);
                                     }
                                 }
                             }
@@ -1083,7 +1122,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                             // Host의 보드 -> opponent1에 할당
                             gameScene.updateOpponent1(
                                     boardUpdate.getBoardState(),
-                                    0, 0, 0, 0, -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
                                     null,
                                     boardUpdate.getScore());
                             gameScene.setOpponent1Name("Host");
@@ -1091,7 +1134,11 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                             // 다른 클라이언트의 보드 -> opponent2에 할당
                             gameScene.updateOpponent2(
                                     boardUpdate.getBoardState(),
-                                    0, 0, 0, 0, -1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    -1,
                                     null,
                                     boardUpdate.getScore());
                             gameScene.setOpponent2Name(senderId);
@@ -1158,15 +1205,17 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     if (!client1Connected) {
                         client1Connected = true;
                         playerIds.put(1, clientId);
-                        System.out.println("[SquadGameController] Added client1: " + clientId + " to slot 1");
+                        System.out.println(
+                                "[SquadGameController] Added client1: " + clientId + " to slot 1");
                         lobbyScene.setClient1Connected(true);
                     } else if (!client2Connected) {
                         client2Connected = true;
                         playerIds.put(2, clientId);
-                        System.out.println("[SquadGameController] Added client2: " + clientId + " to slot 2");
+                        System.out.println(
+                                "[SquadGameController] Added client2: " + clientId + " to slot 2");
                         lobbyScene.setClient2Connected(true);
                     }
-                    
+
                     System.out.println("[SquadGameController] Current playerIds: " + playerIds);
 
                     int connectedCount = connectedClients();
@@ -1238,7 +1287,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 }
 
                                 // 자신의 준비 상태 - 최근 변경이 없었다면 서버 상태로 동기화
-                                long timeSinceLastChange = System.currentTimeMillis() - lastReadyChangeTime;
+                                long timeSinceLastChange =
+                                        System.currentTimeMillis() - lastReadyChangeTime;
                                 if (timeSinceLastChange > 500) {
                                     // 500ms 이상 지났으면 서버 상태를 신뢰
                                     System.out.println(
@@ -1319,8 +1369,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     }
                                 }
                             }
-                            
-                            System.out.println("[SquadGameController] Updated playerIds: " + playerIds);
+
+                            System.out.println(
+                                    "[SquadGameController] Updated playerIds: " + playerIds);
                         }
                     }
                 });
@@ -1376,47 +1427,55 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onCountdownStart() {
-        Platform.runLater(() -> {
-            if (lobbyScene != null) {
-                // 기존 타임라인이 실행 중이면 중지
-                if (countdownTimeline != null) {
-                    countdownTimeline.stop();
-                    countdownTimeline = null;
-                }
-                
-                lobbyScene.setControlsDisabled(true);
-                lobbyScene.setStatusText("Game starting in...");
-                
-                // 카운트다운 전에 기존 바인딩 해제 및 스타일 정리
-                lobbyScene.getReadyButton().textProperty().unbind();
-                lobbyScene.getReadyButton().getStyleClass().remove("selected");
-                
-                countdownSeconds.set(5);
-                
-                // 준비 버튼 텍스트를 카운트다운에 바인딩
-                lobbyScene.getReadyButton().textProperty().bind(countdownSeconds.asString());
-                
-                countdownTimeline = new Timeline(
-                    new KeyFrame(Duration.seconds(1), e -> {
-                        int current = countdownSeconds.get();
-                        if (current > 0) {
-                            countdownSeconds.set(current - 1);
+        Platform.runLater(
+                () -> {
+                    if (lobbyScene != null) {
+                        // 기존 타임라인이 실행 중이면 중지
+                        if (countdownTimeline != null) {
+                            countdownTimeline.stop();
+                            countdownTimeline = null;
                         }
-                    })
-                );
-                countdownTimeline.setCycleCount(6); // 5, 4, 3, 2, 1, 0까지 총 6번
-                countdownTimeline.setOnFinished(e -> {
-                    lobbyScene.getReadyButton().textProperty().unbind();
-                    lobbyScene.getReadyButton().setText("Starting...");
+
+                        lobbyScene.setControlsDisabled(true);
+                        lobbyScene.setStatusText("Game starting in...");
+
+                        // 카운트다운 전에 기존 바인딩 해제 및 스타일 정리
+                        lobbyScene.getReadyButton().textProperty().unbind();
+                        lobbyScene.getReadyButton().getStyleClass().remove("selected");
+
+                        countdownSeconds.set(5);
+
+                        // 준비 버튼 텍스트를 카운트다운에 바인딩
+                        lobbyScene
+                                .getReadyButton()
+                                .textProperty()
+                                .bind(countdownSeconds.asString());
+
+                        countdownTimeline =
+                                new Timeline(
+                                        new KeyFrame(
+                                                Duration.seconds(1),
+                                                e -> {
+                                                    int current = countdownSeconds.get();
+                                                    if (current > 0) {
+                                                        countdownSeconds.set(current - 1);
+                                                    }
+                                                }));
+                        countdownTimeline.setCycleCount(6); // 5, 4, 3, 2, 1, 0까지 총 6번
+                        countdownTimeline.setOnFinished(
+                                e -> {
+                                    lobbyScene.getReadyButton().textProperty().unbind();
+                                    lobbyScene.getReadyButton().setText("Starting...");
+                                });
+                        countdownTimeline.play();
+                    }
                 });
-                countdownTimeline.play();
-            }
-        });
     }
 
     @Override
     public void onChatMessageReceived(String senderId, String message) {
-        System.out.println("[SquadGameController] Chat message received from " + senderId + ": " + message);
+        System.out.println(
+                "[SquadGameController] Chat message received from " + senderId + ": " + message);
         if (lobbyScene != null) {
             lobbyScene.appendChatMessage(senderId, message);
         }

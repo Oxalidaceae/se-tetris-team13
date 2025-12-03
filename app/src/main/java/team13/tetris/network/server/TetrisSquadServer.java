@@ -245,31 +245,33 @@ public class TetrisSquadServer {
         // 카운트다운 시작 메시지 브로드캐스트
         ConnectionMessage countdownMsg = ConnectionMessage.createCountdownStart(hostPlayerId);
         broadcast(countdownMsg);
-        
+
         // 호스트에게도 알림
         if (hostMessageListener != null) {
             hostMessageListener.onCountdownStart();
         }
-        
+
         // 5초 후 게임 시작
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-                startGame();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        new Thread(
+                        () -> {
+                            try {
+                                Thread.sleep(5000);
+                                startGame();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        })
+                .start();
     }
 
     public void startGame() {
         gameInProgress = true;
-        
+
         // 호스트에게 게임 시작 알림
         if (hostMessageListener != null) {
             hostMessageListener.onGameStart();
         }
-        
+
         // 모든 클라이언트에게 게임 시작 메시지 전송
         broadcast(ConnectionMessage.createGameStart(hostPlayerId));
     }
@@ -377,7 +379,8 @@ public class TetrisSquadServer {
         List<String> targets = new ArrayList<>(alivePlayers);
         targets.remove(hostPlayerId);
 
-        System.out.println("[SERVER] Host attack - alivePlayers: " + alivePlayers + ", targets: " + targets);
+        System.out.println(
+                "[SERVER] Host attack - alivePlayers: " + alivePlayers + ", targets: " + targets);
 
         if (!targets.isEmpty()) {
             // Random selection
@@ -425,12 +428,12 @@ public class TetrisSquadServer {
                 // 원래 클라이언트 ID 저장
                 ConnectionMessage connMsg = (ConnectionMessage) firstMessage;
                 String originalClientId = connMsg.getSenderId();
-                
+
                 // 연결 순서에 따라 친근한 클라이언트 이름 부여 (동기화)
                 synchronized (clientConnectionOrder) {
                     int connectionIndex = clientConnectionOrder.size();
                     clientId = "Client " + (connectionIndex + 1);
-                    
+
                     // 원래 ID와 새로운 ID 간 매핑 저장
                     clientIdMapping.put(originalClientId, clientId);
 
@@ -545,7 +548,13 @@ public class TetrisSquadServer {
             List<String> targets = new ArrayList<>(alivePlayers);
             targets.remove(clientId);
 
-            System.out.println("[SERVER] " + clientId + " attack - alivePlayers: " + alivePlayers + ", targets: " + targets);
+            System.out.println(
+                    "[SERVER] "
+                            + clientId
+                            + " attack - alivePlayers: "
+                            + alivePlayers
+                            + ", targets: "
+                            + targets);
 
             if (!targets.isEmpty()) {
                 // Random selection

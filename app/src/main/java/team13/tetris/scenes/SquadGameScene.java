@@ -688,7 +688,7 @@ public class SquadGameScene extends BaseGameScene {
 
         int h = opp.board.length;
         int w = opp.board[0].length;
-        
+
         // 상대방 보드의 고정된 블록들만 표시 (떨어지는 블록은 표시하지 않음)
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
