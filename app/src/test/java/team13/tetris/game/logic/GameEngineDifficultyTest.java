@@ -1,14 +1,13 @@
 package team13.tetris.game.logic;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.DisplayName;
 
 // GameEngine 난이도별 조각 생성 테스트: Tests piece spawning distribution and speed increase by difficulty
 @DisplayName("GameEngine Difficulty-Based Piece Spawning Tests")
@@ -38,7 +37,8 @@ public class GameEngineDifficultyTest {
     @DisplayName("EASY 모드로 게임 엔진을 생성할 수 있어야 함")
     void testEasyModeEngineCreation() {
         Board board = new Board(10, 20);
-        GameEngine easyEngine = new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.EASY);
+        GameEngine easyEngine =
+                new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.EASY);
 
         // Verify the engine was created successfully with EASY mode
         assertNotNull(easyEngine);
@@ -48,7 +48,8 @@ public class GameEngineDifficultyTest {
     @DisplayName("HARD 모드로 게임 엔진을 생성할 수 있어야 함")
     void testHardModeEngineCreation() {
         Board board = new Board(10, 20);
-        GameEngine hardEngine = new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.HARD);
+        GameEngine hardEngine =
+                new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.HARD);
 
         assertNotNull(hardEngine);
     }
@@ -57,7 +58,8 @@ public class GameEngineDifficultyTest {
     @DisplayName("NORMAL 모드로 게임 엔진을 생성할 수 있어야 함")
     void testNormalModeEngineCreation() {
         Board board = new Board(10, 20);
-        GameEngine normalEngine = new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.NORMAL);
+        GameEngine normalEngine =
+                new GameEngine(board, new NoOpListener(), ScoreBoard.ScoreEntry.Mode.NORMAL);
 
         assertNotNull(normalEngine);
     }
@@ -139,7 +141,7 @@ public class GameEngineDifficultyTest {
         for (int w : weights) totalWeight += w;
 
         // Print results
-        String[] pieceNames = { "I", "O", "T", "S", "Z", "J", "L" };
+        String[] pieceNames = {"I", "O", "T", "S", "Z", "J", "L"};
         System.out.println("Piece | Count | Actual% | Expected% | Difference");
         System.out.println("------|-------|---------|-----------|------------");
 
@@ -148,7 +150,8 @@ public class GameEngineDifficultyTest {
             double expectedPercent = (weights[i] * 100.0) / totalWeight;
             double difference = actualPercent - expectedPercent;
 
-            System.out.printf("  %s   | %4d  | %6.2f%% |  %6.2f%%  | %+6.2f%%\n",
+            System.out.printf(
+                    "  %s   | %4d  | %6.2f%% |  %6.2f%%  | %+6.2f%%\n",
                     pieceNames[i], counts[i], actualPercent, expectedPercent, difference);
         }
 
@@ -160,19 +163,21 @@ public class GameEngineDifficultyTest {
         double iBlockPercent = (counts[0] * 100.0) / samples;
         double expectedIPercent = (weights[0] * 100.0) / totalWeight;
 
-        assertTrue(Math.abs(iBlockPercent - expectedIPercent) < 5.0,
-                String.format("I-block distribution deviation too large: %.2f%% vs expected %.2f%%",
+        assertTrue(
+                Math.abs(iBlockPercent - expectedIPercent) < 5.0,
+                String.format(
+                        "I-block distribution deviation too large: %.2f%% vs expected %.2f%%",
                         iBlockPercent, expectedIPercent));
     }
 
     private int[] getExpectedWeights(ScoreBoard.ScoreEntry.Mode difficulty) {
         switch (difficulty) {
             case EASY:
-                return new int[] { 12, 10, 10, 10, 10, 10, 10 }; // I gets +20% (12/10)
+                return new int[] {12, 10, 10, 10, 10, 10, 10}; // I gets +20% (12/10)
             case HARD:
-                return new int[] { 8, 10, 10, 10, 10, 10, 10 }; // I gets -20% (8/10)
+                return new int[] {8, 10, 10, 10, 10, 10, 10}; // I gets -20% (8/10)
             default: // NORMAL
-                return new int[] { 10, 10, 10, 10, 10, 10, 10 }; // All equal
+                return new int[] {10, 10, 10, 10, 10, 10, 10}; // All equal
         }
     }
 
@@ -187,7 +192,8 @@ public class GameEngineDifficultyTest {
         testSpeedIncrease(ScoreBoard.ScoreEntry.Mode.HARD, 1.2, "HARD (20% faster)");
     }
 
-    private void testSpeedIncrease(ScoreBoard.ScoreEntry.Mode difficulty, double expectedMultiplier, String label) {
+    private void testSpeedIncrease(
+            ScoreBoard.ScoreEntry.Mode difficulty, double expectedMultiplier, String label) {
         Board board = new Board(10, 20);
         GameEngine engine = new GameEngine(board, new NoOpListener(), difficulty);
 
@@ -202,13 +208,18 @@ public class GameEngineDifficultyTest {
         double actualIncrease = afterFirstIncrease - initialSpeed;
         double expectedIncrease = 0.1 * expectedMultiplier; // SPEED_INCREMENT = 0.1
 
-        System.out.printf("  After 10 lines: %.2f (increase: %.3f)\n", afterFirstIncrease, actualIncrease);
+        System.out.printf(
+                "  After 10 lines: %.2f (increase: %.3f)\n", afterFirstIncrease, actualIncrease);
         System.out.printf("  Expected increase: %.3f\n", expectedIncrease);
         System.out.printf("  Multiplier applied: %.2fx\n", expectedMultiplier);
 
         // Allow small floating-point error margin
-        assertEquals(expectedIncrease, actualIncrease, 0.001,
-                String.format("%s mode speed increase incorrect: expected %.3f, got %.3f",
+        assertEquals(
+                expectedIncrease,
+                actualIncrease,
+                0.001,
+                String.format(
+                        "%s mode speed increase incorrect: expected %.3f, got %.3f",
                         difficulty, expectedIncrease, actualIncrease));
 
         // Test cumulative effect after multiple increases
@@ -219,10 +230,15 @@ public class GameEngineDifficultyTest {
         double totalIncrease = afterThreeIncreases - initialSpeed;
         double expectedTotalIncrease = 0.1 * expectedMultiplier * 3;
 
-        System.out.printf("  After 30 lines: %.2f (total increase: %.3f)\n", afterThreeIncreases, totalIncrease);
+        System.out.printf(
+                "  After 30 lines: %.2f (total increase: %.3f)\n",
+                afterThreeIncreases, totalIncrease);
         System.out.printf("  Expected total increase: %.3f\n", expectedTotalIncrease);
 
-        assertEquals(expectedTotalIncrease, totalIncrease, 0.001,
+        assertEquals(
+                expectedTotalIncrease,
+                totalIncrease,
+                0.001,
                 String.format("%s mode cumulative speed increase incorrect", difficulty));
     }
 }

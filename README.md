@@ -29,18 +29,32 @@ JavaFX를 사용한 클래식 테트리스 게임입니다.
 
 ## ✨ 주요 기능
 
-### 🎯 게임플레이
+### 🎯 게임 모드
 
-- 클래식 테트리스 게임 메커니즘
+#### 싱글 플레이 모드
+- **Classic Mode**: 클래식 테트리스 게임 메커니즘
+- **Item Mode**: 특수 아이템 블록으로 전략적 플레이
+- **Timer Mode**: 제한 시간 내 최고 점수 달성
+
+#### 멀티플레이 모드
+- **Local Versus (1v1)**: 같은 컴퓨터에서 2인 대전
+- **Online PVP (1v1)**: 네트워크로 1:1 대전
+- **Squad PVP (3인)**: 네트워크로 3인 배틀로얄
+
+### 🎮 게임플레이 기능
+
 - 실시간 점수 및 레벨 표시
 - 일시정지 및 재개 기능
+- 다음 블록 미리보기
+- 고스트 피스 (블록 착지 위치 표시)
 - 게임 오버 처리
 
 ### ⚙️ 설정 관리
 
 - **창 크기 조절**: Small(400x500), Medium(600x700), Large(800x900)
-- **색맹 모드**: 색각이상자를 위한 고대비 색상 테마
-- **키 설정**: 모든 게임 키를 사용자 정의 가능
+- **색맹 모드**: 색각이상자를 위한 고대비 색상 테마 및 패턴
+- **키 설정**: Player 1, Player 2 모든 게임 키를 개별 설정 가능
+- **폰트**: 레트로 게임 느낌의 고정폭 폰트 (Consolas, Courier New)
 - **설정 지속성**: JSON 파일을 통한 설정 자동 저장/로드
 
 ### 📊 점수 시스템
@@ -87,31 +101,47 @@ se-tetris-team13/
 │   │   │   │   ├── data/
 │   │   │   │   │   └── ScoreBoard.java         # 점수 관리
 │   │   │   │   ├── game/
-│   │   │   │   │   ├── GameManager.java        # 게임 로직 관리
-│   │   │   │   │   ├── Timer.java              # 게임 타이머
 │   │   │   │   │   ├── logic/
 │   │   │   │   │   │   └── GameEngine.java     # 게임 엔진
 │   │   │   │   │   ├── model/
 │   │   │   │   │   │   ├── Board.java          # 게임 보드
 │   │   │   │   │   │   └── Tetromino.java      # 테트로미노 블록
 │   │   │   │   │   ├── controller/
-│   │   │   │   │   │   ├── GameController.java         # 게임 컨트롤러
-│   │   │   │   │   │   ├── GameSceneController.java    # 게임 씬 컨트롤러
-│   │   │   │   │   │   ├── GameStateListener.java      # 게임 상태 리스너
-│   │   │   │   │   │   └── CompositeGameStateListener.java
+│   │   │   │   │   │   ├── GameController.java         # 싱글 게임 컨트롤러
+│   │   │   │   │   │   ├── VersusGameController.java   # 로컬 대전 컨트롤러
+│   │   │   │   │   │   ├── NetworkGameController.java  # 온라인 1v1 컨트롤러
+│   │   │   │   │   │   ├── SquadGameController.java    # Squad 3인 컨트롤러
+│   │   │   │   │   │   └── GameStateListener.java      # 게임 상태 리스너
 │   │   │   │   │   └── util/
 │   │   │   │   │       └── AsciiBoardRenderer.java     # ASCII 보드 렌더러
 │   │   │   │   ├── input/
 │   │   │   │   │   └── KeyInputHandler.java    # 키 입력 처리
+│   │   │   │   ├── network/
+│   │   │   │   │   ├── client/
+│   │   │   │   │   │   └── TetrisClient.java   # 네트워크 클라이언트
+│   │   │   │   │   ├── server/
+│   │   │   │   │   │   ├── TetrisServer.java   # 1v1 서버
+│   │   │   │   │   │   └── TetrisSquadServer.java  # Squad 서버
+│   │   │   │   │   ├── protocol/
+│   │   │   │   │   │   └── *Message.java       # 네트워크 메시지 프로토콜
+│   │   │   │   │   └── listener/
+│   │   │   │   │       └── *MessageListener.java   # 메시지 리스너
 │   │   │   │   └── scenes/
 │   │   │   │       ├── MainMenuScene.java      # 메인 메뉴
-│   │   │   │       ├── DifficultySelectionScene.java   # 난이도 선택
-│   │   │   │       ├── GameScene.java          # 게임 화면
+│   │   │   │       ├── ModeSelectionScene.java # 모드 선택
+│   │   │   │       ├── MultiModeSelectionScene.java  # 멀티 모드 선택
+│   │   │   │       ├── GameScene.java          # 싱글 게임 화면
+│   │   │   │       ├── VersusGameScene.java    # 로컬 대전 화면
+│   │   │   │       ├── NetworkGameScene.java   # 온라인 1v1 화면
+│   │   │   │       ├── SquadGameScene.java     # Squad 게임 화면
+│   │   │   │       ├── NetworkLobbyScene.java  # 온라인 대기실
+│   │   │   │       ├── SquadNetworkLobbyScene.java  # Squad 대기실
 │   │   │   │       ├── GameOverScene.java      # 게임 오버
+│   │   │   │       ├── SquadResultScene.java   # Squad 결과 화면
 │   │   │   │       ├── SettingsScene.java      # 설정 화면
 │   │   │   │       ├── KeySettingsScene.java   # 키 설정
 │   │   │   │       ├── ScoreboardScene.java    # 점수판
-│   │   │   │       └── ExitScene.java          # 종료 확인
+│   │   │   │       └── ConfirmScene.java       # 확인 다이얼로그
 │   │   │   └── resources/
 │   │   │       ├── application.css             # 기본 스타일
 │   │   │       ├── colorblind.css              # 색맹 모드 스타일
@@ -195,13 +225,22 @@ se-tetris-team13/
 
 ## 🎯 게임 조작법
 
-### 기본 키 설정
+### 기본 키 설정 (Player 1)
 
-- **이동**: LEFT (왼쪽), RIGHT (오른쪽)
-- **회전**: Z
-- **소프트 드롭**: DOWN (아래)
-- **하드 드롭**: X
-- **일시정지**: P
+- **왼쪽 이동**: A
+- **오른쪽 이동**: D
+- **소프트 드롭**: S
+- **회전**: W
+- **하드 드롭**: SPACE
+- **일시정지**: ESC
+
+### Player 2 키 설정 (로컬 대전 모드)
+
+- **왼쪽 이동**: ← (LEFT)
+- **오른쪽 이동**: → (RIGHT)
+- **소프트 드롭**: ↓ (DOWN)
+- **회전**: ↑ (UP)
+- **하드 드롭**: / (SLASH)
 
 > 💡 모든 키는 설정 메뉴에서 변경 가능합니다.
 
@@ -223,11 +262,12 @@ se-tetris-team13/
 
 테스트 커버리지:
 
-- 게임 로직 (GameEngine, Board)
+- 게임 로직 (GameEngine, Board, Tetromino)
 - 설정 관리 (Settings, SettingsRepository)
 - 점수 시스템 (ScoreBoard)
-- UI 컨트롤러 (JavaFX headless 테스트)
-- 등
+- 네트워크 프로토콜 (Message 클래스들)
+- UI 씬 (GameScene, VersusGameScene 등)
+- 컨트롤러 (JavaFX headless 테스트)
 
 ## 🚢 배포
 
@@ -262,16 +302,38 @@ git push origin main --tags
 
 생성된 파일 위치: `app/build/jpackage/Tetris/`
 
+## 🌐 네트워크 모드
+
+### 온라인 PVP (1v1)
+- 호스트 또는 참가로 게임 시작
+- 실시간 보드 상태 동기화
+- 공격 라인 전송 및 수신
+- 게임 모드 선택 (Normal/Item/Timer)
+- 일시정지/재개 동기화
+
+### Squad PVP (3인)
+- 3인 배틀로얄 모드
+- 무작위 공격 대상 선택
+- 탈락 순서 추적
+- 최종 순위 표시
+
+### 네트워크 기능
+- 로비 시스템 (준비 상태 확인)
+- 5초 카운트다운 후 게임 시작
+- 연결 끊김 감지 및 처리
+- 최근 접속 IP 저장
+
 ## 👥 팀 구성
 
 **Team 13 - 서울과학기술대학교 컴퓨터공학과**
 
 각 팀원은 다음 모듈을 담당하여 개발했습니다:
 
-- 게임 로직 & 블럭 시스템
+- 게임 로직 & 블록 시스템
 - 조작 입력 & 테스트 코드
 - UI/화면 구성 & 설정
 - 점수 시스템 & 스코어보드
+- 네트워크 시스템 & 멀티플레이
 
 ## 📄 라이선스
 

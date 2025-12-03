@@ -11,6 +11,15 @@ plugins {
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0' // JavaFX 지원
     id 'jacoco' // 코드 커버리지
+    id "com.diffplug.spotless" version "6.23.3"
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.17.0')
+            .aosp() // 4-space indentation
+        lineEndings 'UNIX'
+    }
 }
 
 repositories {
@@ -26,6 +35,13 @@ dependencies {
     
     // JavaFX headless 테스트를 위한 Monocle
     testImplementation 'org.testfx:openjfx-monocle:jdk-12.0.1+2'
+    
+    // Mockito for mocking in tests
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+
+    testImplementation 'org.testfx:testfx-core:4.0.16-alpha'
+    testImplementation 'org.testfx:testfx-junit5:4.0.16-alpha'
 }
 
 testing {
@@ -50,19 +66,54 @@ application {
     mainClass = 'team13.tetris.App'
 }
 
-// 추가
+// 네트워크 테스트용 Task들
+task runServer(type: JavaExec) {
+    group = 'network'
+    description = 'Run Tetris Server (Test CLI)'
+    mainClass = 'team13.tetris.network.test.TestTetrisServer'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+}
+
+task runClient(type: JavaExec) {
+    group = 'network'
+    description = 'Run Tetris Client (Test CLI)'
+    mainClass = 'team13.tetris.network.test.TestTetrisClient'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    if (project.hasProperty('player')) {
+        args = [project.property('player')]
+    } else {
+        args = ['TestPlayer']
+    }
+}
+
 tasks.test {
     // Enable JUnit 5 (Jupiter) support in Gradle
     useJUnitPlatform()
     
+    // OS 감지 - Linux CI 환경과 Windows 로컬 환경 구분
+    def isLinux = System.getProperty('os.name').toLowerCase().contains('linux')
+    def isCI = System.getenv('CI') != null
+    
     // JavaFX headless 모드 설정
-    systemProperty 'java.awt.headless', 'true'
+    // Linux/CI 환경에서만 java.awt.headless=true 적용
+    if (isLinux || isCI) {
+        systemProperty 'java.awt.headless', 'true'
+    }
+    
     systemProperty 'testfx.robot', 'glass'
     systemProperty 'testfx.headless', 'true'
     systemProperty 'prism.order', 'sw'
     systemProperty 'prism.text', 't2k'
     systemProperty 'glass.platform', 'Monocle'
     systemProperty 'monocle.platform', 'Headless'
+    
+    // JavaFX 모듈 초기화를 위한 JVM 인자
+    jvmArgs = [
+        '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED',
+        '--add-opens', 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    ]
     
     // Show standard output and error during test execution
     testLogging {
@@ -119,7 +170,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.60 // 60% 이상
+                minimum = 0.70 // 70% 이상
             }
         }
         

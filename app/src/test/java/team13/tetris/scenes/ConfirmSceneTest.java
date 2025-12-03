@@ -1,21 +1,22 @@
 package team13.tetris.scenes;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import team13.tetris.SceneManager;
 import team13.tetris.config.Settings;
 
-// ExitScene 테스트: Tests scene creation with various parameters and object independence
-@DisplayName("ExitScene 테스트")
-public class ExitSceneTest {
+// confirmScene 테스트: Tests scene creation with various parameters and object independence
+@DisplayName("confirmScene 테스트")
+public class ConfirmSceneTest {
 
     private TestSceneManager testSceneManager;
     private Settings testSettings;
+    private TestRunnable testOnConfirm;
     private TestRunnable testOnCancel;
-    private ExitScene exitScene;
+    private ConfirmScene confirmScene;
 
     // Test용 SceneManager 구현
     static class TestSceneManager extends SceneManager {
@@ -48,17 +49,22 @@ public class ExitSceneTest {
         // Test objects 생성
         testSceneManager = new TestSceneManager();
         testSettings = new Settings();
+        testOnConfirm = new TestRunnable();
         testOnCancel = new TestRunnable();
 
-        // ExitScene 인스턴스 생성
-        exitScene = new ExitScene(testSceneManager, testSettings, testOnCancel);
+        // confirmScene 인스턴스 생성
+        confirmScene =
+                new ConfirmScene(
+                        testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
     }
 
     @Test
     @DisplayName("생성자: 정상적인 매개변수로 객체 생성")
     void testConstructor() {
         // 정상적인 매개변수로 생성
-        ExitScene scene = new ExitScene(testSceneManager, testSettings, testOnCancel);
+        ConfirmScene scene =
+                new ConfirmScene(
+                        testSceneManager, testSettings, "Test Title", testOnConfirm, testOnCancel);
         assertNotNull(scene);
     }
 
@@ -66,20 +72,28 @@ public class ExitSceneTest {
     @DisplayName("생성자: null onCancel로 객체 생성")
     void testConstructorWithNullOnCancel() {
         // onCancel이 null이어도 정상 생성되어야 함
-        ExitScene scene = new ExitScene(testSceneManager, testSettings, null);
+        ConfirmScene scene =
+                new ConfirmScene(testSceneManager, testSettings, "Test Title", testOnConfirm, null);
         assertNotNull(scene);
     }
 
     @Test
     @DisplayName("생성자: 매개변수 저장 확인")
     void testConstructorParameterStorage() {
-        // ExitScene은 생성자 매개변수를 내부 필드로 저장해야 함
+        // confirmScene은 생성자 매개변수를 내부 필드로 저장해야 함
         // getScene 호출 없이도 객체가 정상적으로 생성되어야 함
         TestSceneManager customManager = new TestSceneManager();
         Settings customSettings = new Settings();
-        TestRunnable customRunnable = new TestRunnable();
+        TestRunnable customOnConfirm = new TestRunnable();
+        TestRunnable customOnCancel = new TestRunnable();
 
-        ExitScene scene = new ExitScene(customManager, customSettings, customRunnable);
+        ConfirmScene scene =
+                new ConfirmScene(
+                        customManager,
+                        customSettings,
+                        "Custom Title",
+                        customOnConfirm,
+                        customOnCancel);
         assertNotNull(scene);
     }
 
@@ -90,11 +104,13 @@ public class ExitSceneTest {
         TestSceneManager manager2 = new TestSceneManager();
         Settings settings1 = new Settings();
         Settings settings2 = new Settings();
-        TestRunnable runnable1 = new TestRunnable();
-        TestRunnable runnable2 = new TestRunnable();
+        TestRunnable confirm1 = new TestRunnable();
+        TestRunnable confirm2 = new TestRunnable();
+        TestRunnable cancel1 = new TestRunnable();
+        TestRunnable cancel2 = new TestRunnable();
 
-        ExitScene scene1 = new ExitScene(manager1, settings1, runnable1);
-        ExitScene scene2 = new ExitScene(manager2, settings2, runnable2);
+        ConfirmScene scene1 = new ConfirmScene(manager1, settings1, "Title 1", confirm1, cancel1);
+        ConfirmScene scene2 = new ConfirmScene(manager2, settings2, "Title 2", confirm2, cancel2);
 
         // 각각 독립적인 객체여야 함
         assertNotSame(scene1, scene2);
@@ -106,46 +122,57 @@ public class ExitSceneTest {
     @DisplayName("매개변수 유효성: null SceneManager 처리")
     void testNullSceneManager() {
         // null SceneManager로도 생성할 수 있어야 함 (실제 사용에서는 문제가 될 수 있지만)
-        assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(null, testSettings, testOnCancel);
-            assertNotNull(scene);
-        });
+        assertDoesNotThrow(
+                () -> {
+                    ConfirmScene scene =
+                            new ConfirmScene(
+                                    null, testSettings, "Test Title", testOnConfirm, testOnCancel);
+                    assertNotNull(scene);
+                });
     }
 
     @Test
     @DisplayName("매개변수 유효성: null Settings 처리")
     void testNullSettings() {
         // null Settings로도 생성할 수 있어야 함
-        assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(testSceneManager, null, testOnCancel);
-            assertNotNull(scene);
-        });
+        assertDoesNotThrow(
+                () -> {
+                    ConfirmScene scene =
+                            new ConfirmScene(
+                                    testSceneManager,
+                                    null,
+                                    "Test Title",
+                                    testOnConfirm,
+                                    testOnCancel);
+                    assertNotNull(scene);
+                });
     }
 
     @Test
     @DisplayName("매개변수 유효성: 모든 매개변수 null 처리")
     void testAllNullParameters() {
         // 모든 매개변수가 null이어도 생성할 수 있어야 함
-        assertDoesNotThrow(() -> {
-            ExitScene scene = new ExitScene(null, null, null);
-            assertNotNull(scene);
-        });
+        assertDoesNotThrow(
+                () -> {
+                    ConfirmScene scene = new ConfirmScene(null, null, null, null, null);
+                    assertNotNull(scene);
+                });
     }
 
     @Test
-    @DisplayName("getScene 메서드: ExitScene 클래스 메서드 존재 확인")
+    @DisplayName("getScene 메서드: confirmScene 클래스 메서드 존재 확인")
     void testGetSceneMethodExists() {
         // getScene() 메서드가 존재하는지 확인 (JavaFX 초기화 없이)
         // 리플렉션을 사용해서 메서드 존재만 확인
         boolean hasGetSceneMethod = false;
         try {
-            exitScene.getClass().getMethod("getScene");
+            confirmScene.getClass().getMethod("getScene");
             hasGetSceneMethod = true;
         } catch (NoSuchMethodException e) {
             hasGetSceneMethod = false;
         }
 
-        assertTrue(hasGetSceneMethod, "ExitScene should have getScene() method");
+        assertTrue(hasGetSceneMethod, "confirmScene should have getScene() method");
     }
 
     @Test
@@ -221,8 +248,12 @@ public class ExitSceneTest {
         assertNotSame(settings1, settings2);
 
         // 각각 독립적으로 사용 가능해야 함
-        ExitScene scene1 = new ExitScene(testSceneManager, settings1, testOnCancel);
-        ExitScene scene2 = new ExitScene(testSceneManager, settings2, testOnCancel);
+        ConfirmScene scene1 =
+                new ConfirmScene(
+                        testSceneManager, settings1, "Title 1", testOnConfirm, testOnCancel);
+        ConfirmScene scene2 =
+                new ConfirmScene(
+                        testSceneManager, settings2, "Title 2", testOnConfirm, testOnCancel);
 
         assertNotNull(scene1);
         assertNotNull(scene2);

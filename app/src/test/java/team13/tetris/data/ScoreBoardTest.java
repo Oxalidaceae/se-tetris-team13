@@ -1,18 +1,18 @@
 package team13.tetris.data;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 // ScoreBoard 테스트 클래스: Tests score addition, sorting, persistence, and edge cases
 @DisplayName("ScoreBoard 테스트")
@@ -21,8 +21,7 @@ public class ScoreBoardTest {
     private ScoreBoard scoreBoard;
     private String originalWorkingDir;
 
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     @BeforeEach
     void setUp(@TempDir Path tempDir) throws IOException {
@@ -124,7 +123,8 @@ public class ScoreBoardTest {
     @Test
     @DisplayName("ScoreEntry toString: 문자열 변환 형식 확인")
     void testScoreEntryToString() {
-        ScoreBoard.ScoreEntry entry = new ScoreBoard.ScoreEntry("TestPlayer", 12345, ScoreBoard.ScoreEntry.Mode.NORMAL);
+        ScoreBoard.ScoreEntry entry =
+                new ScoreBoard.ScoreEntry("TestPlayer", 12345, ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertEquals("TestPlayer: 12345 (NORMAL)", entry.toString());
     }
 
@@ -309,19 +309,22 @@ public class ScoreBoardTest {
         scoreBoard.addScore("ItemPlayer", 1200, ScoreBoard.ScoreEntry.Mode.ITEM);
 
         // Test filtering by NORMAL mode
-        List<ScoreBoard.ScoreEntry> normalScores = scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.NORMAL);
+        List<ScoreBoard.ScoreEntry> normalScores =
+                scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.NORMAL);
         assertEquals(1, normalScores.size());
         assertEquals("NormalPlayer", normalScores.get(0).getName());
         assertEquals(1000, normalScores.get(0).getScore());
 
         // Test filtering by ITEM mode
-        List<ScoreBoard.ScoreEntry> itemScores = scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.ITEM);
+        List<ScoreBoard.ScoreEntry> itemScores =
+                scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.ITEM);
         assertEquals(1, itemScores.size());
         assertEquals("ItemPlayer", itemScores.get(0).getName());
         assertEquals(1200, itemScores.get(0).getScore());
 
         // Test filtering by EASY mode (should be empty)
-        List<ScoreBoard.ScoreEntry> easyScores = scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.EASY);
+        List<ScoreBoard.ScoreEntry> easyScores =
+                scoreBoard.getScoresByMode(ScoreBoard.ScoreEntry.Mode.EASY);
         assertEquals(0, easyScores.size());
     }
 

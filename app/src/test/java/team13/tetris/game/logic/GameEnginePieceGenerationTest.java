@@ -6,13 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-// GameEngine Piece Generation 테스트: Tests piece spawning, initial placement, and game over conditions
+// GameEngine Piece Generation 테스트: Tests piece spawning, initial placement, and game over
+// conditions
 @DisplayName("GameEngine 조각 생성 테스트")
 public class GameEnginePieceGenerationTest {
 
@@ -39,7 +39,9 @@ public class GameEnginePieceGenerationTest {
         public void onLinesCleared(int lines) {}
 
         @Override
-        public void onGameOver() { gameOver = true; }
+        public void onGameOver() {
+            gameOver = true;
+        }
 
         @Override
         public void onPieceSpawned(Tetromino piece, int x, int y) {
@@ -92,10 +94,14 @@ public class GameEnginePieceGenerationTest {
         // I, O, T, S, Z, J, L 중 하나
         Tetromino.Kind kind = current.getKind();
         assertTrue(
-            kind == Tetromino.Kind.I || kind == Tetromino.Kind.O ||
-            kind == Tetromino.Kind.T || kind == Tetromino.Kind.S ||
-            kind == Tetromino.Kind.Z || kind == Tetromino.Kind.J ||
-            kind == Tetromino.Kind.L, "7가지 기본 조각 종류 중 하나여야 함");
+                kind == Tetromino.Kind.I
+                        || kind == Tetromino.Kind.O
+                        || kind == Tetromino.Kind.T
+                        || kind == Tetromino.Kind.S
+                        || kind == Tetromino.Kind.Z
+                        || kind == Tetromino.Kind.J
+                        || kind == Tetromino.Kind.L,
+                "7가지 기본 조각 종류 중 하나여야 함");
     }
 
     @Test
@@ -134,7 +140,14 @@ public class GameEnginePieceGenerationTest {
         }
 
         // 100번 생성하면 대부분의 종류가 나와야 함
-        int kindCount = (hasI ? 1 : 0) + (hasO ? 1 : 0) + (hasT ? 1 : 0) + (hasS ? 1 : 0) + (hasZ ? 1 : 0) + (hasJ ? 1 : 0) + (hasL ? 1 : 0);
+        int kindCount =
+                (hasI ? 1 : 0)
+                        + (hasO ? 1 : 0)
+                        + (hasT ? 1 : 0)
+                        + (hasS ? 1 : 0)
+                        + (hasZ ? 1 : 0)
+                        + (hasJ ? 1 : 0)
+                        + (hasL ? 1 : 0);
         assertTrue(kindCount >= 5, "100번 생성 시 최소 5가지 이상의 조각 종류가 나와야 함");
     }
 
@@ -151,7 +164,9 @@ public class GameEnginePieceGenerationTest {
     @Test
     @DisplayName("EASY 모드: I 블록 출현 빈도 확인")
     void testEasyModeIPieceProbability() {
-        GameEngine easyEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.EASY);
+        GameEngine easyEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.EASY);
         easyEngine.startNewGame();
 
         int totalPieces = 1000;
@@ -165,7 +180,9 @@ public class GameEnginePieceGenerationTest {
         // EASY: I블록 가중치 12, 전체 72 → 약 16.7%
         // 기대값: 167, 표준편차: 11.8
         // 99% 신뢰구간: 167 ± 3*11.8 ≈ 131~203
-        assertTrue(iCount >= 130 && iCount <= 205, "EASY 모드에서 I 블록이 약 16.7% 출현해야 함 (실제: " + iCount + "/1000)");
+        assertTrue(
+                iCount >= 130 && iCount <= 205,
+                "EASY 모드에서 I 블록이 약 16.7% 출현해야 함 (실제: " + iCount + "/1000)");
 
         easyEngine.shutdown();
     }
@@ -193,7 +210,8 @@ public class GameEnginePieceGenerationTest {
         // 기대값: 100, 표준편차: 9.3
         // 99% 신뢰구간: 100 ± 3*9.3 ≈ 72~128
         for (int i = 0; i < 7; i++) {
-            assertTrue(counts[i] >= 70 && counts[i] <= 130,
+            assertTrue(
+                    counts[i] >= 70 && counts[i] <= 130,
                     "NORMAL 모드에서 모든 블록이 비슷한 빈도로 출현해야 함 (블록 " + i + ": " + counts[i] + "/700)");
         }
     }
@@ -201,7 +219,9 @@ public class GameEnginePieceGenerationTest {
     @Test
     @DisplayName("HARD 모드: I 블록 출현 빈도 감소")
     void testHardModeIPieceProbability() {
-        GameEngine hardEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.HARD);
+        GameEngine hardEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.HARD);
         hardEngine.startNewGame();
 
         int totalPieces = 1000;
@@ -215,7 +235,9 @@ public class GameEnginePieceGenerationTest {
         // HARD: I블록 가중치 8, 전체 68 → 약 11.8%
         // 기대값: 118, 표준편차: 10.2
         // 99% 신뢰구간: 118 ± 3*10.2 ≈ 87~149
-        assertTrue(iCount >= 85 && iCount <= 150, "HARD 모드에서 I 블록이 약 11.8% 출현해야 함 (실제: " + iCount + "/1000)");
+        assertTrue(
+                iCount >= 85 && iCount <= 150,
+                "HARD 모드에서 I 블록이 약 11.8% 출현해야 함 (실제: " + iCount + "/1000)");
 
         hardEngine.shutdown();
     }
@@ -226,8 +248,7 @@ public class GameEnginePieceGenerationTest {
     void testGameOverWhenPieceCannotSpawn() {
         // 맨 위 여러 줄을 완전히 막기
         for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < board.getWidth(); col++)
-                board.setCell(col, row, 1);
+            for (int col = 0; col < board.getWidth(); col++) board.setCell(col, row, 1);
         }
 
         // 현재 조각을 하드드롭하여 다음 조각 생성 시도

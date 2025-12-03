@@ -1,14 +1,13 @@
 package team13.tetris.game.model;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 // Board 클래스 테스트: Tests Board class functionality
 @DisplayName("Board 테스트")
@@ -17,7 +16,9 @@ public class BoardTest {
     private Board board;
 
     @BeforeEach
-    void setUp() { board = new Board(10, 20); }
+    void setUp() {
+        board = new Board(10, 20);
+    }
 
     @Test
     @DisplayName("보드 생성 시 너비와 높이가 올바르게 설정되어야 함")
@@ -117,8 +118,8 @@ public class BoardTest {
     @DisplayName("placePiece는 주어진 모양을 보드에 배치해야 함")
     void testPlacePiece() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         board.placePiece(shape, 3, 5, 7);
@@ -133,9 +134,9 @@ public class BoardTest {
     @DisplayName("placePiece는 0이 아닌 값만 배치해야 함")
     void testPlacePieceIgnoresZeros() {
         int[][] shape = {
-            { 0, 1, 0 },
-            { 1, 1, 1 },
-            { 0, 0, 0 }
+            {0, 1, 0},
+            {1, 1, 1},
+            {0, 0, 0}
         };
 
         board.placePiece(shape, 2, 3, 5);
@@ -155,8 +156,8 @@ public class BoardTest {
     @DisplayName("placePiece는 범위를 벗어난 부분을 무시해야 함")
     void testPlacePieceOutOfBounds() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         // 왼쪽 경계를 벗어남
@@ -183,8 +184,8 @@ public class BoardTest {
     @DisplayName("placeItemPiece - COPY 타입은 지정된 블록만 100번대 값으로 설정해야 함")
     void testPlaceItemPieceCopy() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         board.placeItemPiece(shape, 3, 5, 7, 2, "COPY");
@@ -199,7 +200,7 @@ public class BoardTest {
     @Test
     @DisplayName("placeItemPiece - LINE_CLEAR 타입은 지정된 블록만 200번대 값으로 설정해야 함")
     void testPlaceItemPieceLineClear() {
-        int[][] shape = { { 1, 1, 1 } };
+        int[][] shape = {{1, 1, 1}};
 
         board.placeItemPiece(shape, 0, 0, 5, 1, "LINE_CLEAR");
 
@@ -211,7 +212,7 @@ public class BoardTest {
     @Test
     @DisplayName("placeItemPiece - WEIGHT 타입은 모든 블록을 300번대 값으로 설정해야 함")
     void testPlaceItemPieceWeight() {
-        int[][] shape = { { 1, 1 } };
+        int[][] shape = {{1, 1}};
 
         board.placeItemPiece(shape, 2, 3, 4, 0, "WEIGHT");
 
@@ -222,7 +223,7 @@ public class BoardTest {
     @Test
     @DisplayName("placeItemPiece - GRAVITY 타입은 모든 블록을 400번대 값으로 설정해야 함")
     void testPlaceItemPieceGravity() {
-        int[][] shape = { { 1 } };
+        int[][] shape = {{1}};
 
         board.placeItemPiece(shape, 5, 5, 6, 0, "GRAVITY");
 
@@ -232,7 +233,7 @@ public class BoardTest {
     @Test
     @DisplayName("placeItemPiece - SPLIT 타입은 모든 블록을 500번대 값으로 설정해야 함")
     void testPlaceItemPieceSplit() {
-        int[][] shape = { { 1, 1, 1 } };
+        int[][] shape = {{1, 1, 1}};
 
         board.placeItemPiece(shape, 1, 1, 2, 0, "SPLIT");
 
@@ -245,8 +246,8 @@ public class BoardTest {
     @DisplayName("fits는 빈 공간에 모양을 놓을 수 있는지 확인해야 함")
     void testFitsEmptySpace() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         assertTrue(board.fits(shape, 0, 0));
@@ -258,8 +259,8 @@ public class BoardTest {
     @DisplayName("fits는 이미 블록이 있는 곳에는 false를 반환해야 함")
     void testFitsOccupiedSpace() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         board.setCell(3, 5, 1);
@@ -272,8 +273,8 @@ public class BoardTest {
     @DisplayName("fits는 범위를 벗어나면 false를 반환해야 함")
     void testFitsOutOfBounds() {
         int[][] shape = {
-            { 1, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
 
         assertFalse(board.fits(shape, -1, 0)); // 왼쪽 벗어남
@@ -286,8 +287,8 @@ public class BoardTest {
     @DisplayName("fits는 0인 셀은 무시해야 함")
     void testFitsIgnoresZeros() {
         int[][] shape = {
-            { 0, 1, 0 },
-            { 1, 1, 1 }
+            {0, 1, 0},
+            {1, 1, 1}
         };
 
         board.setCell(3, 5, 1); // shape의 (0,0) 위치에 블록이 있지만 shape[0][0]은 0
@@ -505,22 +506,212 @@ public class BoardTest {
 
         for (int i = 0; i < THREADS; i++) {
             final int threadId = i;
-            new Thread(() -> {
-                try {
-                    for (int j = 0; j < 100; j++) {
-                        int x = (threadId + j) % board.getWidth();
-                        int y = (threadId * 2 + j) % board.getHeight();
-                        board.setCell(x, y, threadId);
-                        int value = board.getCell(x, y);
-                        if (value != 0 && value != threadId) failed.set(true);
-                    }
-                } finally {
-                    latch.countDown();
-                }
-            }).start();
+            new Thread(
+                            () -> {
+                                try {
+                                    for (int j = 0; j < 100; j++) {
+                                        int x = (threadId + j) % board.getWidth();
+                                        int y = (threadId * 2 + j) % board.getHeight();
+                                        board.setCell(x, y, threadId);
+                                        int value = board.getCell(x, y);
+                                        if (value != 0 && value != threadId) failed.set(true);
+                                    }
+                                } finally {
+                                    latch.countDown();
+                                }
+                            })
+                    .start();
         }
 
         latch.await();
         assertFalse(failed.get(), "동시 접근 시 데이터 불일치가 발생하지 않아야 함");
+    }
+
+    @Test
+    @DisplayName("극단적인 보드 크기에서도 정상 동작해야 함")
+    void testExtremeBoardSizes() {
+        // 최소 크기
+        Board minBoard = new Board(1, 1);
+        assertEquals(1, minBoard.getWidth());
+        assertEquals(1, minBoard.getHeight());
+        minBoard.setCell(0, 0, 5);
+        assertEquals(5, minBoard.getCell(0, 0));
+
+        // 큰 크기
+        Board largeBoard = new Board(50, 100);
+        assertEquals(50, largeBoard.getWidth());
+        assertEquals(100, largeBoard.getHeight());
+        largeBoard.setCell(49, 99, 7);
+        assertEquals(7, largeBoard.getCell(49, 99));
+    }
+
+    @Test
+    @DisplayName("보드 상태가 올바르게 변경되어야 함")
+    void testSequentialModification() {
+        board.setCell(0, 0, 1);
+        assertEquals(1, board.getCell(0, 0));
+        assertEquals(0, board.getCell(1, 1));
+
+        board.setCell(1, 1, 2);
+        assertEquals(1, board.getCell(0, 0)); // 이전 값 유지
+        assertEquals(2, board.getCell(1, 1)); // 새 값 설정
+    }
+
+    @Test
+    @DisplayName("applyGravity 후 블록이 올바른 순서로 쌓여야 함")
+    void testApplyGravityOrder() {
+        // 위에서부터 1, 2, 3으로 배치 (중간에 빈 공간 있음)
+        board.setCell(0, 5, 1);
+        board.setCell(0, 10, 2);
+        board.setCell(0, 15, 3);
+
+        board.applyGravity();
+
+        // 아래부터 위에서 아래로 내려온 순서대로 쌓여야 함: 3(가장 아래), 2, 1 순서
+        assertEquals(3, board.getCell(0, 19)); // 15에서 내려온 블록 (가장 아래)
+        assertEquals(2, board.getCell(0, 18)); // 10에서 내려온 블록
+        assertEquals(1, board.getCell(0, 17)); // 5에서 내려온 블록
+
+        // 위쪽은 모두 비어있어야 함
+        for (int y = 0; y < 17; y++) {
+            assertEquals(0, board.getCell(0, y));
+        }
+    }
+
+    @Test
+    @DisplayName("여러 열에서 서로 다른 높이의 블록 중력 적용")
+    void testComplexGravityScenario() {
+        // 패턴 생성: 각 열마다 다른 개수의 블록
+        for (int col = 0; col < board.getWidth(); col++) {
+            for (int i = 0; i < col + 1; i++) {
+                board.setCell(col, i * 2, col + 1); // 간격을 두고 배치
+            }
+        }
+
+        board.applyGravity();
+
+        // 각 열의 바닥부터 블록이 쌓여있어야 함
+        for (int col = 0; col < board.getWidth(); col++) {
+            int expectedBlocks = col + 1;
+
+            // 바닥부터 예상 개수만큼 블록이 있어야 함
+            for (int i = 0; i < expectedBlocks; i++) {
+                int y = board.getHeight() - 1 - i;
+                assertEquals(col + 1, board.getCell(col, y), "열 " + col + ", 행 " + y + "에 블록이 없음");
+            }
+
+            // 나머지는 비어있어야 함
+            for (int y = 0; y < board.getHeight() - expectedBlocks; y++) {
+                assertEquals(0, board.getCell(col, y), "열 " + col + ", 행 " + y + "가 비어있지 않음");
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("중력 적용 시 블록 값이 보존되어야 함")
+    void testGravityPreservesBlockValues() {
+        int[] testValues = {1, 2, 3, 4, 5, 6, 7};
+        int col = 3;
+
+        // 다양한 값의 블록을 여러 높이에 배치
+        for (int i = 0; i < testValues.length; i++) {
+            board.setCell(col, i * 3, testValues[i]);
+        }
+
+        board.applyGravity();
+
+        // 바닥부터 역순으로 값이 보존되어야 함 (위에서 아래로 내려오는 순서)
+        for (int i = 0; i < testValues.length; i++) {
+            int y = board.getHeight() - 1 - i;
+            int expectedValue = testValues[testValues.length - 1 - i]; // 역순
+            assertEquals(
+                    expectedValue,
+                    board.getCell(col, y),
+                    "블록 값이 보존되지 않음: 예상 " + expectedValue + ", 실제 " + board.getCell(col, y));
+        }
+    }
+
+    @Test
+    @DisplayName("빈 보드에서 중력 적용해도 변화가 없어야 함")
+    void testGravityOnEmptyBoard() {
+        // 빈 보드 확인
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+
+        board.applyGravity();
+
+        // 여전히 빈 보드여야 함
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("이미 바닥에 있는 블록은 중력 적용 후에도 그대로 있어야 함")
+    void testGravityOnBottomBlocks() {
+        // 바닥 줄에 블록 배치
+        for (int x = 0; x < board.getWidth(); x++) {
+            board.setCell(x, board.getHeight() - 1, x + 1);
+        }
+
+        board.applyGravity();
+
+        // 바닥 줄 블록은 그대로 있어야 함
+        for (int x = 0; x < board.getWidth(); x++) {
+            assertEquals(x + 1, board.getCell(x, board.getHeight() - 1));
+        }
+
+        // 다른 줄은 모두 비어있어야 함
+        for (int y = 0; y < board.getHeight() - 1; y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                assertEquals(0, board.getCell(x, y));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("보드 크기 속성이 올바르게 설정되어야 함")
+    void testBoardDimensions() {
+        assertEquals(10, board.getWidth(), "보드 너비가 올바르지 않음");
+        assertEquals(20, board.getHeight(), "보드 높이가 올바르지 않음");
+
+        // 다양한 크기의 보드 테스트
+        Board smallBoard = new Board(5, 8);
+        assertEquals(5, smallBoard.getWidth());
+        assertEquals(8, smallBoard.getHeight());
+
+        Board largeBoard = new Board(15, 25);
+        assertEquals(15, largeBoard.getWidth());
+        assertEquals(25, largeBoard.getHeight());
+    }
+
+    @Test
+    @DisplayName("연속적인 중력 적용이 idempotent해야 함")
+    void testMultipleGravityApplications() {
+        // 블록 배치
+        board.setCell(2, 5, 1);
+        board.setCell(2, 10, 2);
+        board.setCell(7, 8, 3);
+
+        // 첫 번째 중력 적용
+        board.applyGravity();
+
+        // 첫 번째 적용 후 상태 저장
+        int col2_19_first = board.getCell(2, 19);
+        int col2_18_first = board.getCell(2, 18);
+        int col7_19_first = board.getCell(7, 19);
+
+        // 두 번째 중력 적용
+        board.applyGravity();
+
+        // 결과가 같아야 함
+        assertEquals(col2_19_first, board.getCell(2, 19), "연속 중력 적용 후 결과가 다름");
+        assertEquals(col2_18_first, board.getCell(2, 18), "연속 중력 적용 후 결과가 다름");
+        assertEquals(col7_19_first, board.getCell(7, 19), "연속 중력 적용 후 결과가 다름");
     }
 }

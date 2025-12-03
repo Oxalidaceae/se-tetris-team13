@@ -6,13 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
 
-// GameEngine Line Clear 테스트: Tests line clear scoring, speed increase, and total lines cleared tracking
+// GameEngine Line Clear 테스트: Tests line clear scoring, speed increase, and total lines cleared
+// tracking
 @DisplayName("GameEngine Line Clear 테스트")
 public class GameEngineLineClearTest {
 
@@ -182,7 +182,8 @@ public class GameEngineLineClearTest {
     @Test
     @DisplayName("EASY 모드: 속도 증가율 0.8배")
     void testEasyModeSpeedIncrease() {
-        GameEngine easyEngine = new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.EASY);
+        GameEngine easyEngine =
+                new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.EASY);
         easyEngine.startNewGame();
 
         double initialInterval = easyEngine.getDropIntervalSeconds();
@@ -208,7 +209,8 @@ public class GameEngineLineClearTest {
     @Test
     @DisplayName("HARD 모드: 속도 증가율 1.2배")
     void testHardModeSpeedIncrease() {
-        GameEngine hardEngine = new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.HARD);
+        GameEngine hardEngine =
+                new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.HARD);
         hardEngine.startNewGame();
 
         double initialInterval = hardEngine.getDropIntervalSeconds();
@@ -223,9 +225,15 @@ public class GameEngineLineClearTest {
     @Test
     @DisplayName("난이도별 속도 증가율 비교: HARD > NORMAL > EASY")
     void testDifficultySpeedIncreaseComparison() {
-        GameEngine easyEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.EASY);
-        GameEngine normalEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.NORMAL);
-        GameEngine hardEngine = new GameEngine(new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.HARD);
+        GameEngine easyEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.EASY);
+        GameEngine normalEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.NORMAL);
+        GameEngine hardEngine =
+                new GameEngine(
+                        new Board(10, 20), new TestListener(), ScoreBoard.ScoreEntry.Mode.HARD);
 
         easyEngine.startNewGame();
         normalEngine.startNewGame();
@@ -269,7 +277,8 @@ public class GameEngineLineClearTest {
     @DisplayName("라인 클리어 시 totalLinesCleared 증가 (ITEM 모드)")
     void testTotalLinesClearedIncrease() {
         // ITEM 모드에서만 totalLinesCleared가 증가
-        GameEngine itemEngine = new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.ITEM);
+        GameEngine itemEngine =
+                new GameEngine(new Board(10, 20), listener, ScoreBoard.ScoreEntry.Mode.ITEM);
         itemEngine.startNewGame();
 
         int initialTotal = itemEngine.getTotalLinesCleared();
@@ -277,7 +286,9 @@ public class GameEngineLineClearTest {
         itemEngine.addScoreForClearedLines(3);
 
         // ITEM 모드에서 addScoreForClearedLines 호출 시 totalLinesCleared 증가
-        assertTrue(itemEngine.getTotalLinesCleared() >= initialTotal, "라인 클리어 시 totalLinesCleared가 증가하거나 유지되어야 함");
+        assertTrue(
+                itemEngine.getTotalLinesCleared() >= initialTotal,
+                "라인 클리어 시 totalLinesCleared가 증가하거나 유지되어야 함");
 
         itemEngine.shutdown();
     }

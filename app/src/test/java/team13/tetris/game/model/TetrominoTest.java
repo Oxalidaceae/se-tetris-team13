@@ -1,11 +1,11 @@
 package team13.tetris.game.model;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import team13.tetris.game.model.Tetromino.ItemType;
 import team13.tetris.game.model.Tetromino.Kind;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 // Tetromino 클래스 테스트: Tests Tetromino class functionality
 @DisplayName("Tetromino 테스트")
@@ -51,8 +51,8 @@ public class TetrominoTest {
     @DisplayName("raw shape로 Tetromino를 생성할 수 있어야 함")
     void testCreateTetrominoWithRawShape() {
         int[][] shape = {
-                { 1, 1 },
-                { 1, 1 }
+            {1, 1},
+            {1, 1}
         };
         Tetromino tetromino = new Tetromino(5, shape);
 
@@ -112,49 +112,11 @@ public class TetrominoTest {
     }
 
     @Test
-    @DisplayName("반시계방향 회전이 올바르게 동작해야 함")
-    void testRotateCounter() {
-        Tetromino original = new Tetromino(Kind.T, 0);
-        Tetromino rotated = original.rotateCounter();
-
-        assertNotNull(rotated);
-        assertEquals(Kind.T, rotated.getKind());
-        assertNotSame(original, rotated);
-    }
-
-    @Test
     @DisplayName("4번 시계방향 회전 시 원래 모양으로 돌아와야 함")
     void testFourClockwiseRotationsReturnToOriginal() {
         Tetromino original = new Tetromino(Kind.L);
-        Tetromino rotated = original
-            .rotateClockwise()
-            .rotateClockwise()
-            .rotateClockwise()
-            .rotateClockwise();
-
-        assertArrayEquals(original.getShape(), rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("4번 반시계방향 회전 시 원래 모양으로 돌아와야 함")
-    void testFourCounterRotationsReturnToOriginal() {
-        Tetromino original = new Tetromino(Kind.J);
-        Tetromino rotated = original
-            .rotateCounter()
-            .rotateCounter()
-            .rotateCounter()
-            .rotateCounter();
-
-        assertArrayEquals(original.getShape(), rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("시계방향 회전 후 반시계방향 회전 시 원래 모양으로 돌아와야 함")
-    void testClockwiseThenCounter() {
-        Tetromino original = new Tetromino(Kind.S);
-        Tetromino rotated = original
-            .rotateClockwise()
-            .rotateCounter();
+        Tetromino rotated =
+                original.rotateClockwise().rotateClockwise().rotateClockwise().rotateClockwise();
 
         assertArrayEquals(original.getShape(), rotated.getShape());
     }
@@ -172,33 +134,15 @@ public class TetrominoTest {
     @DisplayName("raw shape의 시계방향 회전이 올바르게 동작해야 함")
     void testRawShapeRotateClockwise() {
         int[][] shape = {
-            { 1, 0 },
-            { 1, 1 }
+            {1, 0},
+            {1, 1}
         };
         Tetromino tetromino = new Tetromino(1, shape);
         Tetromino rotated = tetromino.rotateClockwise();
 
         int[][] expected = {
-            { 1, 1 },
-            { 1, 0 }
-        };
-
-        assertArrayEquals(expected, rotated.getShape());
-    }
-
-    @Test
-    @DisplayName("raw shape의 반시계방향 회전이 올바르게 동작해야 함")
-    void testRawShapeRotateCounter() {
-        int[][] shape = {
-            { 1, 0 },
-            { 1, 1 }
-        };
-        Tetromino tetromino = new Tetromino(1, shape);
-        Tetromino rotated = tetromino.rotateCounter();
-
-        int[][] expected = {
-            { 0, 1 },
-            { 1, 1 }
+            {1, 1},
+            {1, 0}
         };
 
         assertArrayEquals(expected, rotated.getShape());
@@ -231,7 +175,7 @@ public class TetrominoTest {
     @Test
     @DisplayName("raw shape에서 ID로 block style class를 반환해야 함")
     void testRawShapeBlockStyleClass() {
-        int[][] shape = { { 1 } };
+        int[][] shape = {{1}};
         assertEquals("block-I", new Tetromino(1, shape).getBlockStyleClass());
         assertEquals("block-O", new Tetromino(2, shape).getBlockStyleClass());
         assertEquals("block-T", new Tetromino(3, shape).getBlockStyleClass());
@@ -240,7 +184,7 @@ public class TetrominoTest {
     @Test
     @DisplayName("raw shape에서 ID로 text style class를 반환해야 함")
     void testRawShapeTextStyleClass() {
-        int[][] shape = { { 1 } };
+        int[][] shape = {{1}};
         assertEquals("tetris-i-text", new Tetromino(1, shape).getTextStyleClass());
         assertEquals("tetris-o-text", new Tetromino(2, shape).getTextStyleClass());
         assertEquals("tetris-t-text", new Tetromino(3, shape).getTextStyleClass());
@@ -276,7 +220,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(COPY) 생성 시 isItemPiece가 true여야 함")
     void testCreateItemPieceCopy() {
-        Tetromino itemPiece = new Tetromino(Kind.T, 0, 1);
+        Tetromino itemPiece = Tetromino.item(Kind.T, 0, ItemType.COPY, 1);
+
         assertTrue(itemPiece.isItemPiece());
         assertEquals(ItemType.COPY, itemPiece.getItemType());
         assertEquals(1, itemPiece.getCopyBlockIndex());
@@ -285,7 +230,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(WEIGHT)는 회전할 수 없어야 함")
     void testWeightCannotRotate() {
-        Tetromino weight = new Tetromino(Kind.WEIGHT, 0, 0);
+        Tetromino weight = Tetromino.item(Kind.WEIGHT, 0, ItemType.WEIGHT, 0);
+
         assertFalse(weight.canRotate());
         assertTrue(weight.isItemPiece());
         assertEquals(ItemType.WEIGHT, weight.getItemType());
@@ -294,7 +240,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(GRAVITY)는 회전할 수 없어야 함")
     void testGravityCannotRotate() {
-        Tetromino gravity = new Tetromino(Kind.GRAVITY, 0, 0);
+        Tetromino gravity = Tetromino.item(Kind.GRAVITY, 0, ItemType.GRAVITY, 0);
+
         assertFalse(gravity.canRotate());
         assertTrue(gravity.isItemPiece());
         assertEquals(ItemType.GRAVITY, gravity.getItemType());
@@ -303,7 +250,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(SPLIT)는 회전할 수 없어야 함")
     void testSplitCannotRotate() {
-        Tetromino split = new Tetromino(Kind.SPLIT, 0, 0);
+        Tetromino split = Tetromino.item(Kind.SPLIT, 0, ItemType.SPLIT, 0);
+
         assertFalse(split.canRotate());
         assertTrue(split.isItemPiece());
         assertEquals(ItemType.SPLIT, split.getItemType());
@@ -312,7 +260,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("아이템 미노(LINE_CLEAR) 생성 시 올바른 타입이 설정되어야 함")
     void testCreateItemPieceLineClear() {
-        Tetromino lineClear = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino lineClear = Tetromino.lineClearItem(Kind.T, 0, 2);
+
         assertTrue(lineClear.isItemPiece());
         assertEquals(ItemType.LINE_CLEAR, lineClear.getItemType());
         assertEquals(2, lineClear.getLineClearBlockIndex());
@@ -383,7 +332,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("COPY 아이템 미노 회전 시 copyBlockIndex가 올바르게 업데이트되어야 함")
     void testCopyItemRotation() {
-        Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
+        Tetromino copyItem = Tetromino.item(Kind.T, 0, ItemType.COPY, 1);
+
         assertEquals(1, copyItem.getCopyBlockIndex());
 
         Tetromino rotated = copyItem.rotateClockwise();
@@ -396,7 +346,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템 미노 회전 시 lineClearBlockIndex가 올바르게 업데이트되어야 함")
     void testLineClearItemRotation() {
-        Tetromino lineClearItem = new Tetromino(Kind.L, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino lineClearItem = Tetromino.lineClearItem(Kind.L, 0, 2);
+
         assertEquals(2, lineClearItem.getLineClearBlockIndex());
 
         Tetromino rotated = lineClearItem.rotateClockwise();
@@ -411,7 +362,8 @@ public class TetrominoTest {
     void testOMinoCopyClockwiseRotation() {
         // O 미노는 블록 위치가 고정: (0,1), (0,2), (1,1), (1,2)
         // 시계방향 회전: 0 -> 1 -> 3 -> 2 -> 0
-        Tetromino copyItem0 = new Tetromino(Kind.O, 0, 0);
+        Tetromino copyItem0 = Tetromino.item(Kind.O, 0, ItemType.COPY, 0);
+
         Tetromino rotated1 = copyItem0.rotateClockwise();
         assertEquals(1, rotated1.getCopyBlockIndex());
 
@@ -422,25 +374,6 @@ public class TetrominoTest {
         assertEquals(2, rotated3.getCopyBlockIndex());
 
         Tetromino rotated4 = rotated3.rotateClockwise();
-        assertEquals(0, rotated4.getCopyBlockIndex());
-    }
-
-    @Test
-    @DisplayName("O 미노 COPY 아이템 반시계방향 회전 시 올바른 인덱스가 계산되어야 함")
-    void testOMinoCopyCounterRotation() {
-        // O 미노는 블록 위치가 고정: (0,1), (0,2), (1,1), (1,2)
-        // 반시계방향 회전: 0 -> 2 -> 3 -> 1 -> 0
-        Tetromino copyItem0 = new Tetromino(Kind.O, 0, 0);
-        Tetromino rotated1 = copyItem0.rotateCounter();
-        assertEquals(2, rotated1.getCopyBlockIndex());
-
-        Tetromino rotated2 = rotated1.rotateCounter();
-        assertEquals(3, rotated2.getCopyBlockIndex());
-
-        Tetromino rotated3 = rotated2.rotateCounter();
-        assertEquals(1, rotated3.getCopyBlockIndex());
-
-        Tetromino rotated4 = rotated3.rotateCounter();
         assertEquals(0, rotated4.getCopyBlockIndex());
     }
 
@@ -459,14 +392,15 @@ public class TetrominoTest {
     @Test
     @DisplayName("모든 Kind의 회전이 정상적으로 동작해야 함")
     void testAllKindsCanRotate() {
-        Kind[] normalKinds = { Kind.I, Kind.O, Kind.T, Kind.S, Kind.Z, Kind.J, Kind.L };
+        Kind[] normalKinds = {Kind.I, Kind.O, Kind.T, Kind.S, Kind.Z, Kind.J, Kind.L};
 
         for (Kind kind : normalKinds) {
             Tetromino tetromino = new Tetromino(kind);
-            assertDoesNotThrow(() -> {
-                tetromino.rotateClockwise();
-                tetromino.rotateCounter();
-            }, kind + " 회전 시 예외가 발생하지 않아야 함");
+            assertDoesNotThrow(
+                    () -> {
+                        tetromino.rotateClockwise();
+                    },
+                    kind + " 회전 시 예외가 발생하지 않아야 함");
         }
     }
 
@@ -484,8 +418,8 @@ public class TetrominoTest {
     @Test
     @DisplayName("COPY 아이템과 LINE_CLEAR 아이템은 서로 독립적이어야 함")
     void testCopyAndLineClearAreIndependent() {
-        Tetromino copyItem = new Tetromino(Kind.T, 0, 1);
-        Tetromino lineClearItem = new Tetromino(Kind.T, 0, 2, ItemType.LINE_CLEAR);
+        Tetromino copyItem = Tetromino.item(Kind.T, 0, ItemType.COPY, 1);
+        Tetromino lineClearItem = Tetromino.lineClearItem(Kind.T, 0, 2);
 
         assertEquals(ItemType.COPY, copyItem.getItemType());
         assertEquals(ItemType.LINE_CLEAR, lineClearItem.getItemType());
@@ -509,5 +443,242 @@ public class TetrominoTest {
         assertEquals("tetris-copy-text", new Tetromino(Kind.COPY).getTextStyleClass());
         assertEquals("tetris-gravity-text", new Tetromino(Kind.GRAVITY).getTextStyleClass());
         assertEquals("tetris-split-text", new Tetromino(Kind.SPLIT).getTextStyleClass());
+    }
+
+    @Test
+    @DisplayName("getRotationIndex()가 올바른 회전 인덱스를 반환해야 함")
+    void testGetRotationIndex() {
+        // 회전값 0으로 생성
+        Tetromino tetromino0 = new Tetromino(Kind.T, 0);
+        assertEquals(0, tetromino0.getRotationIndex());
+
+        // 회전값 1로 생성
+        Tetromino tetromino1 = new Tetromino(Kind.T, 1);
+        assertEquals(1, tetromino1.getRotationIndex());
+
+        // 회전값 2로 생성
+        Tetromino tetromino2 = new Tetromino(Kind.T, 2);
+        assertEquals(2, tetromino2.getRotationIndex());
+
+        // 회전값 3으로 생성
+        Tetromino tetromino3 = new Tetromino(Kind.T, 3);
+        assertEquals(3, tetromino3.getRotationIndex());
+    }
+
+    @Test
+    @DisplayName("getRotationIndex()가 회전값을 4로 나눈 나머지를 반환해야 함")
+    void testGetRotationIndexModulo() {
+        // 회전값 4 (= 0 % 4)
+        Tetromino tetromino4 = new Tetromino(Kind.I, 4);
+        assertEquals(0, tetromino4.getRotationIndex());
+
+        // 회전값 5 (= 1 % 4)
+        Tetromino tetromino5 = new Tetromino(Kind.I, 5);
+        assertEquals(1, tetromino5.getRotationIndex());
+
+        // 회전값 8 (= 0 % 4)
+        Tetromino tetromino8 = new Tetromino(Kind.L, 8);
+        assertEquals(0, tetromino8.getRotationIndex());
+
+        // 회전값 11 (= 3 % 4)
+        Tetromino tetromino11 = new Tetromino(Kind.S, 11);
+        assertEquals(3, tetromino11.getRotationIndex());
+    }
+
+    @Test
+    @DisplayName("시계방향 회전 후 getRotationIndex()가 올바르게 증가해야 함")
+    void testGetRotationIndexAfterRotation() {
+        Tetromino original = new Tetromino(Kind.J, 0);
+        assertEquals(0, original.getRotationIndex());
+
+        Tetromino rotated1 = original.rotateClockwise();
+        assertEquals(1, rotated1.getRotationIndex());
+
+        Tetromino rotated2 = rotated1.rotateClockwise();
+        assertEquals(2, rotated2.getRotationIndex());
+
+        Tetromino rotated3 = rotated2.rotateClockwise();
+        assertEquals(3, rotated3.getRotationIndex());
+
+        // 4번째 회전 후 0으로 돌아가야 함
+        Tetromino rotated4 = rotated3.rotateClockwise();
+        assertEquals(0, rotated4.getRotationIndex());
+    }
+
+    @Test
+    @DisplayName("raw shape으로 생성된 Tetromino의 getRotationIndex()는 0이어야 함")
+    void testRawShapeRotationIndex() {
+        int[][] shape = {{1, 1}, {1, 0}};
+        Tetromino rawTetromino = new Tetromino(1, shape);
+        assertEquals(0, rawTetromino.getRotationIndex());
+    }
+
+    @Test
+    @DisplayName("LINE_CLEAR 아이템의 getLineClearBlockRow()가 올바른 행을 반환해야 함")
+    void testGetLineClearBlockRow() {
+        // T 미노의 기본 모양에서 블록 위치 확인
+        // T 미노 (rotation 0): {{0,1,0,0},{1,1,1,0},{0,0,0,0},{0,0,0,0}}
+        // 블록 인덱스: 0=(0,1), 1=(1,0), 2=(1,1), 3=(1,2)
+
+        // 블록 인덱스 0 (행 0, 열 1)
+        Tetromino lineClear0 = Tetromino.lineClearItem(Kind.T, 0, 0);
+        assertEquals(0, lineClear0.getLineClearBlockRow());
+
+        // 블록 인덱스 1 (행 1, 열 0)
+        Tetromino lineClear1 = Tetromino.lineClearItem(Kind.T, 0, 1);
+        assertEquals(1, lineClear1.getLineClearBlockRow());
+
+        // 블록 인덱스 2 (행 1, 열 1)
+        Tetromino lineClear2 = Tetromino.lineClearItem(Kind.T, 0, 2);
+        assertEquals(1, lineClear2.getLineClearBlockRow());
+
+        // 블록 인덱스 3 (행 1, 열 2)
+        Tetromino lineClear3 = Tetromino.lineClearItem(Kind.T, 0, 3);
+        assertEquals(1, lineClear3.getLineClearBlockRow());
+    }
+
+    @Test
+    @DisplayName("LINE_CLEAR 아이템의 getLineClearBlockCol()이 올바른 열을 반환해야 함")
+    void testGetLineClearBlockCol() {
+        // T 미노의 기본 모양에서 블록 위치 확인
+        // T 미노 (rotation 0): {{0,1,0,0},{1,1,1,0},{0,0,0,0},{0,0,0,0}}
+        // 블록 인덱스: 0=(0,1), 1=(1,0), 2=(1,1), 3=(1,2)
+
+        // 블록 인덱스 0 (행 0, 열 1)
+        Tetromino lineClear0 = Tetromino.lineClearItem(Kind.T, 0, 0);
+        assertEquals(1, lineClear0.getLineClearBlockCol());
+
+        // 블록 인덱스 1 (행 1, 열 0)
+        Tetromino lineClear1 = Tetromino.lineClearItem(Kind.T, 0, 1);
+        assertEquals(0, lineClear1.getLineClearBlockCol());
+
+        // 블록 인덱스 2 (행 1, 열 1)
+        Tetromino lineClear2 = Tetromino.lineClearItem(Kind.T, 0, 2);
+        assertEquals(1, lineClear2.getLineClearBlockCol());
+
+        // 블록 인덱스 3 (행 1, 열 2)
+        Tetromino lineClear3 = Tetromino.lineClearItem(Kind.T, 0, 3);
+        assertEquals(2, lineClear3.getLineClearBlockCol());
+    }
+
+    @Test
+    @DisplayName("일반 미노(비아이템)의 getLineClearBlockRow()는 -1을 반환해야 함")
+    void testNormalPieceLineClearBlockRow() {
+        Tetromino normalPiece = new Tetromino(Kind.I);
+        assertEquals(-1, normalPiece.getLineClearBlockRow());
+    }
+
+    @Test
+    @DisplayName("일반 미노(비아이템)의 getLineClearBlockCol()은 -1을 반환해야 함")
+    void testNormalPieceLineClearBlockCol() {
+        Tetromino normalPiece = new Tetromino(Kind.O);
+        assertEquals(-1, normalPiece.getLineClearBlockCol());
+    }
+
+    @Test
+    @DisplayName("COPY 아이템의 getLineClearBlockRow()는 -1을 반환해야 함")
+    void testCopyItemLineClearBlockRow() {
+        Tetromino copyItem = Tetromino.item(Kind.S, 0, ItemType.COPY, 1);
+        assertEquals(-1, copyItem.getLineClearBlockRow());
+    }
+
+    @Test
+    @DisplayName("COPY 아이템의 getLineClearBlockCol()은 -1을 반환해야 함")
+    void testCopyItemLineClearBlockCol() {
+        Tetromino copyItem = Tetromino.item(Kind.Z, 0, ItemType.COPY, 2);
+        assertEquals(-1, copyItem.getLineClearBlockCol());
+    }
+
+    @Test
+    @DisplayName("I 미노 LINE_CLEAR 아이템의 행/열이 올바르게 설정되어야 함")
+    void testIMinoLineClearBlockPosition() {
+        // I 미노 (rotation 0): {{0,0,0,0},{1,1,1,1},{0,0,0,0},{0,0,0,0}}
+        // 블록 인덱스: 0=(1,0), 1=(1,1), 2=(1,2), 3=(1,3)
+
+        Tetromino iLineClear0 = Tetromino.lineClearItem(Kind.I, 0, 0);
+        assertEquals(1, iLineClear0.getLineClearBlockRow());
+        assertEquals(0, iLineClear0.getLineClearBlockCol());
+
+        Tetromino iLineClear2 = Tetromino.lineClearItem(Kind.I, 0, 2);
+        assertEquals(1, iLineClear2.getLineClearBlockRow());
+        assertEquals(2, iLineClear2.getLineClearBlockCol());
+    }
+
+    @Test
+    @DisplayName("O 미노 LINE_CLEAR 아이템의 행/열이 올바르게 설정되어야 함")
+    void testOMinoLineClearBlockPosition() {
+        // O 미노 (rotation 0): {{0,1,1,0},{0,1,1,0},{0,0,0,0},{0,0,0,0}}
+        // 블록 인덱스: 0=(0,1), 1=(0,2), 2=(1,1), 3=(1,2)
+
+        Tetromino oLineClear0 = Tetromino.lineClearItem(Kind.O, 0, 0);
+        assertEquals(0, oLineClear0.getLineClearBlockRow());
+        assertEquals(1, oLineClear0.getLineClearBlockCol());
+
+        Tetromino oLineClear3 = Tetromino.lineClearItem(Kind.O, 0, 3);
+        assertEquals(1, oLineClear3.getLineClearBlockRow());
+        assertEquals(2, oLineClear3.getLineClearBlockCol());
+    }
+
+    @Test
+    @DisplayName("LINE_CLEAR 아이템 회전 후 행/열 위치가 올바르게 업데이트되어야 함")
+    void testLineClearBlockPositionAfterRotation() {
+        // T 미노로 테스트
+        Tetromino lineClearOriginal = Tetromino.lineClearItem(Kind.T, 0, 0);
+        assertEquals(0, lineClearOriginal.getLineClearBlockRow());
+        assertEquals(1, lineClearOriginal.getLineClearBlockCol());
+
+        Tetromino rotated = lineClearOriginal.rotateClockwise();
+        assertTrue(rotated.isItemPiece());
+        assertEquals(ItemType.LINE_CLEAR, rotated.getItemType());
+
+        // 회전 후에도 유효한 행/열 값을 가져야 함 (정확한 값은 회전 로직에 따라 결정됨)
+        assertTrue(rotated.getLineClearBlockRow() >= 0);
+        assertTrue(rotated.getLineClearBlockCol() >= 0);
+    }
+
+    @Test
+    @DisplayName("잘못된 블록 인덱스로 LINE_CLEAR 아이템 생성 시 -1을 반환해야 함")
+    void testInvalidLineClearBlockIndex() {
+        // 유효하지 않은 블록 인덱스 (-1)로 생성
+        Tetromino invalidLineClear = Tetromino.lineClearItem(Kind.T, 0, -1);
+        assertEquals(-1, invalidLineClear.getLineClearBlockRow());
+        assertEquals(-1, invalidLineClear.getLineClearBlockCol());
+        assertEquals(-1, invalidLineClear.getLineClearBlockIndex());
+    }
+
+    @Test
+    @DisplayName("다양한 회전값에서 getRotationIndex()가 올바르게 동작해야 함")
+    void testGetRotationIndexWithVariousKinds() {
+        Kind[] allKinds = {Kind.I, Kind.O, Kind.T, Kind.S, Kind.Z, Kind.J, Kind.L};
+
+        for (Kind kind : allKinds) {
+            for (int rotation = 0; rotation < 8; rotation++) {
+                Tetromino tetromino = new Tetromino(kind, rotation);
+                assertEquals(
+                        rotation % 4,
+                        tetromino.getRotationIndex(),
+                        kind
+                                + " with rotation "
+                                + rotation
+                                + " should have rotationIndex "
+                                + (rotation % 4));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("아이템 미노의 getRotationIndex()가 올바르게 동작해야 함")
+    void testItemPieceRotationIndex() {
+        // COPY 아이템
+        Tetromino copyItem = Tetromino.item(Kind.L, 2, ItemType.COPY, 1);
+        assertEquals(2, copyItem.getRotationIndex());
+
+        // LINE_CLEAR 아이템
+        Tetromino lineClearItem = Tetromino.lineClearItem(Kind.J, 1, 2);
+        assertEquals(1, lineClearItem.getRotationIndex());
+
+        // WEIGHT 아이템
+        Tetromino weightItem = Tetromino.item(Kind.WEIGHT, 3, ItemType.WEIGHT, 0);
+        assertEquals(3, weightItem.getRotationIndex());
     }
 }

@@ -73,10 +73,15 @@ public class KeyInputHandler {
 
     public interface KeyInputCallback {
         void onLeftPressed();
+
         void onRightPressed();
+
         void onRotatePressed();
+
         void onDropPressed();
+
         void onHardDropPressed();
+
         void onPausePressed();
     }
 }

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.controller.GameStateListener;
 import team13.tetris.game.model.Board;
@@ -85,8 +84,7 @@ public class GameEngineItemModeTest {
         for (int iteration = 0; iteration < 3; iteration++) {
             // 4줄을 채우기 (하단부터)
             for (int row = 19; row >= 16; row--) {
-                for (int col = 0; col < 10; col++)
-                    board.setCell(col, row, 1);
+                for (int col = 0; col < 10; col++) board.setCell(col, row, 1);
             }
 
             // 조각을 배치하여 라인 클리어 트리거 (실제로는 게임 엔진이 처리해야 함)
@@ -106,7 +104,7 @@ public class GameEngineItemModeTest {
     @DisplayName("COPY 아이템: 특정 미노를 복사할 수 있어야 함")
     void testCopyItemCreation() {
         // COPY 아이템 미노 직접 생성 (I 블록 복사, 3개 파라미터 생성자 사용)
-        Tetromino copyItem = new Tetromino(Tetromino.Kind.I, 0, 2);
+        Tetromino copyItem = Tetromino.item(Tetromino.Kind.I, 0, Tetromino.ItemType.COPY, 2);
 
         assertNotNull(copyItem, "COPY 아이템이 생성되어야 함");
         assertTrue(copyItem.isItemPiece(), "아이템 피스여야 함");
@@ -118,7 +116,7 @@ public class GameEngineItemModeTest {
     @DisplayName("COPY 아이템: copyBlockIndex가 올바르게 설정되어야 함")
     void testCopyItemBlockIndex() {
         for (int i = 0; i < 4; i++) {
-            Tetromino copyItem = new Tetromino(Tetromino.Kind.T, 0, i);
+            Tetromino copyItem = Tetromino.item(Tetromino.Kind.T, 0, Tetromino.ItemType.COPY, i);
             assertEquals(i, copyItem.getCopyBlockIndex(), "복사 블록 인덱스가 " + i + "여야 함");
         }
     }
@@ -127,7 +125,8 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템: 생성 가능해야 함")
     void testWeightItemCreation() {
-        Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        Tetromino weightItem =
+                Tetromino.item(Tetromino.Kind.WEIGHT, 0, Tetromino.ItemType.WEIGHT, 0);
 
         assertNotNull(weightItem, "WEIGHT 아이템이 생성되어야 함");
         assertEquals(Tetromino.Kind.WEIGHT, weightItem.getKind(), "WEIGHT 타입이어야 함");
@@ -137,7 +136,9 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템: 회전 불가능해야 함")
     void testWeightItemCannotRotate() {
-        Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        Tetromino weightItem =
+                Tetromino.item(Tetromino.Kind.WEIGHT, 0, Tetromino.ItemType.WEIGHT, 0);
+
         assertFalse(weightItem.canRotate(), "WEIGHT는 회전할 수 없어야 함");
     }
 
@@ -145,7 +146,8 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템: 생성 가능해야 함")
     void testGravityItemCreation() {
-        Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
+        Tetromino gravityItem =
+                Tetromino.item(Tetromino.Kind.GRAVITY, 0, Tetromino.ItemType.GRAVITY, 0);
 
         assertNotNull(gravityItem, "GRAVITY 아이템이 생성되어야 함");
         assertEquals(Tetromino.Kind.GRAVITY, gravityItem.getKind(), "GRAVITY 타입이어야 함");
@@ -155,7 +157,9 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템: 회전 불가능해야 함")
     void testGravityItemCannotRotate() {
-        Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
+        Tetromino gravityItem =
+                Tetromino.item(Tetromino.Kind.GRAVITY, 0, Tetromino.ItemType.GRAVITY, 0);
+
         assertFalse(gravityItem.canRotate(), "GRAVITY는 회전할 수 없어야 함");
     }
 
@@ -163,7 +167,7 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템: 생성 가능해야 함")
     void testSplitItemCreation() {
-        Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
+        Tetromino splitItem = Tetromino.item(Tetromino.Kind.SPLIT, 0, Tetromino.ItemType.SPLIT, 0);
 
         assertNotNull(splitItem, "SPLIT 아이템이 생성되어야 함");
         assertEquals(Tetromino.Kind.SPLIT, splitItem.getKind(), "SPLIT 타입이어야 함");
@@ -173,7 +177,8 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템: 회전 불가능해야 함")
     void testSplitItemCannotRotate() {
-        Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
+        Tetromino splitItem = Tetromino.item(Tetromino.Kind.SPLIT, 0, Tetromino.ItemType.SPLIT, 0);
+
         assertFalse(splitItem.canRotate(), "SPLIT는 회전할 수 없어야 함");
     }
 
@@ -181,7 +186,7 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템: 생성 가능해야 함")
     void testLineClearItemCreation() {
-        Tetromino lineClearItem = new Tetromino(Tetromino.Kind.T, 0, 1, Tetromino.ItemType.LINE_CLEAR);
+        Tetromino lineClearItem = Tetromino.lineClearItem(Tetromino.Kind.T, 0, 1);
 
         assertNotNull(lineClearItem, "LINE_CLEAR 아이템이 생성되어야 함");
         assertTrue(lineClearItem.isItemPiece(), "아이템 피스여야 함");
@@ -192,7 +197,8 @@ public class GameEngineItemModeTest {
     @DisplayName("LINE_CLEAR 아이템: lineClearBlockIndex가 올바르게 설정되어야 함")
     void testLineClearItemBlockIndex() {
         for (int i = 0; i < 4; i++) {
-            Tetromino lineClearItem = new Tetromino(Tetromino.Kind.S, 0, i, Tetromino.ItemType.LINE_CLEAR);
+            Tetromino lineClearItem = Tetromino.lineClearItem(Tetromino.Kind.S, 0, i);
+
             assertEquals(i, lineClearItem.getLineClearBlockIndex(), "라인 클리어 블록 인덱스가 " + i + "여야 함");
         }
     }
@@ -201,7 +207,8 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("COPY 아이템 블록: 100-199 범위여야 함")
     void testCopyItemBlockValueRange() {
-        Tetromino copyItem = new Tetromino(Tetromino.Kind.I, 0, 0, Tetromino.ItemType.COPY);
+        Tetromino copyItem = Tetromino.item(Tetromino.Kind.I, 0, Tetromino.ItemType.COPY, 0);
+
         board.placeItemPiece(copyItem.getShape(), 0, 0, copyItem.getId(), 0, "COPY");
 
         // COPY 블록 값 확인 (100 + id)
@@ -223,8 +230,10 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("LINE_CLEAR 아이템 블록: 200-299 범위여야 함")
     void testLineClearItemBlockValueRange() {
-        Tetromino lineClearItem = new Tetromino(Tetromino.Kind.T, 0, 0, Tetromino.ItemType.LINE_CLEAR);
-        board.placeItemPiece(lineClearItem.getShape(), 0, 0, lineClearItem.getId(), 0, "LINE_CLEAR");
+        Tetromino lineClearItem = Tetromino.lineClearItem(Tetromino.Kind.T, 0, 0);
+
+        board.placeItemPiece(
+                lineClearItem.getShape(), 0, 0, lineClearItem.getId(), 0, "LINE_CLEAR");
 
         boolean foundLineClearBlock = false;
         for (int y = 0; y < board.getHeight(); y++) {
@@ -244,7 +253,9 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("WEIGHT 아이템 블록: 300-399 범위여야 함")
     void testWeightItemBlockValueRange() {
-        Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        Tetromino weightItem =
+                Tetromino.item(Tetromino.Kind.WEIGHT, 0, Tetromino.ItemType.WEIGHT, 0);
+
         board.placeItemPiece(weightItem.getShape(), 0, 0, weightItem.getId(), 0, "WEIGHT");
 
         boolean foundWeightBlock = false;
@@ -265,7 +276,9 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("GRAVITY 아이템 블록: 400-499 범위여야 함")
     void testGravityItemBlockValueRange() {
-        Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
+        Tetromino gravityItem =
+                Tetromino.item(Tetromino.Kind.GRAVITY, 0, Tetromino.ItemType.GRAVITY, 0);
+
         board.placeItemPiece(gravityItem.getShape(), 0, 0, gravityItem.getId(), 0, "GRAVITY");
 
         boolean foundGravityBlock = false;
@@ -286,7 +299,8 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("SPLIT 아이템 블록: 500-599 범위여야 함")
     void testSplitItemBlockValueRange() {
-        Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
+        Tetromino splitItem = Tetromino.item(Tetromino.Kind.SPLIT, 0, Tetromino.ItemType.SPLIT, 0);
+
         board.placeItemPiece(splitItem.getShape(), 0, 0, splitItem.getId(), 0, "SPLIT");
 
         boolean foundSplitBlock = false;
@@ -315,35 +329,42 @@ public class GameEngineItemModeTest {
     @Test
     @DisplayName("COPY 아이템은 아이템 피스여야 함")
     void testCopyIsItemPiece() {
-        Tetromino copyItem = new Tetromino(Tetromino.Kind.T, 0, 0, Tetromino.ItemType.COPY);
+        Tetromino copyItem = Tetromino.item(Tetromino.Kind.T, 0, Tetromino.ItemType.COPY, 0);
+
         assertTrue(copyItem.isItemPiece(), "COPY 아이템은 아이템 피스여야 함");
     }
 
     @Test
     @DisplayName("LINE_CLEAR 아이템은 아이템 피스여야 함")
     void testLineClearIsItemPiece() {
-        Tetromino lineClearItem = new Tetromino(Tetromino.Kind.S, 0, 0, Tetromino.ItemType.LINE_CLEAR);
+        Tetromino lineClearItem = Tetromino.lineClearItem(Tetromino.Kind.S, 0, 0);
+
         assertTrue(lineClearItem.isItemPiece(), "LINE_CLEAR 아이템은 아이템 피스여야 함");
     }
 
     @Test
     @DisplayName("WEIGHT 아이템은 Kind로 판별 가능해야 함")
     void testWeightItemKind() {
-        Tetromino weightItem = new Tetromino(Tetromino.Kind.WEIGHT, 0, 0);
+        Tetromino weightItem =
+                Tetromino.item(Tetromino.Kind.WEIGHT, 0, Tetromino.ItemType.WEIGHT, 0);
+
         assertEquals(Tetromino.Kind.WEIGHT, weightItem.getKind(), "WEIGHT Kind여야 함");
     }
 
     @Test
     @DisplayName("GRAVITY 아이템은 Kind로 판별 가능해야 함")
     void testGravityItemKind() {
-        Tetromino gravityItem = new Tetromino(Tetromino.Kind.GRAVITY, 0, 0);
+        Tetromino gravityItem =
+                Tetromino.item(Tetromino.Kind.GRAVITY, 0, Tetromino.ItemType.GRAVITY, 0);
+
         assertEquals(Tetromino.Kind.GRAVITY, gravityItem.getKind(), "GRAVITY Kind여야 함");
     }
 
     @Test
     @DisplayName("SPLIT 아이템은 Kind로 판별 가능해야 함")
     void testSplitItemKind() {
-        Tetromino splitItem = new Tetromino(Tetromino.Kind.SPLIT, 0, 0);
+        Tetromino splitItem = Tetromino.item(Tetromino.Kind.SPLIT, 0, Tetromino.ItemType.SPLIT, 0);
+
         assertEquals(Tetromino.Kind.SPLIT, splitItem.getKind(), "SPLIT Kind여야 함");
     }
 
@@ -379,6 +400,7 @@ public class GameEngineItemModeTest {
 
         // totalLinesCleared는 라인 클리어 후 증가해야 함
         // (비동기 처리로 인해 즉시 증가하지 않을 수 있음)
-        assertTrue(engine.getTotalLinesCleared() >= initialLinesCleared, "총 라인 클리어 수가 유지되거나 증가해야 함");
+        assertTrue(
+                engine.getTotalLinesCleared() >= initialLinesCleared, "총 라인 클리어 수가 유지되거나 증가해야 함");
     }
 }

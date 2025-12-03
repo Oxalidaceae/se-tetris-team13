@@ -1,6 +1,6 @@
 .root {
     -fx-background-color: #000000;
-    -fx-font-family: "Roboto", "Noto Sans", sans-serif;
+    -fx-font-family: "Consolas", "Courier New", "Lucida Console", monospace;
     -fx-text-fill: white;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .button {
-    -fx-background-color: transparent;
+    -fx-background-color: #212830;
     -fx-text-fill: white;
     -fx-border-color: white;
     -fx-border-width: 2;
@@ -29,6 +29,12 @@
 
 .button:hover {
     -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+/* Style for the selected role button */
+.button.selected {
+    -fx-background-color: rgb(231, 152, 50);
     -fx-text-fill: black;
 }
 
@@ -79,14 +85,14 @@
 .window-small .button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
-    -fx-pref-width: 150px;
+    -fx-pref-width: 174px;
     -fx-pref-height: 30px;
 }
 
 .window-small .toggle-button {
     -fx-font-size: 12px;
     -fx-padding: 6 12;
-    -fx-pref-width: 150px;
+    -fx-pref-width: 174px;
     -fx-pref-height: 30px;
 }
 
@@ -130,7 +136,7 @@
 }
 
 .window-small .right-panel {
-    -fx-padding: 30 40 10 15;
+    -fx-padding: 30 0 10 0;
     -fx-spacing: 8;
     -fx-min-width: 100;
     -fx-max-width: 100;
@@ -148,13 +154,13 @@
 .window-medium .button {
     -fx-font-size: 16px;
     -fx-padding: 8 16;
-    -fx-pref-width: 200px;
+    -fx-pref-width: 231px;
     -fx-pref-height: 40px;
 }
 .window-medium .toggle-button{
     -fx-font-size: 16px;
     -fx-padding: 8 16;
-    -fx-pref-width: 200px;
+    -fx-pref-width: 231px;
     -fx-pref-height: 40px;
 }
 
@@ -198,7 +204,7 @@
 }
 
 .window-medium .right-panel {
-    -fx-padding: 40 60 20 20;
+    -fx-padding: 40 0 20 0;
     -fx-spacing: 15;
     -fx-min-width: 150;
     -fx-max-width: 150;
@@ -216,13 +222,13 @@
 .window-large .button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
-    -fx-pref-width: 250px;
+    -fx-pref-width: 290px;
     -fx-pref-height: 50px;
 }
 .window-large .toggle-button {
     -fx-font-size: 20px;
     -fx-padding: 10 20;
-    -fx-pref-width: 250px;
+    -fx-pref-width: 290px;
     -fx-pref-height: 50px;
 }
 
@@ -266,7 +272,7 @@
 }
 
 .window-large .right-panel {
-    -fx-padding: 60 100 30 30;
+    -fx-padding: 60 0 30 0;
     -fx-spacing: 20;
     -fx-min-width: 200;
     -fx-max-width: 200;
@@ -339,6 +345,7 @@
 .score-label {
     -fx-text-fill: white;
     -fx-font-family: "Monospaced";
+    -fx-alignment: center;
     -fx-font-size: 14px;
 }
 
@@ -352,7 +359,7 @@
    오른쪽 패널 (다음 블록 미리보기 + 점수)
    ================================ */
 .right-panel {
-    -fx-padding: 40 60 20 20;
+    -fx-padding: 40 0 20 0;
     -fx-alignment: top-center;
     -fx-spacing: 15;
     -fx-min-width: 150;
@@ -419,9 +426,23 @@
     -fx-stroke-width: 0.2 !important; 
 }
 
+.block-gray {
+    -fx-fill: #808080; /* 회색 */
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 0.2;
+}
+
+.block-weight,
+.block-gravity,
+.block-split {
+    -fx-fill: #b0b0b0; /* 회색 */
+    -fx-stroke: rgba(0, 0, 0, 0.5);
+    -fx-stroke-width: 0.2;
+}
+
 .item-copy-block {
-    -fx-text-fill: #FFD966;
-    -fx-fill: #FFD966;
+    -fx-text-fill: #693B87;
+    -fx-fill: #693B87;
 }
 
 .block-ghost {
