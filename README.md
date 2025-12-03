@@ -31,7 +31,9 @@ JavaFX를 사용한 클래식 테트리스 게임입니다.
 
 ### 🎯 게임플레이
 
-- 클래식 테트리스 게임 메커니즘
+- **싱글 플레이**: 클래식 테트리스 게임 메커니즘
+- **멀티플레이**: 로컬 1v1 대전 모드
+- **네트워크 모드**: 온라인 1v1 PVP 및 3인 Squad 모드
 - 실시간 점수 및 레벨 표시
 - 일시정지 및 재개 기능
 - 게임 오버 처리
@@ -97,16 +99,31 @@ se-tetris-team13/
 │   │   │   │   │   ├── controller/
 │   │   │   │   │   │   ├── GameController.java         # 게임 컨트롤러
 │   │   │   │   │   │   ├── GameSceneController.java    # 게임 씬 컨트롤러
+│   │   │   │   │   │   ├── NetworkGameController.java  # 네트워크 게임 컨트롤러
+│   │   │   │   │   │   ├── SquadGameController.java    # Squad 모드 컨트롤러
 │   │   │   │   │   │   ├── GameStateListener.java      # 게임 상태 리스너
 │   │   │   │   │   │   └── CompositeGameStateListener.java
 │   │   │   │   │   └── util/
 │   │   │   │   │       └── AsciiBoardRenderer.java     # ASCII 보드 렌더러
 │   │   │   │   ├── input/
 │   │   │   │   │   └── KeyInputHandler.java    # 키 입력 처리
+│   │   │   │   ├── network/
+│   │   │   │   │   ├── client/
+│   │   │   │   │   │   └── TetrisClient.java   # 네트워크 클라이언트
+│   │   │   │   │   ├── server/
+│   │   │   │   │   │   ├── TetrisServer.java   # 1v1 서버
+│   │   │   │   │   │   └── TetrisSquadServer.java  # Squad 서버
+│   │   │   │   │   ├── protocol/
+│   │   │   │   │   │   └── ConnectionMessage.java  # 네트워크 프로토콜
+│   │   │   │   │   └── listener/
+│   │   │   │   │       └── ConnectionListener.java # 연결 리스너
 │   │   │   │   └── scenes/
 │   │   │   │       ├── MainMenuScene.java      # 메인 메뉴
 │   │   │   │       ├── DifficultySelectionScene.java   # 난이도 선택
 │   │   │   │       ├── GameScene.java          # 게임 화면
+│   │   │   │       ├── VersusGameScene.java    # 대전 모드 화면
+│   │   │   │       ├── NetworkLobbyScene.java  # 네트워크 대기실
+│   │   │   │       ├── SquadNetworkLobbyScene.java # Squad 대기실
 │   │   │   │       ├── GameOverScene.java      # 게임 오버
 │   │   │   │       ├── SettingsScene.java      # 설정 화면
 │   │   │   │       ├── KeySettingsScene.java   # 키 설정
@@ -144,7 +161,7 @@ se-tetris-team13/
 #### 최소 요구사항
 
 - Windows 10 이상의 운영체제
-- 500MB 이상의 저장공간
+- 300MB 이상의 저장공간
 - 1GB 이상의 RAM
 - 1.2GHz 이상의 프로세서
 
@@ -197,11 +214,19 @@ se-tetris-team13/
 
 ### 기본 키 설정
 
+**플레이어 1:**
+- **이동**: A (왼쪽), D (오른쪽)
+- **회전**: W
+- **소프트 드롭**: S (아래)
+- **하드 드롭**: SPACE
+- **일시정지**: ESC
+
+**플레이어 2 (대전 모드):**
 - **이동**: LEFT (왼쪽), RIGHT (오른쪽)
-- **회전**: Z
+- **회전**: UP (위)
 - **소프트 드롭**: DOWN (아래)
-- **하드 드롭**: X
-- **일시정지**: P
+- **하드 드롭**: /
+- **일시정지**: ESC
 
 > 💡 모든 키는 설정 메뉴에서 변경 가능합니다.
 
