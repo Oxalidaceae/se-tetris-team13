@@ -348,7 +348,7 @@ class NetworkGameControllerTest {
     void testClientMessageListenerMethods() {
         assertDoesNotThrow(
                 () -> {
-                    controller.onConnectionAccepted();
+                    controller.onConnectionAccepted("TestPlayer");
                     controller.onError("Test error");
                     controller.onGameModeSelected(GameModeMessage.GameMode.NORMAL);
                 },
@@ -434,7 +434,7 @@ class NetworkGameControllerTest {
         assertDoesNotThrow(
                 () -> {
                     // Mock KeyEvent는 복잡하므로 직접적인 키 이벤트 처리는 생략
-                    controller.onConnectionAccepted(); // 연결 상태로 만듦
+                    controller.onConnectionAccepted("TestPlayer"); // 연결 상태로 만듦
                 },
                 "키 입력 처리 설정은 안전해야 함");
     }

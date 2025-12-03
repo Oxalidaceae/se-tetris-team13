@@ -71,7 +71,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
     private boolean pauseInitiatedByMe = false;
-    private long lastReadyChangeTime = 0; // Track when client last changed ready state
 
     // Squad-specific: Player management
     private boolean hostReady = false;
@@ -226,12 +225,16 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
             // Client: send ready message to server and update UI immediately
             System.out.println("[SquadGameController] Client sending ready message: " + myReady);
             
-            // Record the time of this ready state change
-            lastReadyChangeTime = System.currentTimeMillis();
-            
-            // Update button text immediately for responsive UI
+            // Update button text and style immediately for responsive UI
             if (lobbyScene != null) {
-                lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+                lobbyScene.getReadyButton().setText(myReady ? "Cancel Ready" : "Ready");
+                
+                // Apply or remove selected style
+                if (myReady) {
+                    lobbyScene.getReadyButton().getStyleClass().add("selected");
+                } else {
+                    lobbyScene.getReadyButton().getStyleClass().remove("selected");
+                }
             }
             
             if (myReady) {
@@ -246,11 +249,10 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         if (isHost && server != null && !gameStarted) {
             if (server.areAllPlayersReady()) {
                 if (lobbyScene != null) {
-                    lobbyScene.setStatusText("All players ready! Starting game...");
-                    lobbyScene.setControlsDisabled(true);
+                    lobbyScene.setStatusText("All players ready! Starting countdown...");
                 }
-                server.startGame();
-                startGame();
+                // Server will broadcast countdown and then start game after 5 seconds
+                server.checkAllReady();
             }
         }
     }
@@ -1333,6 +1335,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     public void onCountdownStart() {
         Platform.runLater(() -> {
             if (lobbyScene != null) {
+                // 기존 타임라인이 실행 중이면 중지
+                if (countdownTimeline != null) {
+                    countdownTimeline.stop();
+                    countdownTimeline = null;
+                }
+                
                 lobbyScene.setControlsDisabled(true);
                 lobbyScene.setStatusText("Game starting in...");
                 
@@ -1347,10 +1355,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                 
                 countdownTimeline = new Timeline(
                     new KeyFrame(Duration.seconds(1), e -> {
-                        countdownSeconds.set(countdownSeconds.get() - 1);
+                        int current = countdownSeconds.get();
+                        if (current > 0) {
+                            countdownSeconds.set(current - 1);
+                        }
                     })
                 );
-                countdownTimeline.setCycleCount(5); // 5초 동안 5번 실행: 4, 3, 2, 1, 0
+                countdownTimeline.setCycleCount(6); // 5, 4, 3, 2, 1, 0까지 총 6번
                 countdownTimeline.setOnFinished(e -> {
                     lobbyScene.getReadyButton().textProperty().unbind();
                     lobbyScene.getReadyButton().setText("Starting...");

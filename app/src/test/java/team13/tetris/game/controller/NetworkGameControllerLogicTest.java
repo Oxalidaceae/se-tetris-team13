@@ -44,8 +44,8 @@ class NetworkGameControllerLogicTest {
         // 연결 수락
         assertDoesNotThrow(
                 () -> {
-                    hostController.onConnectionAccepted();
-                    clientController.onConnectionAccepted();
+                    hostController.onConnectionAccepted("TestClient");
+                    clientController.onConnectionAccepted("TestHost");
                 },
                 "연결 수락 이벤트 처리는 안전해야 함");
 
@@ -256,7 +256,7 @@ class NetworkGameControllerLogicTest {
                             () -> {
                                 try {
                                     // 다양한 메시지를 동시에 처리
-                                    hostController.onConnectionAccepted();
+                                    hostController.onConnectionAccepted("Client" + index);
                                     hostController.onGameStart();
                                     hostController.onGamePaused();
                                     hostController.onGameResumed();
@@ -337,8 +337,8 @@ class NetworkGameControllerLogicTest {
         assertDoesNotThrow(
                 () -> {
                     // 연결
-                    hostController.onConnectionAccepted();
-                    clientController.onConnectionAccepted();
+                    hostController.onConnectionAccepted("TestClient");
+                    clientController.onConnectionAccepted("TestHost");
 
                     // 게임 모드 선택
                     hostController.onGameModeSelected(GameModeMessage.GameMode.ITEM);
@@ -457,8 +457,8 @@ class NetworkGameControllerLogicTest {
                         assertNotNull(testClient, "클라이언트 컨트롤러가 IP " + ip + "로 생성되어야 함");
 
                         // 기본 동작 테스트
-                        testHost.onConnectionAccepted();
-                        testClient.onConnectionAccepted();
+                        testHost.onConnectionAccepted("TestClient");
+                        testClient.onConnectionAccepted("TestHost");
 
                         testHost.disconnect();
                         testClient.disconnect();
