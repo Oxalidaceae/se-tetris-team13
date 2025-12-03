@@ -129,13 +129,29 @@ public class TetrisClient {
 
     // 수신한 메시지 처리
     private void handleReceivedMessage(NetworkMessage message) {
-        System.out.println("Received from server: " + message.getType());
-
         if (messageListener == null) {
             return;
         }
 
         switch (message.getType()) {
+            case CONNECTION_ACCEPTED -> {
+                // Another client connected to the server
+                if (message instanceof ConnectionMessage connMsg) {
+                    String otherClientId = connMsg.getSenderId();
+                    System.out.println("[TetrisClient] Another player connected: " + otherClientId);
+                    // For now, we'll just log it. The controller will track clients through ready
+                    // messages
+                }
+            }
+
+            case LOBBY_STATE_UPDATE -> {
+                // \ud638\uc2a4\ud2b8\uac00 \uc804\uccb4 \ub85c\ube44 \uc0c1\ud0dc\ub97c
+                // \ubcf4\ub0c4
+                if (message instanceof LobbyStateMessage lobbyMsg) {
+                    messageListener.onLobbyStateUpdate(lobbyMsg.getPlayers());
+                }
+            }
+
             case PLAYER_READY -> {
                 // 누군가 준비 완료
                 if (message instanceof ConnectionMessage connMsg) {
@@ -160,9 +176,16 @@ public class TetrisClient {
 
             case GAME_OVER -> {
                 gameStarted = false;
-                String reason =
-                        (message instanceof ConnectionMessage connMsg) ? connMsg.getMessage() : "";
-                messageListener.onGameOver(reason);
+                // Check if this is a GameEndMessage with rankings
+                if (message instanceof GameEndMessage endMsg) {
+                    messageListener.onGameEnd(endMsg.getRankings());
+                } else {
+                    String reason =
+                            (message instanceof ConnectionMessage connMsg)
+                                    ? connMsg.getMessage()
+                                    : "";
+                    messageListener.onGameOver(reason);
+                }
             }
 
             case BOARD_UPDATE -> {

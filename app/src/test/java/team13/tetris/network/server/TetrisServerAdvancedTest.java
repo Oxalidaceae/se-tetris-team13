@@ -3,6 +3,7 @@ package team13.tetris.network.server;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +16,7 @@ import team13.tetris.network.client.TetrisClient;
 import team13.tetris.network.listener.ClientMessageListener;
 import team13.tetris.network.listener.ServerMessageListener;
 import team13.tetris.network.protocol.*;
+import team13.tetris.network.protocol.LobbyStateMessage.PlayerState;
 
 @Disabled("Network tests are unstable and cause timeouts")
 class TetrisServerAdvancedTest {
@@ -395,6 +397,18 @@ class TetrisServerAdvancedTest {
         public void onPlayerUnready(String playerId) {
             // Test implementation
         }
+
+        @Override
+        public void onLobbyStateUpdate(List<PlayerState> playerStates) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onLobbyStateUpdate'");
+        }
+
+        @Override
+        public void onGameEnd(List<String> rankings) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
+        }
     }
 
     // 테스트용 클라이언트 리스너
@@ -509,6 +523,17 @@ class TetrisServerAdvancedTest {
         }
 
         @Override
+        public void onLobbyStateUpdate(List<PlayerState> playerStates) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onLobbyStateUpdate'");
+        }
+
+        @Override
+        public void onGameEnd(List<String> rankings) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'onGameEnd'");
+        }
+      
         public void onChatMessageReceived(String senderId, String message) {
             // Test implementation
         }

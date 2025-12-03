@@ -21,9 +21,11 @@ public class CellView extends StackPane {
 
     public CellView(double size, Settings settings) {
         this.settings = settings;
+
         setMinSize(size, size);
         setPrefSize(size, size);
         setMaxSize(size, size);
+
         setAlignment(Pos.CENTER);
         getStyleClass().add("cell");
 
@@ -127,7 +129,7 @@ public class CellView extends StackPane {
         if (!rect.getStyleClass().contains("cell-border")) rect.getStyleClass().add("cell-border");
         if (!label.getStyleClass().contains("cell-border"))
             label.getStyleClass().add("cell-border");
-        label.setText("X");
+        // label.setText("X");
     }
 
     public void setBlock(String symbol, String blockClass, String textClass) {

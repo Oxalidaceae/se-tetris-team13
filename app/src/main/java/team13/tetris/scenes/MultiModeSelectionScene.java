@@ -22,13 +22,15 @@ public class MultiModeSelectionScene {
 
         Button localMultiBtn = new Button("Local (1P/2P)");
         Button p2pBtn = new Button("Online (P2P)");
+        Button squadPvpBtn = new Button("Online Squad PVP");
         Button backBtn = new Button("Back");
 
         localMultiBtn.setOnAction(e -> manager.showLocalMultiModeSelection(settings));
         p2pBtn.setOnAction(e -> manager.showHostOrJoin(settings));
+        squadPvpBtn.setOnAction(e -> manager.showSquadHostOrJoin(settings));
         backBtn.setOnAction(e -> manager.showGameModeSelection(settings));
 
-        VBox layout = new VBox(15, title, localMultiBtn, p2pBtn, backBtn);
+        VBox layout = new VBox(15, title, localMultiBtn, p2pBtn, squadPvpBtn, backBtn);
         layout.setStyle("-fx-alignment: center;");
 
         Scene scene = new Scene(layout, 600, 700);

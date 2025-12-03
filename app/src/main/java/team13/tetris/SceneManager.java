@@ -97,6 +97,11 @@ public class SceneManager {
         changeScene(new HostOrJoinScene(this, settings).getScene());
     }
 
+    public void showSquadHostOrJoin(Settings settings) {
+        restoreWindowSize();
+        changeScene(new team13.tetris.scenes.SquadHostOrJoinScene(this, settings).getScene());
+    }
+
     public void showNetworkLobby(Settings settings, boolean isHost, String serverIP) {
         // "SMALL" 크기일 때만 창 크기를 10% 늘림
         if ("SMALL".equals(settings.getWindowSize())) {
@@ -113,6 +118,23 @@ public class SceneManager {
         soundManager.playMenuBGM(); // 로비도 메뉴 BGM
         NetworkGameController controller =
                 new NetworkGameController(this, settings, isHost, serverIP);
+        controller.initializeLobby();
+    }
+
+    public void showSquadNetworkLobby(Settings settings, boolean isHost, String serverIP) {
+        // Squad 모드는 3명이므로 창 크기를 약간 더 확장
+        if ("SMALL".equals(settings.getWindowSize())) {
+            if (previousWidth == 0 && previousHeight == 0) {
+                previousWidth = stage.getWidth();
+                previousHeight = stage.getHeight();
+                stage.setWidth(previousWidth * 1.15);
+                stage.setHeight(previousHeight * 1.15);
+            }
+        }
+
+        team13.tetris.game.controller.SquadGameController controller =
+                new team13.tetris.game.controller.SquadGameController(
+                        this, settings, isHost, serverIP);
         controller.initializeLobby();
     }
 

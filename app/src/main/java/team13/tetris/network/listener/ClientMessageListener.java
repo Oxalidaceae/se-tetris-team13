@@ -1,5 +1,6 @@
 package team13.tetris.network.listener;
 
+import java.util.List;
 import team13.tetris.network.protocol.*;
 
 // 클라이언트가 서버로부터 받은 메시지를 처리하는 리스너 인터페이스
@@ -13,6 +14,9 @@ public interface ClientMessageListener {
 
     // 서버 연결이 끊겼을 때 호출
     void onServerDisconnected(String reason);
+
+    // 로비 상태 업데이트 (서버로부터 전체 플레이어 상태를 받을 때)
+    void onLobbyStateUpdate(List<LobbyStateMessage.PlayerState> playerStates);
 
     // 플레이어(호스트 또는 다른 클라이언트)가 준비 완료했을 때 호출
     void onPlayerReady(String playerId);
@@ -28,6 +32,9 @@ public interface ClientMessageListener {
 
     // 게임이 종료되었을 때 호출
     void onGameOver(String reason);
+
+    // 게임이 끝나고 최종 순위가 결정되었을 때 호출 (Squad PVP)
+    void onGameEnd(List<String> rankings);
 
     // 상대방의 보드 상태 업데이트를 받았을 때 호출
     void onBoardUpdate(BoardUpdateMessage boardUpdate);
