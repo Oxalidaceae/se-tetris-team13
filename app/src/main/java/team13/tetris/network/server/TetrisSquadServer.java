@@ -23,6 +23,7 @@ public class TetrisSquadServer {
     private final Map<String, ClientHandler> connectedClients;
     private final Map<String, PlayerInfo> players; // All 3 players including host
     private final List<String> clientConnectionOrder = new ArrayList<>(); // Track connection order
+    private final Map<String, String> clientIdMapping = new HashMap<>(); // originalId -> friendlyId
     private final ExecutorService threadPool;
     private volatile boolean isRunning = false;
 
@@ -120,6 +121,15 @@ public class TetrisSquadServer {
     public void broadcast(Object message) {
         for (ClientHandler client : connectedClients.values()) {
             client.send(message);
+        }
+    }
+
+    // 발신자를 제외한 다른 플레이어들에게 메시지 전송
+    public void broadcastToOthers(String senderPlayerId, Object message) {
+        for (Map.Entry<String, ClientHandler> entry : connectedClients.entrySet()) {
+            if (!entry.getKey().equals(senderPlayerId)) {
+                entry.getValue().send(message);
+            }
         }
     }
 
@@ -266,6 +276,17 @@ public class TetrisSquadServer {
         }
     }
 
+    // 채팅 메시지 전송 (호스트용)
+    public void sendChatMessage(String message) {
+        ChatMessage chatMsg = new ChatMessage(hostPlayerId, message);
+        broadcastToOthers(hostPlayerId, chatMsg);
+
+        // 호스트에게도 자신의 메시지를 알림 (에코)
+        if (hostMessageListener != null) {
+            hostMessageListener.onChatMessageReceived("ME", message);
+        }
+    }
+
     /** Manually end the game and show final rankings */
     public void endGame() {
         // Add remaining alive players as winners
@@ -338,13 +359,20 @@ public class TetrisSquadServer {
                     return;
                 }
 
+                // 원래 클라이언트 ID 저장
                 ConnectionMessage connMsg = (ConnectionMessage) firstMessage;
-                clientId = connMsg.getSenderId();
+                String originalClientId = connMsg.getSenderId();
+                
+                // 연결 순서에 따라 친근한 클라이언트 이름 부여
+                int connectionIndex = clientConnectionOrder.size();
+                clientId = "Client " + (connectionIndex + 1);
+                
+                // 원래 ID와 새로운 ID 간 매핑 저장
+                clientIdMapping.put(originalClientId, clientId);
 
                 // Accept connection and track connection order
                 connectedClients.put(clientId, this);
-                clientConnectionOrder.add(
-                        clientId); // Track order: first client = index 0, second = index 1
+                clientConnectionOrder.add(clientId);
                 PlayerInfo playerInfo = new PlayerInfo(clientId);
                 players.put(clientId, playerInfo);
                 alivePlayers.add(clientId);
@@ -420,6 +448,16 @@ public class TetrisSquadServer {
                 }
             } else if (message instanceof AttackMessage) {
                 distributeAttackRandomly((AttackMessage) message);
+            } else if (message instanceof ChatMessage) {
+                // 채팅 메시지를 발신자를 제외한 다른 플레이어들에게 브로드캐스트
+                ChatMessage chatMsg = (ChatMessage) message;
+                // 친근한 클라이언트 ID로 새로운 채팅 메시지 생성
+                ChatMessage friendlyChatMsg = new ChatMessage(clientId, chatMsg.getMessage());
+                broadcastToOthers(clientId, friendlyChatMsg);
+                // 호스트에게도 전달
+                if (hostMessageListener != null) {
+                    hostMessageListener.onChatMessageReceived(clientId, chatMsg.getMessage());
+                }
             }
         }
 
