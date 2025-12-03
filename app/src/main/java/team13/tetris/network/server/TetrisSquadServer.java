@@ -468,6 +468,19 @@ public class TetrisSquadServer {
                     players.remove(clientId);
                     alivePlayers.remove(clientId);
                     System.out.println("Client disconnected: " + clientId);
+
+                    // 호스트에게 클라이언트 연결 끊김 알리기
+                    if (hostMessageListener != null) {
+                        hostMessageListener.onClientDisconnected(clientId);
+                    }
+
+                    // 다른 클라이언트들에게 이 클라이언트의 연결 끊김 알리기
+                    ConnectionMessage disconnectMsg =
+                            new ConnectionMessage(
+                                    MessageType.GAME_OVER, clientId, "Player disconnected");
+                    for (ClientHandler otherClient : connectedClients.values()) {
+                        otherClient.send(disconnectMsg);
+                    }
                 }
                 if (socket != null && !socket.isClosed()) {
                     socket.close();
