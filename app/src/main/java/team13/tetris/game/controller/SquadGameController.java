@@ -25,7 +25,6 @@ import team13.tetris.data.ScoreBoard;
 import team13.tetris.game.logic.GameEngine;
 import team13.tetris.game.model.Board;
 import team13.tetris.game.model.Tetromino;
-import team13.tetris.input.KeyInputHandler;
 import team13.tetris.network.client.TetrisClient;
 import team13.tetris.network.listener.ClientMessageListener;
 import team13.tetris.network.listener.ServerMessageListener;
@@ -52,8 +51,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private TetrisClient client; // Client only
     private String myPlayerId;
     private final Map<Integer, String> playerIds = new HashMap<>(); // index -> playerId
-    private final List<String> otherPlayerConnectionOrder =
-            new ArrayList<>(); // For clients: track other players' connection order
 
     // Scenes
     private SquadNetworkLobbyScene lobbyScene;
@@ -61,7 +58,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     // Game
     private GameEngine myEngine;
-    private KeyInputHandler keyInputHandler;
 
     // State
     private boolean gameStarted = false;
@@ -74,13 +70,15 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     // Squad-specific: Player management
     private boolean hostReady = false;
-    private boolean client1Ready = false;
-    private boolean client2Ready = false;
     private boolean client1Connected = false;
     private boolean client2Connected = false;
 
     private final Set<String> alivePlayers = new HashSet<>();
-    private final List<String> eliminationOrder = new ArrayList<>();
+    private final Set<String> otherPlayerConnectionOrder = new HashSet<>();
+
+    // Opponent tracking for board updates
+    private String opponent1Id = null;
+    private String opponent2Id = null;
 
     // Incoming attacks queue
     private final Queue<int[][]> myIncomingBlocks = new LinkedList<>();
@@ -271,6 +269,10 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         + isHost);
         System.out.println("[SquadGameController] Starting game - playerIds: " + playerIds);
 
+        // 게임 시작 시 opponent 할당 변수들 초기화
+        opponent1Id = null;
+        opponent2Id = null;
+        System.out.println("[SquadGameController] Initialized opponent tracking variables");
         // Play game BGM when starting the squad game
         SoundManager.getInstance().playGameBGM();
 
@@ -389,17 +391,22 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         if (myEngine == null) return;
 
         Board board = myEngine.getBoard();
+        
+        // 디버깅: 보드 업데이트 전송 로그
+        System.out.println("[SquadGameController] Sending board update - myPlayerId: " + myPlayerId + 
+                          ", score: " + myEngine.getScore() + ", isHost: " + isHost);
+        
         BoardUpdateMessage msg =
                 new BoardUpdateMessage(
                         myPlayerId,
                         board.snapshot(),
-                        0,
-                        0,
-                        0,
-                        0,
+                        0,  // currentPieceX - 떨어지는 블록은 보여주지 않음
+                        0,  // currentPieceY
+                        0,  // currentPieceType
+                        0,  // currentPieceRotation
                         false,
                         null,
-                        -1,
+                        -1, // nextPieceType - 다음 블록도 보여주지 않음
                         0,
                         false,
                         null,
@@ -410,15 +417,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                         0);
 
         if (isHost) {
+            System.out.println("[SquadGameController] Host broadcasting board update");
             server.broadcast(msg);
         } else {
+            System.out.println("[SquadGameController] Client sending board update to server");
             client.sendMessage(msg);
         }
-    }
-
-    private void sendGameOver() {
-        // Game over handling moved to handleLocalGameOver and onGameEnd
-        // Don't call showSquadGameOver here - wait for final rankings
     }
 
     private int[][] createAttackPattern(int lines, GameEngine engine) {
@@ -639,6 +643,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         }
 
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
+        lobbyScene.setOnSendChatCallback(this::handleSendChat);
         lobbyScene.setOnCancelCallback(this::disconnect);
 
         // Set initial button text
@@ -910,8 +915,9 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     myPlayerId = assignedClientId;
                     
                     lobbyScene.setStatusText("Connected to server!");
-                    // 클라이언트는 자신의 ID를 0번 슬롯에 등록
-                    playerIds.put(0, myPlayerId);
+                    System.out.println("[SquadGameController] Client playerIds before: " + playerIds);
+                    // 클라이언트는 자신의 ID를 저장 (서버에서 할당받은 슬롯 정보는 onLobbyStateUpdate에서 처리)
+                    System.out.println("[SquadGameController] Client playerIds after: " + playerIds);
                 });
     }
 
@@ -997,57 +1003,124 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         String senderId = boardUpdate.getPlayerId();
         if (senderId.equals(myPlayerId)) return; // 자기 자신의 보드는 무시
 
+        System.out.println("[SquadGameController] ===== BOARD UPDATE RECEIVED =====");
+        System.out.println("[SquadGameController] From: " + senderId + ", MyID: " + myPlayerId);
+        System.out.println("[SquadGameController] PlayerIds map: " + playerIds);
+        System.out.println("[SquadGameController] Board size: " + 
+                          (boardUpdate.getBoardState() != null ? boardUpdate.getBoardState().length : "null") +
+                          ", Score: " + boardUpdate.getScore());
+
         Platform.runLater(
                 () -> {
-                    // 모든 플레이어 ID 수집 (자신 제외)
-                    List<String> allOpponents = new ArrayList<>();
-
+                    // senderId로 직접 판단하여 상대방 보드 업데이트
+                    System.out.println("[SquadGameController] Processing board update from: " + senderId);
+                    
                     if (isHost) {
-                        // 호스트 시점: 클라이언트 1과 클라이언트 2가 상대방
-                        for (Map.Entry<Integer, String> entry : playerIds.entrySet()) {
-                            int idx = entry.getKey();
-                            String pid = entry.getValue();
-                            if (idx != 0) { // 0번은 호스트 자신
-                                allOpponents.add(pid);
+                        // 호스트 관점: 모든 클라이언트는 상대방
+                        if (!senderId.equals("Host") && !senderId.equals(myPlayerId)) {
+                            // 클라이언트 보드 업데이트를 받음
+                            // senderId를 기준으로 고정된 슬롯에 할당 (동일한 클라이언트는 항상 같은 슬롯)
+                            
+                            // playerIds에서 해당 senderId가 어느 슬롯에 있는지 확인
+                            int clientSlot = -1;
+                            for (Map.Entry<Integer, String> entry : playerIds.entrySet()) {
+                                if (entry.getValue().equals(senderId)) {
+                                    clientSlot = entry.getKey();
+                                    break;
+                                }
+                            }
+                            
+                            System.out.println("[SquadGameController] Client " + senderId + " mapped to slot " + clientSlot);
+                            
+                            if (clientSlot == 1) {
+                                // 첫 번째 클라이언트 -> opponent1
+                                System.out.println("[SquadGameController] Updating opponent1 with " + senderId);
+                                gameScene.updateOpponent1(
+                                        boardUpdate.getBoardState(),
+                                        0, 0, 0, 0, -1,
+                                        null,
+                                        boardUpdate.getScore());
+                                gameScene.setOpponent1Name("Client 1");
+                            } else if (clientSlot == 2) {
+                                // 두 번째 클라이언트 -> opponent2
+                                System.out.println("[SquadGameController] Updating opponent2 with " + senderId);
+                                gameScene.updateOpponent2(
+                                        boardUpdate.getBoardState(),
+                                        0, 0, 0, 0, -1,
+                                        null,
+                                        boardUpdate.getScore());
+                                gameScene.setOpponent2Name("Client 2");
+                            } else {
+                                // playerIds에 없는 경우 - 새로운 클라이언트를 순서대로 할당
+                                System.out.println("[SquadGameController] Unknown client " + senderId + ", assigning to available slot");
+                                System.out.println("[SquadGameController] Current state - opponent1Id: " + opponent1Id + ", opponent2Id: " + opponent2Id);
+                                
+                                if (opponent1Id == null) {
+                                    // opponent1 슬롯이 비어있으면 여기에 할당
+                                    opponent1Id = senderId;
+                                    System.out.println("[SquadGameController] Assigned " + senderId + " to opponent1");
+                                    gameScene.updateOpponent1(
+                                            boardUpdate.getBoardState(),
+                                            0, 0, 0, 0, -1,
+                                            null,
+                                            boardUpdate.getScore());
+                                    gameScene.setOpponent1Name("Client 1");
+                                } else if (opponent2Id == null && !senderId.equals(opponent1Id)) {
+                                    // opponent2 슬롯이 비어있고 opponent1과 다른 클라이언트면 여기에 할당
+                                    opponent2Id = senderId;
+                                    System.out.println("[SquadGameController] Assigned " + senderId + " to opponent2");
+                                    gameScene.updateOpponent2(
+                                            boardUpdate.getBoardState(),
+                                            0, 0, 0, 0, -1,
+                                            null,
+                                            boardUpdate.getScore());
+                                    gameScene.setOpponent2Name("Client 2");
+                                } else {
+                                    // 이미 할당된 클라이언트 중 하나인지 확인하여 업데이트
+                                    System.out.println("[SquadGameController] Both slots filled. Checking for existing assignment...");
+                                    if (senderId.equals(opponent1Id)) {
+                                        System.out.println("[SquadGameController] Updating existing opponent1: " + senderId);
+                                        gameScene.updateOpponent1(
+                                                boardUpdate.getBoardState(),
+                                                0, 0, 0, 0, -1,
+                                                null,
+                                                boardUpdate.getScore());
+                                    } else if (senderId.equals(opponent2Id)) {
+                                        System.out.println("[SquadGameController] Updating existing opponent2: " + senderId);
+                                        gameScene.updateOpponent2(
+                                                boardUpdate.getBoardState(),
+                                                0, 0, 0, 0, -1,
+                                                null,
+                                                boardUpdate.getScore());
+                                    } else {
+                                        System.out.println("[SquadGameController] ERROR: Unknown senderId " + senderId + " not matching opponent1Id=" + opponent1Id + " or opponent2Id=" + opponent2Id);
+                                    }
+                                }
                             }
                         }
                     } else {
-                        // 클라이언트 시점: 호스트와 다른 클라이언트가 상대방
-                        for (Map.Entry<Integer, String> entry : playerIds.entrySet()) {
-                            String pid = entry.getValue();
-                            if (!pid.equals(myPlayerId)) {
-                                allOpponents.add(pid);
-                            }
+                        // 클라이언트 관점
+                        if (senderId.equals("Host")) {
+                            // Host의 보드 -> opponent1에 할당
+                            System.out.println("[SquadGameController] Updating opponent1 with Host board");
+                            gameScene.updateOpponent1(
+                                    boardUpdate.getBoardState(),
+                                    0, 0, 0, 0, -1,
+                                    null,
+                                    boardUpdate.getScore());
+                            gameScene.setOpponent1Name("Host");
+                        } else if (!senderId.equals(myPlayerId)) {
+                            // 다른 클라이언트의 보드 -> opponent2에 할당
+                            System.out.println("[SquadGameController] Updating opponent2 with other client: " + senderId);
+                            gameScene.updateOpponent2(
+                                    boardUpdate.getBoardState(),
+                                    0, 0, 0, 0, -1,
+                                    null,
+                                    boardUpdate.getScore());
+                            gameScene.setOpponent2Name(senderId);
+                        } else {
+                            System.out.println("[SquadGameController] Ignoring own board update from " + senderId);
                         }
-                    }
-
-                    // 일관된 순서 보장
-                    Collections.sort(allOpponents);
-
-                    int opponentSlot = allOpponents.indexOf(senderId);
-
-                    if (opponentSlot == 0) {
-                        // 첫 번째 상대방 -> opponent1
-                        gameScene.updateOpponent1(
-                                boardUpdate.getBoardState(),
-                                boardUpdate.getCurrentPieceX(),
-                                boardUpdate.getCurrentPieceY(),
-                                boardUpdate.getCurrentPieceType(),
-                                boardUpdate.getCurrentPieceRotation(),
-                                boardUpdate.getNextPieceType(),
-                                null,
-                                boardUpdate.getScore());
-                    } else if (opponentSlot == 1) {
-                        // 두 번째 상대방 -> opponent2
-                        gameScene.updateOpponent2(
-                                boardUpdate.getBoardState(),
-                                boardUpdate.getCurrentPieceX(),
-                                boardUpdate.getCurrentPieceY(),
-                                boardUpdate.getCurrentPieceType(),
-                                boardUpdate.getCurrentPieceRotation(),
-                                boardUpdate.getNextPieceType(),
-                                null,
-                                boardUpdate.getScore());
                     }
                 });
     }
@@ -1103,18 +1176,23 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
     @Override
     public void onClientConnected(String clientId) {
+        System.out.println("[SquadGameController] Client connected: " + clientId);
         Platform.runLater(
                 () -> {
                     // Update client connection indicators
                     if (!client1Connected) {
                         client1Connected = true;
                         playerIds.put(1, clientId);
+                        System.out.println("[SquadGameController] Added client1: " + clientId + " to slot 1");
                         lobbyScene.setClient1Connected(true);
                     } else if (!client2Connected) {
                         client2Connected = true;
                         playerIds.put(2, clientId);
+                        System.out.println("[SquadGameController] Added client2: " + clientId + " to slot 2");
                         lobbyScene.setClient2Connected(true);
                     }
+                    
+                    System.out.println("[SquadGameController] Current playerIds: " + playerIds);
 
                     int connectedCount = connectedClients();
                     lobbyScene.setStatusText(
@@ -1154,7 +1232,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                         lobbyScene.setClient1Connected(true);
                                     }
                                 }
-                                client1Ready = ready;
                                 if (lobbyScene != null) {
                                     lobbyScene.setClient1Ready(ready);
                                 }
@@ -1168,7 +1245,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                         lobbyScene.setClient2Connected(true);
                                     }
                                 }
-                                client2Ready = ready;
                                 if (lobbyScene != null) {
                                     lobbyScene.setClient2Ready(ready);
                                 }
@@ -1200,14 +1276,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     if (lobbyScene != null) {
                                         lobbyScene
                                                 .getReadyButton()
-                                                .setText(ready ? "Cancel Ready" : "Ready");
-                                        
-                                        // Apply or remove selected style
-                                        if (ready) {
-                                            lobbyScene.getReadyButton().getStyleClass().add("selected");
-                                        } else {
-                                            lobbyScene.getReadyButton().getStyleClass().remove("selected");
-                                        }
+                                                .setText(ready ? "Unready" : "Ready");
                                     }
                                 } else {
                                     System.out.println(
@@ -1244,40 +1313,39 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     playerIds.put(order, playerId);
                                 }
 
-                                // order가 0이면 Host
+                                // 각 order에 따라 로비 UI 업데이트
                                 if (order == 0) {
+                                    // Host
                                     hostReady = ready;
                                     if (lobbyScene != null) {
                                         lobbyScene.setHostReady(ready);
                                     }
-                                }
-                                // order가 1이면 첫 번째 클라이언트
-                                else if (order == 1) {
+                                } else if (order == 1) {
+                                    // Client 1
                                     if (!client1Connected) {
                                         client1Connected = true;
                                         if (lobbyScene != null) {
                                             lobbyScene.setClient1Connected(true);
                                         }
                                     }
-                                    client1Ready = ready;
                                     if (lobbyScene != null) {
                                         lobbyScene.setClient1Ready(ready);
                                     }
-                                }
-                                // order가 2이면 두 번째 클라이언트
-                                else if (order == 2) {
+                                } else if (order == 2) {
+                                    // Client 2
                                     if (!client2Connected) {
                                         client2Connected = true;
                                         if (lobbyScene != null) {
                                             lobbyScene.setClient2Connected(true);
                                         }
                                     }
-                                    client2Ready = ready;
                                     if (lobbyScene != null) {
                                         lobbyScene.setClient2Ready(ready);
                                     }
                                 }
                             }
+                            
+                            System.out.println("[SquadGameController] Updated playerIds: " + playerIds);
                         }
                     }
                 });
@@ -1299,14 +1367,14 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                     int clientIndex = getClientIndex(clientId);
                     if (clientIndex == 1) {
                         client1Connected = false;
-                        client1Ready = false;
+                        playerIds.remove(1);
                         if (lobbyScene != null) {
                             lobbyScene.setClient1Connected(false);
                             lobbyScene.setClient1Ready(false);
                         }
                     } else if (clientIndex == 2) {
                         client2Connected = false;
-                        client2Ready = false;
+                        playerIds.remove(2);
                         if (lobbyScene != null) {
                             lobbyScene.setClient2Connected(false);
                             lobbyScene.setClient2Ready(false);
