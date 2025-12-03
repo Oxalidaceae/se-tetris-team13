@@ -183,7 +183,7 @@ public class TetrisSquadServer {
         this.hostMessageListener = listener;
     }
 
-    private void broadcastLobbyState() {
+    public void broadcastLobbyState() {
         List<LobbyStateMessage.PlayerState> playerStates = new ArrayList<>();
 
         // Host \ucd94\uac00 (order = 0)

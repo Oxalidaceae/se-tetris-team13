@@ -7,7 +7,7 @@ import team13.tetris.network.protocol.*;
 public interface ClientMessageListener {
 
     // 서버 연결이 승인되었을 때 호출
-    void onConnectionAccepted();
+    void onConnectionAccepted(String assignedClientId);
 
     // 서버 연결이 거절되었을 때 호출
     void onConnectionRejected(String reason);

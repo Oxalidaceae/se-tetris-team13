@@ -438,7 +438,7 @@ class TetrisClientTest {
         private String lastError = null;
 
         @Override
-        public void onConnectionAccepted() {
+        public void onConnectionAccepted(String assignedClientId) {
             connectionAccepted = true;
         }
 
