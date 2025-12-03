@@ -500,6 +500,8 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                 () -> {
                     SquadResultScene resultScene =
                             new SquadResultScene(manager, settings, rankings, playerIds);
+                    // Set callback to return to lobby instead of disconnecting
+                    resultScene.setOnReturnToLobbyCallback(this::returnToLobby);
                     manager.changeScene(resultScene.getScene());
                 });
     }
@@ -529,12 +531,95 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         } else if (keyString.equals(dropKey)) {
             myEngine.hardDrop();
         } else if (keyString.equals(pauseKey) || code == KeyCode.ESCAPE) {
+            // If player is the last one alive (winner), end game and show rankings
+            if (isHost && server != null && server.getAlivePlayers().size() == 1 && isAlive) {
+                server.endGame(); // Trigger game end with rankings
+            } else {
+                returnToLobby();
+            }
             togglePause();
         }
     }
 
     private void handleKeyRelease(KeyEvent e) {
         // Handle key release if needed
+    }
+
+    private void returnToLobby() {
+        // Reset game state without disconnecting network
+        gameStarted = false;
+        gameScene = null;
+        myEngine = null;
+        isAlive = true;
+        myIncomingBlocks.clear();
+
+        // Don't reset ready states here - they should already be reset by server's resetGameState()
+        // which was called in endGame() and broadcasted via onLobbyStateUpdate()
+        // Just ensure server state is clean (safe to call multiple times)
+
+        if (isHost && server != null) {
+            // Reset server game state
+            // This is safe to call even if already called in endGame()
+            server.resetGameState();
+        }
+        // Client: don't send unready message - server already reset all states
+
+        // Recreate lobby scene WITHOUT reconnecting
+        Platform.runLater(
+                () -> {
+                    recreateLobbyScene();
+                });
+    }
+
+    private void recreateLobbyScene() {
+        // Create new lobby scene but keep existing network connections
+        lobbyScene = new SquadNetworkLobbyScene(manager, settings, isHost);
+
+        if (isHost) {
+            // Update lobby UI with current connection status
+            int connectedCount = connectedClients();
+            lobbyScene.setStatusText(
+                    "Server started. "
+                            + connectedCount
+                            + "/2 clients connected\nYour IP: "
+                            + TetrisSquadServer.getServerIP());
+
+            // Restore client connection indicators only (not ready states - they're reset)
+            if (client1Connected) {
+                lobbyScene.setClient1Connected(true);
+            }
+            if (client2Connected) {
+                lobbyScene.setClient2Connected(true);
+            }
+
+            // Ready states are all false after reset - no need to set
+        } else {
+            // Client: show connected status
+            lobbyScene.setStatusText("Connected to Squad server!");
+
+            // Restore connection indicators for clients (not ready states)
+            if (client1Connected) {
+                lobbyScene.setClient1Connected(true);
+            }
+            if (client2Connected) {
+                lobbyScene.setClient2Connected(true);
+            }
+
+            // Ready states will be updated via onLobbyStateUpdate from server
+        }
+
+        lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
+        lobbyScene.setOnCancelCallback(this::disconnect);
+
+        // Sync button text with actual myReady state
+        // Host always shows "Start", clients show "Ready"/"Unready"
+        if (isHost) {
+            lobbyScene.getReadyButton().setText("Start");
+        } else {
+            lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+        }
+
+        manager.changeScene(lobbyScene.getScene());
     }
 
     private void disconnect() {
@@ -1006,6 +1091,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                             // 호스트: order로 직접 매핑
                             if (order == 0) {
                                 // 호스트 자신
+                                myReady = ready;
                                 hostReady = ready;
                                 if (lobbyScene != null) {
                                     lobbyScene.setHostReady(ready);

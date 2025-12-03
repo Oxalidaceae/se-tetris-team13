@@ -306,6 +306,10 @@ public class TetrisSquadServer {
         if (hostMessageListener != null) {
             hostMessageListener.onGameEnd(finalRankings);
         }
+
+        // Reset game state immediately after sending rankings
+        // This ensures all players who return to lobby will have reset ready states
+        resetGameState();
     }
 
     public List<String> getEliminationOrder() {
@@ -314,6 +318,36 @@ public class TetrisSquadServer {
 
     public Set<String> getAlivePlayers() {
         return new HashSet<>(alivePlayers);
+    }
+
+    /** Reset game state for a new game while keeping network connections */
+    public void resetGameState() {
+        gameInProgress = false;
+        eliminationOrder.clear();
+        alivePlayers.clear();
+
+        // Re-add all connected players as alive
+        alivePlayers.add(hostPlayerId);
+        for (String clientId : connectedClients.keySet()) {
+            alivePlayers.add(clientId);
+        }
+
+        // Reset all ready states
+        PlayerInfo hostInfo = players.get(hostPlayerId);
+        if (hostInfo != null) {
+            hostInfo.setReady(false);
+        }
+        for (String clientId : connectedClients.keySet()) {
+            PlayerInfo clientInfo = players.get(clientId);
+            if (clientInfo != null) {
+                clientInfo.setReady(false);
+            }
+        }
+
+        System.out.println("Game state reset. Alive players: " + alivePlayers);
+
+        // Broadcast updated lobby state to all clients
+        broadcastLobbyState();
     }
 
     // 호스트의 공격을 랜덤하게 분배
