@@ -67,7 +67,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
     private boolean pauseInitiatedByMe = false;
-    private long lastReadyChangeTime = 0; // Track when client last changed ready state
 
     // Squad-specific: Player management
     private boolean hostReady = false;
@@ -75,6 +74,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private boolean client2Connected = false;
 
     private final Set<String> alivePlayers = new HashSet<>();
+    private final Set<String> otherPlayerConnectionOrder = new HashSet<>();
 
     // Opponent tracking for board updates
     private String opponent1Id = null;
@@ -1247,28 +1247,6 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 }
                             }
                         } else {
-                            // 클라이언트: 모든 플레이어 정보를 playerIds에 저장
-                            System.out.println("[SquadGameController] Processing player state: order=" + order + 
-                                             ", playerId=" + playerId + ", ready=" + ready);
-                            System.out.println("[SquadGameController] My current playerId: " + myPlayerId);
-                            
-                            // 모든 플레이어를 playerIds에 저장
-                            playerIds.put(order, playerId);
-                            
-                            // 클라이언트는 자신의 원래 ID를 유지하고, 서버에서 보내온 정보는 playerIds에만 저장
-                            // myPlayerId는 변경하지 않음 - 연결할 때 사용한 임시 ID 유지
-                            
-                            // 자신이 어느 order에 해당하는지 찾기 (서버가 할당한 order 확인)
-                            // 현재는 단순히 모든 플레이어 정보를 저장만 함
-                            
-                            System.out.println("[SquadGameController] Player info stored - not updating myPlayerId");
-                            
-                            // 각 order에 따라 로비 UI 업데이트
-                            if (order == 0) {
-                                // Host
-                                hostReady = ready;
-                                if (lobbyScene != null) {
-                                    lobbyScene.setHostReady(ready);
                             // 클라이언트: playerId로 자신인지 명확하게 판단
                             if (playerId.equals(myPlayerId)) {
                                 // 자신의 playerIds 맵에 자신을 추가
@@ -1295,14 +1273,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                     if (lobbyScene != null) {
                                         lobbyScene
                                                 .getReadyButton()
-                                                .setText(ready ? "Cancel Ready" : "Ready");
-                                        
-                                        // Apply or remove selected style
-                                        if (ready) {
-                                            lobbyScene.getReadyButton().getStyleClass().add("selected");
-                                        } else {
-                                            lobbyScene.getReadyButton().getStyleClass().remove("selected");
-                                        }
+                                                .setText(ready ? "Unready" : "Ready");
                                     }
                                 } else {
                                     System.out.println(
@@ -1338,27 +1309,36 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
                                 if (!playerIds.containsValue(playerId)) {
                                     playerIds.put(order, playerId);
                                 }
-                            } else if (order == 1) {
-                                // Client 1
-                                if (!client1Connected) {
-                                    client1Connected = true;
+
+                                // 각 order에 따라 로비 UI 업데이트
+                                if (order == 0) {
+                                    // Host
+                                    hostReady = ready;
                                     if (lobbyScene != null) {
-                                        lobbyScene.setClient1Connected(true);
+                                        lobbyScene.setHostReady(ready);
                                     }
-                                }
-                                if (lobbyScene != null) {
-                                    lobbyScene.setClient1Ready(ready);
-                                }
-                            } else if (order == 2) {
-                                // Client 2
-                                if (!client2Connected) {
-                                    client2Connected = true;
+                                } else if (order == 1) {
+                                    // Client 1
+                                    if (!client1Connected) {
+                                        client1Connected = true;
+                                        if (lobbyScene != null) {
+                                            lobbyScene.setClient1Connected(true);
+                                        }
+                                    }
                                     if (lobbyScene != null) {
-                                        lobbyScene.setClient2Connected(true);
+                                        lobbyScene.setClient1Ready(ready);
                                     }
-                                }
-                                if (lobbyScene != null) {
-                                    lobbyScene.setClient2Ready(ready);
+                                } else if (order == 2) {
+                                    // Client 2
+                                    if (!client2Connected) {
+                                        client2Connected = true;
+                                        if (lobbyScene != null) {
+                                            lobbyScene.setClient2Connected(true);
+                                        }
+                                    }
+                                    if (lobbyScene != null) {
+                                        lobbyScene.setClient2Ready(ready);
+                                    }
                                 }
                             }
                             
