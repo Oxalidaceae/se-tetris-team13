@@ -626,6 +626,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         }
 
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
+        lobbyScene.setOnSendChatCallback(this::handleSendChat);
         lobbyScene.setOnCancelCallback(this::disconnect);
 
         // Sync button text with actual myReady state
