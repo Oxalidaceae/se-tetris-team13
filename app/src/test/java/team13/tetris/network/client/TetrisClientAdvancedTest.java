@@ -324,7 +324,7 @@ class TetrisClientAdvancedTest {
         private volatile GameModeMessage.GameMode selectedGameMode;
 
         @Override
-        public void onConnectionAccepted() {
+        public void onConnectionAccepted(String assignedClientId) {
             connectionAccepted.countDown();
         }
 

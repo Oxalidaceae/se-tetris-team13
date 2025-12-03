@@ -761,9 +761,10 @@ public class NetworkGameController implements ClientMessageListener, ServerMessa
 
     // ClientMessageListener 구현
     @Override
-    public void onConnectionAccepted() {
+    public void onConnectionAccepted(String assignedClientId) {
         if (!isHost) {
             opponentPlayerId = "Host";
+            // 1v1 mode doesn't need to update client ID since it only tracks opponent
         }
     }
 

@@ -71,6 +71,7 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     private boolean disconnectionHandled = false; // Prevent duplicate disconnect popups
     private boolean paused = false;
     private boolean pauseInitiatedByMe = false;
+    private long lastReadyChangeTime = 0; // Track when client last changed ready state
 
     // Squad-specific: Player management
     private boolean hostReady = false;
@@ -222,8 +223,17 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
 
             checkAllReady();
         } else {
-            // Client: send ready message to server
+            // Client: send ready message to server and update UI immediately
             System.out.println("[SquadGameController] Client sending ready message: " + myReady);
+            
+            // Record the time of this ready state change
+            lastReadyChangeTime = System.currentTimeMillis();
+            
+            // Update button text immediately for responsive UI
+            if (lobbyScene != null) {
+                lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+            }
+            
             if (myReady) {
                 client.sendMessage(ConnectionMessage.createPlayerReady(myPlayerId));
             } else {
@@ -575,16 +585,12 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         isAlive = true;
         myIncomingBlocks.clear();
 
-        // Don't reset ready states here - they should already be reset by server's resetGameState()
+        // Don't reset ready states here - they were already reset by server's resetGameState()
         // which was called in endGame() and broadcasted via onLobbyStateUpdate()
-        // Just ensure server state is clean (safe to call multiple times)
-
-        if (isHost && server != null) {
-            // Reset server game state
-            // This is safe to call even if already called in endGame()
-            server.resetGameState();
-        }
-        // Client: don't send unready message - server already reset all states
+        // Do NOT call resetGameState() again here - it would reset states of players who
+        // returned to lobby earlier and already pressed ready
+        
+        // Client: don't send unready message - server already reset all states in endGame()
 
         // Recreate lobby scene WITHOUT reconnecting
         Platform.runLater(
@@ -633,12 +639,26 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
         lobbyScene.getReadyButton().setOnAction(e -> handleReadyButton());
         lobbyScene.setOnCancelCallback(this::disconnect);
 
-        // Sync button text with actual myReady state
-        // Host always shows "Start", clients show "Ready"/"Unready"
+        // Set initial button text
+        // Host always shows "Start", clients show "Ready" initially (will be updated by onLobbyStateUpdate)
         if (isHost) {
             lobbyScene.getReadyButton().setText("Start");
+            
+            // Request server to broadcast current lobby state so returning players see current ready states
+            if (server != null) {
+                server.broadcastLobbyState();
+            }
         } else {
-            lobbyScene.getReadyButton().setText(myReady ? "Unready" : "Ready");
+            // Always start with "Ready" - server will send updated state via onLobbyStateUpdate
+            lobbyScene.getReadyButton().setText("Ready");
+            
+            // Request current lobby state from server by sending unready then ready if needed
+            // This triggers server to broadcast current state to all players
+            if (client != null) {
+                // Send a dummy unready to trigger server's broadcastLobbyState
+                // Server will respond with current state of all players
+                client.sendMessage(ConnectionMessage.createPlayerUnready(myPlayerId));
+            }
         }
 
         manager.changeScene(lobbyScene.getScene());
@@ -880,9 +900,13 @@ public class SquadGameController implements ClientMessageListener, ServerMessage
     // ===== ClientMessageListener Implementation =====
 
     @Override
-    public void onConnectionAccepted() {
+    public void onConnectionAccepted(String assignedClientId) {
         Platform.runLater(
                 () -> {
+                    // 서버가 할당한 새 ID로 업데이트
+                    System.out.println("[SquadGameController] Updating myPlayerId from " + myPlayerId + " to " + assignedClientId);
+                    myPlayerId = assignedClientId;
+                    
                     lobbyScene.setStatusText("Connected to server!");
                     // 클라이언트는 자신의 ID를 0번 슬롯에 등록
                     playerIds.put(0, myPlayerId);
