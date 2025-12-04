@@ -415,7 +415,8 @@ public class GameEngine {
             listener.onBoardUpdated(board);
 
             // Timer를 사용하여 250ms 후 라인 제거 및 게임 진행
-            java.util.Timer delayTimer = new java.util.Timer("GameEngine-LineClear", true); // 데몬 스레드로 설정
+            java.util.Timer delayTimer =
+                    new java.util.Timer("GameEngine-LineClear", true); // 데몬 스레드로 설정
             try {
                 delayTimer.schedule(
                         new java.util.TimerTask() {
@@ -427,14 +428,16 @@ public class GameEngine {
                                                 try {
                                                     // 흰색 플래시를 원래 상태로 복원
                                                     for (int c = 0; c < board.getWidth(); c++) {
-                                                        board.setCell(c, finalTargetRow, originalRow[c]);
+                                                        board.setCell(
+                                                                c, finalTargetRow, originalRow[c]);
                                                     }
 
                                                     // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
                                                     // 위쪽 행들을 한 줄씩 아래로 복사
                                                     for (int r = finalTargetRow; r > 0; r--) {
                                                         for (int c = 0; c < board.getWidth(); c++) {
-                                                            board.setCell(c, r, board.getCell(c, r - 1));
+                                                            board.setCell(
+                                                                    c, r, board.getCell(c, r - 1));
                                                         }
                                                     }
 
@@ -447,7 +450,8 @@ public class GameEngine {
 
                                                     // 점수 적산 (일반 라인클리어와 동일)
                                                     addScoreForClearedLines(1);
-                                                    updateSpeedForLinesCleared(1, totalLinesCleared);
+                                                    updateSpeedForLinesCleared(
+                                                            1, totalLinesCleared);
 
                                                     // 보드 업데이트
                                                     listener.onBoardUpdated(board);
@@ -461,12 +465,15 @@ public class GameEngine {
                                                         int cleared = remainingFullLines.size();
                                                         totalLinesCleared += cleared;
                                                         addScoreForClearedLines(cleared);
-                                                        updateSpeedForLinesCleared(cleared, totalLinesCleared);
+                                                        updateSpeedForLinesCleared(
+                                                                cleared, totalLinesCleared);
                                                         listener.onBoardUpdated(board);
                                                     }
                                                     spawnNext(); // 다음 블록 생성
                                                 } catch (Exception e) {
-                                                    System.err.println("LINE_CLEAR effect error: " + e.getMessage());
+                                                    System.err.println(
+                                                            "LINE_CLEAR effect error: "
+                                                                    + e.getMessage());
                                                     spawnNext(); // 오류 시에도 다음 블록 생성
                                                 }
                                             });
@@ -872,7 +879,8 @@ public class GameEngine {
         if (lineCount > 0) listener.onLinesCleared(lineCount);
 
         // Timer를 사용하여 250ms 후 라인 제거 및 게임 진행
-        java.util.Timer delayTimer = new java.util.Timer("GameEngine-LineClearing", true); // 데몬 스레드로 설정
+        java.util.Timer delayTimer =
+                new java.util.Timer("GameEngine-LineClearing", true); // 데몬 스레드로 설정
         try {
             delayTimer.schedule(
                     new java.util.TimerTask() {
@@ -885,8 +893,11 @@ public class GameEngine {
                                 if (boardSnapshotBeforeClear != null) {
                                     for (int row : fullLines) {
                                         if (row >= 0 && row < boardSnapshotBeforeClear.length) {
-                                            for (int c = 0; c < boardSnapshotBeforeClear[row].length; c++) {
-                                                board.setCell(c, row, boardSnapshotBeforeClear[row][c]);
+                                            for (int c = 0;
+                                                    c < boardSnapshotBeforeClear[row].length;
+                                                    c++) {
+                                                board.setCell(
+                                                        c, row, boardSnapshotBeforeClear[row][c]);
                                             }
                                         }
                                     }
@@ -894,10 +905,13 @@ public class GameEngine {
 
                                 // 아이템 효과를 먼저 처리 (clearFullLines 전에)
                                 // 단, GRAVITY/SPLIT/LINE_CLEAR는 이미 착지 시점에 처리되었으므로 제외
-                                if (itemModeEnabled && finalHasItemBlock && finalDetectedItemType != null) {
+                                if (itemModeEnabled
+                                        && finalHasItemBlock
+                                        && finalDetectedItemType != null) {
                                     if (finalDetectedItemType == Tetromino.ItemType.COPY) {
                                         copyEffectProcessed = true;
-                                        processItemEffect(finalDetectedItemType, finalItemPieceKind);
+                                        processItemEffect(
+                                                finalDetectedItemType, finalItemPieceKind);
                                     }
                                 }
 
