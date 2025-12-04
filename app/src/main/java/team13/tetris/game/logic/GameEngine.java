@@ -415,58 +415,81 @@ public class GameEngine {
             listener.onBoardUpdated(board);
 
             // Timer를 사용하여 250ms 후 라인 제거 및 게임 진행
-            java.util.Timer delayTimer = new java.util.Timer();
-            delayTimer.schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            javafx.application.Platform.runLater(
-                                    () -> {
-                                        // 흰색 플래시를 원래 상태로 복원
-                                        for (int c = 0; c < board.getWidth(); c++) {
-                                            board.setCell(c, finalTargetRow, originalRow[c]);
-                                        }
+            java.util.Timer delayTimer =
+                    new java.util.Timer("GameEngine-LineClear", true); // 데몬 스레드로 설정
+            try {
+                delayTimer.schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    javafx.application.Platform.runLater(
+                                            () -> {
+                                                try {
+                                                    // 흰색 플래시를 원래 상태로 복원
+                                                    for (int c = 0; c < board.getWidth(); c++) {
+                                                        board.setCell(
+                                                                c, finalTargetRow, originalRow[c]);
+                                                    }
 
-                                        // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
-                                        // 위쪽 행들을 한 줄씩 아래로 복사
-                                        for (int r = finalTargetRow; r > 0; r--) {
-                                            for (int c = 0; c < board.getWidth(); c++) {
-                                                board.setCell(c, r, board.getCell(c, r - 1));
-                                            }
-                                        }
+                                                    // 해당 행을 직접 제거하고 위의 행들을 아래로 이동
+                                                    // 위쪽 행들을 한 줄씩 아래로 복사
+                                                    for (int r = finalTargetRow; r > 0; r--) {
+                                                        for (int c = 0; c < board.getWidth(); c++) {
+                                                            board.setCell(
+                                                                    c, r, board.getCell(c, r - 1));
+                                                        }
+                                                    }
 
-                                        // 맨 위 행을 빈 공간으로 설정
-                                        for (int c = 0; c < board.getWidth(); c++) {
-                                            board.setCell(c, 0, 0);
-                                        }
+                                                    // 맨 위 행을 빈 공간으로 설정
+                                                    for (int c = 0; c < board.getWidth(); c++) {
+                                                        board.setCell(c, 0, 0);
+                                                    }
 
-                                        totalLinesCleared += 1;
+                                                    totalLinesCleared += 1;
 
-                                        // 점수 적산 (일반 라인클리어와 동일)
-                                        addScoreForClearedLines(1);
-                                        updateSpeedForLinesCleared(1, totalLinesCleared);
+                                                    // 점수 적산 (일반 라인클리어와 동일)
+                                                    addScoreForClearedLines(1);
+                                                    updateSpeedForLinesCleared(
+                                                            1, totalLinesCleared);
 
-                                        // 보드 업데이트
-                                        listener.onBoardUpdated(board);
+                                                    // 보드 업데이트
+                                                    listener.onBoardUpdated(board);
 
-                                        // LINE_CLEAR 효과 후 남아있는 full line이 있는지 체크
-                                        java.util.List<Integer> remainingFullLines =
-                                                board.getFullLineIndices();
-                                        if (!remainingFullLines.isEmpty()) {
-                                            // 남은 full line이 있으면 일반 라인클리어 처리
-                                            board.clearFullLines();
-                                            int cleared = remainingFullLines.size();
-                                            totalLinesCleared += cleared;
-                                            addScoreForClearedLines(cleared);
-                                            updateSpeedForLinesCleared(cleared, totalLinesCleared);
-                                            listener.onBoardUpdated(board);
-                                        }
-                                        spawnNext(); // 다음 블록 생성
-                                    });
-                            delayTimer.cancel(); // Timer 정리
-                        }
-                    },
-                    250); // 250ms 지연
+                                                    // LINE_CLEAR 효과 후 남아있는 full line이 있는지 체크
+                                                    java.util.List<Integer> remainingFullLines =
+                                                            board.getFullLineIndices();
+                                                    if (!remainingFullLines.isEmpty()) {
+                                                        // 남은 full line이 있으면 일반 라인클리어 처리
+                                                        board.clearFullLines();
+                                                        int cleared = remainingFullLines.size();
+                                                        totalLinesCleared += cleared;
+                                                        addScoreForClearedLines(cleared);
+                                                        updateSpeedForLinesCleared(
+                                                                cleared, totalLinesCleared);
+                                                        listener.onBoardUpdated(board);
+                                                    }
+                                                    spawnNext(); // 다음 블록 생성
+                                                } catch (Exception e) {
+                                                    System.err.println(
+                                                            "LINE_CLEAR effect error: "
+                                                                    + e.getMessage());
+                                                    spawnNext(); // 오류 시에도 다음 블록 생성
+                                                }
+                                            });
+                                } catch (Exception e) {
+                                    System.err.println("LINE_CLEAR task error: " + e.getMessage());
+                                } finally {
+                                    delayTimer.cancel(); // Timer 정리
+                                }
+                            }
+                        },
+                        250); // 250ms 지연
+            } catch (Exception e) {
+                System.err.println("LINE_CLEAR timer error: " + e.getMessage());
+                delayTimer.cancel();
+                spawnNext(); // 타이머 실패 시 즉시 다음 블록 생성
+            }
         }
     }
 
@@ -753,7 +776,9 @@ public class GameEngine {
         int dropDistance = py - startY; // 떨어진 거리 계산
 
         // 하드 드롭 점수 추가 (거리 > 0일 때만)
-        if (dropDistance > 0) addHardDropScore(dropDistance);
+        if (dropDistance > 0) {
+            addHardDropScore(dropDistance);
+        }
 
         placeCurrentPiece(); // 현재 블록을 보드에 배치
         recordLastLockedColumns(); // 마지막으로 고정된 블록의 열 위치 저장
@@ -854,49 +879,69 @@ public class GameEngine {
         if (lineCount > 0) listener.onLinesCleared(lineCount);
 
         // Timer를 사용하여 250ms 후 라인 제거 및 게임 진행
-        java.util.Timer delayTimer = new java.util.Timer();
-        delayTimer.schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        boolean copyEffectProcessed = false;
+        java.util.Timer delayTimer =
+                new java.util.Timer("GameEngine-LineClearing", true); // 데몬 스레드로 설정
+        try {
+            delayTimer.schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            try {
+                                boolean copyEffectProcessed = false;
 
-                        // 흰색 플래시를 원래 상태로 복원 (clearFullLines 전에)
-                        if (boardSnapshotBeforeClear != null) {
-                            for (int row : fullLines) {
-                                if (row >= 0 && row < boardSnapshotBeforeClear.length) {
-                                    for (int c = 0; c < boardSnapshotBeforeClear[row].length; c++) {
-                                        board.setCell(c, row, boardSnapshotBeforeClear[row][c]);
+                                // 흰색 플래시를 원래 상태로 복원 (clearFullLines 전에)
+                                if (boardSnapshotBeforeClear != null) {
+                                    for (int row : fullLines) {
+                                        if (row >= 0 && row < boardSnapshotBeforeClear.length) {
+                                            for (int c = 0;
+                                                    c < boardSnapshotBeforeClear[row].length;
+                                                    c++) {
+                                                board.setCell(
+                                                        c, row, boardSnapshotBeforeClear[row][c]);
+                                            }
+                                        }
                                     }
                                 }
+
+                                // 아이템 효과를 먼저 처리 (clearFullLines 전에)
+                                // 단, GRAVITY/SPLIT/LINE_CLEAR는 이미 착지 시점에 처리되었으므로 제외
+                                if (itemModeEnabled
+                                        && finalHasItemBlock
+                                        && finalDetectedItemType != null) {
+                                    if (finalDetectedItemType == Tetromino.ItemType.COPY) {
+                                        copyEffectProcessed = true;
+                                        processItemEffect(
+                                                finalDetectedItemType, finalItemPieceKind);
+                                    }
+                                }
+
+                                int cleared = board.clearFullLines(null);
+                                // onLinesCleared는 이미 호출되었으므로 여기서는 점수만 추가
+                                if (cleared > 0) {
+                                    addScoreForClearedLines(cleared);
+                                    listener.onScoreChanged(score);
+                                }
+                                listener.onBoardUpdated(board);
+
+                                // COPY 효과가 처리된 경우 spawnNext를 호출하지 않음
+                                if (!copyEffectProcessed) {
+                                    spawnNext();
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Line clearing task error: " + e.getMessage());
+                                e.printStackTrace();
+                            } finally {
+                                delayTimer.cancel(); // Timer 정리
                             }
                         }
-
-                        // 아이템 효과를 먼저 처리 (clearFullLines 전에)
-                        // 단, GRAVITY/SPLIT/LINE_CLEAR는 이미 착지 시점에 처리되었으므로 제외
-                        if (itemModeEnabled && finalHasItemBlock && finalDetectedItemType != null) {
-                            if (finalDetectedItemType == Tetromino.ItemType.COPY) {
-                                copyEffectProcessed = true;
-                                processItemEffect(finalDetectedItemType, finalItemPieceKind);
-                            }
-                        }
-
-                        int cleared = board.clearFullLines(null);
-                        // onLinesCleared는 이미 호출되었으므로 여기서는 점수만 추가
-                        if (cleared > 0) {
-                            addScoreForClearedLines(cleared);
-                            listener.onScoreChanged(score);
-                        }
-                        listener.onBoardUpdated(board);
-
-                        // COPY 효과가 처리된 경우 spawnNext를 호출하지 않음
-                        if (!copyEffectProcessed) {
-                            spawnNext();
-                        }
-                        delayTimer.cancel(); // Timer 정리
-                    }
-                },
-                250); // 250ms 지연
+                    },
+                    250); // 250ms 지연
+        } catch (Exception e) {
+            System.err.println("Timer scheduling error: " + e.getMessage());
+            delayTimer.cancel();
+            // 타이머 실패 시 즉시 처리
+            spawnNext();
+        }
     }
 
     // 제거된 라인 수에 따른 점수 추가 100/250/500/1000
